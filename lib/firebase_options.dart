@@ -52,24 +52,22 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDKr6nl7Ydxp2b6_eVWyRYgYFPTVrcLA5U',
-    appId: '1:484300137942:android:3a2d6abacfd159adbe7077',
+    appId: '1:484300137942:android:5b22873fcadfa14fbe7077',
     messagingSenderId: '484300137942',
     projectId: 'asec-a811b',
     storageBucket: 'asec-a811b.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDRV4GoGZfItFtpJbVbbPSLgfmcQ1O_Evk',
-    appId: '1:484300137942:ios:22eaf20f02fe3172be7077',
+    appId: '1:484300137942:ios:04379e647b756c7ebe7077',
     messagingSenderId: '484300137942',
     projectId: 'asec-a811b',
     storageBucket: 'asec-a811b.firebasestorage.app',
     iosBundleId: 'com.asec.app',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDRV4GoGZfItFtpJbVbbPSLgfmcQ1O_Evk',
-    appId: '1:484300137942:ios:22eaf20f02fe3172be7077',
+    appId: '1:484300137942:ios:04379e647b756c7ebe7077',
     messagingSenderId: '484300137942',
     projectId: 'asec-a811b',
     storageBucket: 'asec-a811b.firebasestorage.app',
