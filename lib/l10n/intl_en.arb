@@ -1,0 +1,1045 @@
+{
+  "@@locale": "en",
+  "appName": "ASEC",
+  "appTagline": "Watch. Learn. Test.",
+  "roleAdmin": "Admin",
+  "roleTeacher": "Teacher",
+  "roleStudent": "Student",
+  "roleParent": "Parent",
+  "typeVideo": "Video",
+  "typePdf": "PDF",
+  "typeImage": "Image",
+  "typeExam": "Exam",
+  "typeQuiz": "Quiz",
+  "attendance": "Attendance",
+  "grades": "Grades",
+  "messages": "Messages",
+  "permissionPublishDesc": "Can add, edit and delete {type} content",
+  "@permissionPublishDesc": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "permissionAttendanceDesc": "Can take attendance for their sections",
+  "permissionGradesDesc": "Can review and grade student results",
+  "permissionMessagesDesc": "Can message parents",
+  "save": "Save",
+  "cancel": "Cancel",
+  "discard": "Discard",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "close": "Close",
+  "done": "Done",
+  "retry": "Try again",
+  "search": "Search",
+  "all": "All",
+  "primaryColor": "Primary colour",
+  "secondaryColor": "Secondary colour",
+  "colors": "Colours",
+  "errWrongCredentials": "Incorrect email or password. Please try again.",
+  "errInvalidEmail": "That does not look like a valid email address.",
+  "errEmailInUse": "An account already exists with this email.",
+  "errWeakPassword": "Use at least 6 characters for the password.",
+  "errUserDisabled": "This account has been disabled.",
+  "errTooManyRequests": "Too many attempts. Wait a minute and try again.",
+  "errNetwork": "No connection. Check your network and try again.",
+  "errProfileMissing": "This account has no profile. Ask the admin to create it from the console.",
+  "errAccountInactive": "This account is switched off. Contact the center.",
+  "errFirestoreUnavailable": "Signed in, but the database did not answer. Check that Firestore is created in your Firebase project.",
+  "errRulesDenied": "The database refused the request. Deploy the Firestore rules: firebase deploy --only firestore:rules",
+  "errSetupAlreadyDone": "Setup is already done on this project. Sign in instead.",
+  "errNotConfigured": "Firebase is not configured yet. Run flutterfire configure.",
+  "errUnknown": "Something went wrong. Please try again.",
+  "failPermission": "You do not have permission for this. Ask the admin, or deploy the Firestore rules.",
+  "failIndex": "This list needs a database index. Deploy firestore.indexes.json.",
+  "failNotFound": "It no longer exists.",
+  "failUpload": "The upload did not finish. Try again.",
+  "typeVideos": "Videos",
+  "typePdfs": "PDFs",
+  "typeImages": "Images",
+  "typeExams": "Exams",
+  "typeQuizzes": "Quizzes",
+  "present": "Present",
+  "absent": "Absent",
+  "lateStatus": "Late",
+  "excused": "Excused",
+  "resetEmailSent": "If that email has an account, a reset link is on its way.",
+  "consoleHeadline": "Your whole center, one screen.",
+  "consoleSubheadline": "Lessons, exams, attendance and parents — organised.",
+  "enterEmail": "Enter your email",
+  "enterPassword": "Enter your password",
+  "enterName": "Enter a name",
+  "setupTitle": "Set up your center",
+  "welcomeBack": "Welcome back",
+  "setupSubtitle": "Create the first admin account. This works once per project.",
+  "signInSubtitle": "Sign in with the account the center gave you.",
+  "fullName": "Full name",
+  "fullNameHint": "e.g. Amr Mesbah",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot password?",
+  "createAdminAccount": "Create admin account",
+  "signIn": "Sign in",
+  "backToSignIn": "Back to sign in",
+  "setupCenter": "First time? Set up the center",
+  "consoleAccountsHint": "Admins and teachers sign in here. Students and parents use the phone app.",
+  "tabletAccountsHint": "Everyone signs in here — students, parents, teachers and admins.",
+  "mobileAccountsHint": "Students and parents sign in here. Teachers use a tablet or computer.",
+  "wrongDeviceMobileTitle": "Open this account on a phone or tablet",
+  "wrongDeviceDesktopTitle": "Open this account on a tablet or computer",
+  "wrongDeviceMobileBody": "{role} accounts use the Mostakbal app on a phone or tablet. Install it there and sign in with the same email.",
+  "@wrongDeviceMobileBody": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "wrongDeviceDesktopBody": "{role} accounts use the console on a tablet or computer. Open Mostakbal there and sign in with the same email.",
+  "@wrongDeviceDesktopBody": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "signOut": "Sign out",
+  "debugPreviewAnyway": "Preview anyway (debug build)",
+  "debugPreviewHint": "Only in debug builds. Reset it from Settings.",
+  "overview": "Overview",
+  "teachers": "Teachers",
+  "students": "Students",
+  "parents": "Parents",
+  "sections": "Sections",
+  "content": "Content",
+  "myStudents": "My students",
+  "settings": "Settings",
+  "signOutQuestion": "Sign out?",
+  "signOutBody": "You will need your email and password to come back.",
+  "helloName": "Hello, {name}",
+  "@helloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "overviewAdminSub": "Here is your center today.",
+  "overviewTeacherSub": "Your classes, content and results at a glance.",
+  "contentLibrary": "Content library",
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "recentlyAdded": "Recently added",
+  "noContentYet": "No content yet.",
+  "demoFailed": "Demo data could not be written",
+  "demoTitle": "Demo data",
+  "demoBody": "Fills every section with sample members, lessons, quizzes, results and CVs, so you can see each screen with real content in it. Every demo account signs in with the password {password}.",
+  "@demoBody": {
+    "placeholders": {
+      "password": {
+        "type": "String"
+      }
+    }
+  },
+  "removeDemo": "Remove demo data",
+  "removeDemoQuestion": "Remove all demo data?",
+  "removeDemoBody": "Deletes every member, video, quiz, result and CV marked as demo. Anything you or your members created is not touched.",
+  "demoRemoved": "Demo data removed",
+  "fillDemo": "Fill demo data",
+  "demoFilled": "Demo data is ready — sign out and try {email}",
+  "@demoFilled": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "demoCounts": "{members} members · {videos} videos · {quizzes} quizzes · {results} results · {cvs} CVs",
+  "@demoCounts": {
+    "placeholders": {
+      "members": {
+        "type": "String"
+      },
+      "videos": {
+        "type": "String"
+      },
+      "quizzes": {
+        "type": "String"
+      },
+      "results": {
+        "type": "String"
+      },
+      "cvs": {
+        "type": "String"
+      }
+    }
+  },
+  "demoAccountsHint": "Demo accounts are real sign-ins on a domain that receives no mail. Removing the data leaves them empty; filling again adopts them back.",
+  "myContent": "My content",
+  "resultsReceived": "Results received",
+  "yourPermissions": "What you can do",
+  "yourPermissionsSub": "Set by the admin. Ask them if something you need is missing.",
+  "nobodyFound": "Nobody matches that search.",
+  "addTeacher": "Add teacher",
+  "editTeacher": "Edit teacher",
+  "addStudent": "Add student",
+  "editStudent": "Edit student",
+  "addParent": "Add parent",
+  "editParent": "Edit parent",
+  "accountCreateHint": "They sign in with this email and password.",
+  "createAccount": "Create account",
+  "phone": "Phone",
+  "passwordShareHint": "Share it with them privately. At least 6 characters.",
+  "generate": "Generate",
+  "subject": "Subject",
+  "subjectHint": "e.g. Mathematics",
+  "teachesSections": "Teaches these sections",
+  "noSectionsYet": "No sections yet — add them in Sections.",
+  "permissions": "Permissions",
+  "section": "Section",
+  "children": "Children",
+  "accountActive": "Account active",
+  "accountActiveHint": "Switch off to block sign-in without deleting anything.",
+  "roleLabel": "Role",
+  "saved": "Saved",
+  "deleteQuestion": "Delete {name}?",
+  "@deleteQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deletePersonBody": "Their profile is removed and they can no longer sign in. Their results and attendance stay on record.",
+  "deleted": "Deleted",
+  "name": "Name",
+  "noSection": "No section",
+  "status": "Status",
+  "active": "Active",
+  "inactive": "Off",
+  "switchOff": "Switch off",
+  "switchOn": "Switch on",
+  "peopleSub": "Create accounts, set sections and control access.",
+  "nobodyYet": "Nobody here yet",
+  "nobodyYetSub": "Add the first one with the button above, or fill demo data from Settings.",
+  "deleteSectionWithStudents": "{count} students are in this section. They will be left without a section until you move them.",
+  "@deleteSectionWithStudents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSectionBody": "The section is removed. Content assigned to it stops showing for it.",
+  "sectionsSub": "Group students into classes. Content, attendance and teachers are organised by section.",
+  "addSection": "Add section",
+  "editSection": "Edit section",
+  "noSectionsTitle": "No sections yet",
+  "noSectionsSub": "Create your first class group, then add students to it.",
+  "studentsCount": "{count} students",
+  "@studentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "teachersCount": "{count} teachers",
+  "@teachersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionName": "Section name",
+  "sectionNameHint": "e.g. Grade 7 — A",
+  "level": "Level",
+  "levelHint": "e.g. Grade 7",
+  "description": "Description",
+  "addQuestion": "Add question",
+  "questionText": "Question",
+  "points": "Points",
+  "optionN": "Option {n}",
+  "@optionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "addOption": "Add option",
+  "markCorrectHint": "Select the correct answer",
+  "fileTooLarge": "That file is larger than {mb} MB.",
+  "@fileTooLarge": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "enterTitle": "Enter a title",
+  "enterValidLink": "Enter a full link starting with https://",
+  "chooseFile": "Choose a file",
+  "questionsIncomplete": "Every question needs text, at least two options and a correct answer.",
+  "newItem": "New {type}",
+  "@newItem": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "editItem": "Edit {type}",
+  "@editItem": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "assessmentHint": "Multiple-choice questions, marked automatically when the student submits.",
+  "fileHint": "Upload a file to Firebase Storage, or paste a link.",
+  "title": "Title",
+  "descriptionHint": "What is this about?",
+  "file": "File",
+  "uploadFile": "Upload file",
+  "pasteLink": "Paste link",
+  "link": "Link",
+  "timeLimit": "Time limit",
+  "minutes": "Minutes",
+  "zeroUntimed": "0 = no time limit",
+  "questionsTotal": "{count} questions · {points} points",
+  "@questionsTotal": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "assignToSections": "Assign to sections",
+  "noSectionsAssigned": "You are not assigned to any section yet. Ask the admin.",
+  "assignToStudents": "…or to single students",
+  "noDueDate": "No due date — tap to set one",
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "published": "Published",
+  "publishedHint": "Off keeps it a draft that only you can see.",
+  "notAssignedWarning": "Not assigned to anyone yet — no student will see it.",
+  "allowedTypes": "Allowed: {types}",
+  "@allowedTypes": {
+    "placeholders": {
+      "types": {
+        "type": "String"
+      }
+    }
+  },
+  "browse": "Browse",
+  "replace": "Replace",
+  "uploadingPercent": "Uploading… {percent}%",
+  "@uploadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAssessmentBody": "Students will no longer see it. Results already submitted stay in Grades.",
+  "deleteContentBody": "Students will no longer see it, and the uploaded file is deleted.",
+  "contentAdminSub": "Everything every teacher has published.",
+  "contentTeacherSub": "Upload lessons and build exams, then assign them to a section or to single students.",
+  "addContent": "Add content",
+  "noContentPermission": "The admin has not given you permission to publish content yet.",
+  "noContentSub": "Use “Add content” to upload your first lesson or build a quiz.",
+  "notAssigned": "Not assigned",
+  "draft": "Draft",
+  "questionsShort": "{count} questions · {time}",
+  "@questionsShort": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "untimed": "untimed",
+  "minutesShort": "{n} min",
+  "@minutesShort": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "open": "Open",
+  "attendanceSaved": "Attendance saved",
+  "attendanceSub": "Pick a section and a day, tap each student's status, then save.",
+  "noStudentsInSection": "No students in this section",
+  "noStudentsInSectionSub": "The admin adds students to sections from the Students page.",
+  "unmarkedCount": "{count} not marked",
+  "@unmarkedCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "markAllPresent": "Mark all present",
+  "saveChanges": "Save changes",
+  "notSavedYet": "Not saved yet",
+  "gradesSub": "Results arrive here the moment a student submits. Adjust a mark or add feedback any time.",
+  "noAssessments": "No exams or quizzes yet",
+  "noAssessmentsSub": "Create one from the Content page.",
+  "pointsTotal": "{points} pts",
+  "@pointsTotal": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "submitted": "Submitted",
+  "missing": "Missing",
+  "average": "Average",
+  "notSubmittedYet": "Not submitted yet",
+  "gradedByTeacher": "Graded by teacher",
+  "autoMarked": "Auto-marked",
+  "enterGrade": "Enter grade",
+  "editGrade": "Edit grade",
+  "scoreRange": "Enter a score from 0 to {max}.",
+  "@scoreRange": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "score": "Score",
+  "feedback": "Feedback",
+  "feedbackHint": "Visible to the student and their parents.",
+  "aboutAssignment": "About an assignment",
+  "noMessagesYet": "No messages yet",
+  "noMessagesYetSub": "Say hello — messages arrive instantly.",
+  "aboutTitle": "About: {title}",
+  "@aboutTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "typeMessage": "Write a message…",
+  "aboutChild": "About {name}",
+  "@aboutChild": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "you": "You",
+  "messagesTeacherSub": "Conversations with parents, one thread per child.",
+  "noConversations": "No conversations yet",
+  "noConversationsTeacherSub": "Parents can write to you from their app, or start one from My students.",
+  "parentOf": "Parent of {name}",
+  "@parentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "myStudentsSub": "Students in the sections you teach. Click one for results, attendance and parents.",
+  "noParentsLinked": "No parent linked yet. The admin links parents from the Parents page.",
+  "message": "Message",
+  "noAttendanceYet": "No attendance recorded yet.",
+  "attendanceRate": "Attendance {percent}%",
+  "@attendanceRate": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "results": "Results",
+  "noResultsYet": "No results yet.",
+  "appearance": "Appearance",
+  "language": "Language",
+  "darkMode": "Dark mode",
+  "haptics": "Vibration on tap",
+  "branding": "Brand colours",
+  "resetColors": "Reset to default colours",
+  "brandingLocalHint": "Saved on this computer.",
+  "developer": "Developer",
+  "clearDeviceOverride": "Clear device preview",
+  "clearDeviceOverrideSub": "Stops pretending this device is a phone / computer, and signs out.",
+  "account": "Account",
+  "overdue": "Overdue",
+  "startNow": "Start",
+  "questionsCount": "{count} questions",
+  "@questionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "openExternally": "Open in another app",
+  "videoFailed": "This video could not be played. Try opening it in another app.",
+  "pageOf": "Page {page} of {pages}",
+  "@pageOf": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfFailed": "This PDF could not be opened here. Tap to open it in another app.",
+  "pinchToZoom": "Pinch to zoom",
+  "questions": "Questions",
+  "notTakenYet": "{name} has not taken this yet.",
+  "@notTakenYet": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "examRules": "Answer every question, then submit. You can move between questions freely. You can submit only once.",
+  "startExam": "Start {type}",
+  "@startExam": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "submitQuestion": "Submit your answers?",
+  "submitWithBlanks": "{count} questions are still blank. You cannot change answers after submitting.",
+  "@submitWithBlanks": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "submitBody": "You cannot change answers after submitting.",
+  "submit": "Submit",
+  "keepGoing": "Keep going",
+  "submitFailed": "Could not submit",
+  "alreadySubmitted": "You have already submitted this one.",
+  "leaveExamQuestion": "Leave without submitting?",
+  "leaveExamBody": "Your answers will be lost.",
+  "leave": "Leave",
+  "questionNofM": "Question {n} of {m}",
+  "@questionNofM": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "previous": "Previous",
+  "next": "Next",
+  "timeUp": "Time is up — your answers were submitted automatically.",
+  "submittedTitle": "Submitted!",
+  "review": "Review",
+  "verdictExcellent": "Excellent work!",
+  "verdictGood": "Good job!",
+  "verdictPass": "Passed",
+  "verdictKeepTrying": "Keep practising",
+  "home": "Home",
+  "libraryTab": "Library",
+  "profile": "Profile",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "nothingAssignedYet": "Nothing assigned yet",
+  "nothingAssignedYetSub": "When your teachers share lessons, exams or quizzes, they will appear here.",
+  "continueLearning": "Continue learning",
+  "seeAll": "See all",
+  "upNext": "Up next",
+  "newThisWeek": "New",
+  "toDo": "To do",
+  "searchLessons": "Search lessons, exams, teachers…",
+  "nothingHere": "Nothing here",
+  "nothingHereSub": "Try another filter or search.",
+  "averageGrade": "Average grade",
+  "resultsCountLabel": "{count} results",
+  "@resultsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRecorded": "{count} days recorded",
+  "@daysRecorded": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "lastDays": "Latest days",
+  "absencesAndLate": "Absences and late days",
+  "myProgress": "My progress",
+  "noChildrenLinked": "No children linked yet",
+  "noChildrenLinkedSub": "Ask the center to link your children to your account.",
+  "yourChildren": "Your children",
+  "messageATeacher": "Message a teacher",
+  "assignments": "Assignments",
+  "chooseTeacher": "Choose a teacher",
+  "noTeachersToMessage": "No teacher of this section can receive messages yet.",
+  "whichChild": "Which child is this about?",
+  "newMessage": "New message",
+  "noConversationsParentSub": "Tap “New message” to write to one of your child's teachers.",
+  "dashboard": "Dashboard",
+  "dashboardAdminSub": "Attendance, results and content across the whole center.",
+  "dashboardTeacherSub": "Attendance and results for the sections you teach.",
+  "attendanceRateLabel": "Attendance rate",
+  "averageScoreLabel": "Average score",
+  "gradedResultsLabel": "Results marked",
+  "publishedContentLabel": "Published content",
+  "attendanceByStatus": "Attendance by status",
+  "attendanceByDay": "Attendance by day",
+  "averageBySection": "Average score by section",
+  "scoreBands": "Score bands",
+  "resultsByType": "Results by type",
+  "band0": "Below 50",
+  "band50": "50–64",
+  "band65": "65–79",
+  "band80": "80–100",
+  "charts": "Charts",
+  "filters": "Filters",
+  "clear": "Clear",
+  "apply": "Apply",
+  "periodLabel": "Period",
+  "period30": "Last 30 days",
+  "period90": "Last 90 days",
+  "periodAll": "All time",
+  "onlyBelowPass": "Only results below 50%",
+  "onlyAbsences": "Only absences and late days",
+  "exportTitle": "Export",
+  "exportFileName": "File name",
+  "exportSaved": "Saved to {path}",
+  "@exportSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailedTitle": "Export failed",
+  "exportCancelled": "Export cancelled.",
+  "student": "Student",
+  "assessment": "Assessment",
+  "dateLabel": "Date",
+  "rowsShown": "{shown} of {total}",
+  "@rowsShown": {
+    "placeholders": {
+      "shown": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "nothingToChart": "Nothing to chart yet",
+  "nothingToChartSub": "Charts fill in as attendance is taken and assessments are marked.",
+  "noRowsMatch": "Nothing matches these filters.",
+  "dashboardSearchHint": "Search a student or an assessment",
+  "exportCsv": "Export CSV",
+  "enterFileName": "Enter a file name",
+  "focusOverdue": "Overdue — finish it first",
+  "focusNext": "Your next task",
+  "focusNew": "New for you",
+  "allCaughtUp": "You're all caught up",
+  "allCaughtUpSub": "No exams or quizzes waiting. A good moment to review a lesson.",
+  "dueToday": "Due today",
+  "dueTomorrow": "Due tomorrow",
+  "dueInDays": "Due in {n} days",
+  "@dueInDays": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "overdueByDays": "{n} days overdue",
+  "@overdueByDays": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "Today",
+  "notRecordedToday": "Not recorded yet",
+  "dayStreak": "day streak",
+  "latestResult": "Latest result",
+  "aboveAverage": "{n} pts above your average",
+  "@aboveAverage": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "belowAverage": "{n} pts below your average",
+  "@belowAverage": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "onYourAverage": "Right on your average",
+  "assessmentsDone": "{done} of {total} exams & quizzes done",
+  "@assessmentsDone": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "atAGlance": "At a glance",
+  "noResultYetShort": "Your first result will show here.",
+  "roleUser": "Member",
+  "roleAdminBadge": "Admin",
+  "heroTitle": "Everything you need to learn, in one place.",
+  "heroSubtitle": "Watch the lessons, then take the quiz before the time runs out.",
+  "createYourAccount": "Create your account",
+  "registerSubtitle": "A minute to sign up, then everything is open to you.",
+  "register": "Create account",
+  "haveAccount": "Already have an account?",
+  "noAccount": "New here?",
+  "confirmPassword": "Confirm password",
+  "errPasswordsDiffer": "The two passwords are not the same.",
+  "phoneHint": "Optional",
+  "welcomeName": "Welcome, {name}",
+  "@welcomeName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "signInAsAdminHint": "The admin account signs in here too.",
+  "registerHint": "Your account is a member account. The center keeps one admin.",
+  "quizzes": "Quizzes",
+  "quizzesAdminSub": "Write the questions, set the timer and the window when it is open.",
+  "quizzesUserSub": "Take a quiz while it is open. The timer starts when you do.",
+  "newQuiz": "New quiz",
+  "editQuiz": "Edit quiz",
+  "quizTitleHint": "Unit 3 — revision",
+  "availabilityWindow": "When it is open",
+  "availabilityHint": "Leave both empty to keep it open with no end date.",
+  "opensAt": "Opens",
+  "closesAt": "Closes",
+  "notSet": "Not set",
+  "clearDate": "Clear",
+  "errWindowBackwards": "The closing time has to come after the opening time.",
+  "errNoQuestions": "Add at least one question.",
+  "quizSaved": "Quiz saved",
+  "deleteQuizBody": "The quiz and every attempt on it are deleted. This cannot be undone.",
+  "noQuizzesTitle": "No quizzes yet",
+  "noQuizzesAdminSub": "Write your first one — questions, a timer, and when it is open.",
+  "noQuizzesUserSub": "Nothing is open for you right now. Come back later.",
+  "attempts": "Attempts",
+  "attemptsSub": "Who has taken this quiz, and how they did.",
+  "noAttemptsYet": "Nobody has taken this quiz yet",
+  "noAttemptsYetSub": "Results appear here the moment somebody submits.",
+  "attemptsCount": "{count} attempts",
+  "@attemptsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "autoSubmitted": "Time ran out",
+  "takenOn": "Taken",
+  "startQuiz": "Start the quiz",
+  "quizRulesTimed": "{count} questions · {minutes} minutes. The timer keeps running once you start, and the quiz is submitted for you when it reaches zero.",
+  "@quizRulesTimed": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "quizRulesUntimed": "{count} questions, no time limit. Take as long as you need.",
+  "@quizRulesUntimed": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "timeLeft": "Time left",
+  "quizNotOpenYet": "Opens {date}",
+  "@quizNotOpenYet": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "quizClosed": "Closed",
+  "quizClosesOn": "Closes {date}",
+  "@quizClosesOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "quizOpenNow": "Open now",
+  "quizWindowClosedBody": "This quiz is not open right now.",
+  "yourScore": "Your score",
+  "correctOfTotal": "{correct} of {total} correct",
+  "@correctOfTotal": {
+    "placeholders": {
+      "correct": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "yourAnswer": "Your answer",
+  "correctAnswer": "Correct answer",
+  "noAnswer": "Left blank",
+  "takeAgain": "Take it again",
+  "alreadyTakenBody": "You have already taken this quiz. Here is how you did.",
+  "backToQuizzes": "Back to quizzes",
+  "answered": "Answered",
+  "videosAdminSub": "Upload a lesson and it appears for every member.",
+  "videosUserSub": "Every lesson the center has published.",
+  "addVideo": "Add a video",
+  "editVideo": "Edit video",
+  "chooseVideoFile": "Choose a video file",
+  "videoSaved": "Video saved",
+  "deleteVideoBody": "The video and its file are deleted. This cannot be undone.",
+  "noVideosTitle": "No videos yet",
+  "noVideosAdminSub": "Upload the first lesson — members see it straight away.",
+  "noVideosUserSub": "Lessons appear here as soon as they are published.",
+  "watchNow": "Watch",
+  "uploadingVideo": "Uploading the video…",
+  "uploadCancel": "Cancel the upload",
+  "noFileChosen": "No file chosen",
+  "megabytes": "{size} MB",
+  "@megabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "videoStillUploading": "Wait for the upload to finish.",
+  "members": "Members",
+  "membersSub": "Everybody who has registered.",
+  "noMembersYet": "No members yet",
+  "noMembersYetSub": "They appear here the moment somebody registers.",
+  "totalMembers": "Members",
+  "totalQuizzes": "Quizzes",
+  "totalVideos": "Videos",
+  "totalAttempts": "Attempts",
+  "dashboardAsecSub": "Your center at a glance.",
+  "memberSince": "Member since {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "editProfile": "Edit profile",
+  "profileSaved": "Profile saved",
+  "publish": "Publish",
+  "errKeychain": "This Mac would not let the app save your session to the keychain. The app has to be signed with an Apple Development team — see SETUP.md.",
+  "failStorageUnavailable": "Cloud Storage is not ready for this project. Turn Storage on in the Firebase console (Build > Storage), then deploy storage.rules.",
+  "startedAt": "Started",
+  "finishedAt": "Finished",
+  "timeTaken": "Time taken",
+  "answerSheet": "Answer sheet",
+  "blanksCount": "{count} left blank",
+  "@blanksCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesSeconds": "{m} min {s} s",
+  "@minutesSeconds": {
+    "placeholders": {
+      "m": {
+        "type": "String"
+      },
+      "s": {
+        "type": "String"
+      }
+    }
+  },
+  "theirAnswer": "Their answer",
+  "openAttempt": "See the answers",
+  "attemptOf": "{name} — {quiz}",
+  "@attemptOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "quiz": {
+        "type": "String"
+      }
+    }
+  },
+  "questionNumber": "Question {n}",
+  "@questionNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "pointsEarned": "{earned} / {total} pts",
+  "@pointsEarned": {
+    "placeholders": {
+      "earned": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "attemptsByDay": "Attempts by day",
+  "averageByQuiz": "Average score by quiz",
+  "topMembers": "Top members",
+  "latestAttempts": "Latest attempts",
+  "member": "Member",
+  "quizLabel": "Quiz",
+  "last7Days": "Last 7 days",
+  "allQuizzesAvg": "Across every quiz",
+  "nothingToChartAsec": "Charts fill in as members take the quizzes.",
+  "seeAllAttempts": "Open the quiz to see them all",
+  "resultsAdminSub": "Every attempt, by every member, across every quiz.",
+  "searchMember": "Search a member",
+  "allQuizzes": "All quizzes",
+  "membersWhoTook": "Members who took",
+  "passRate": "Pass rate",
+  "noAttemptsMatch": "No attempt matches this search",
+  "noAttemptsMatchSub": "Clear the search, or pick another quiz.",
+  "cvs": "CVs",
+  "myCv": "My CV",
+  "cvDirectorySub": "Every member who has published a CV.",
+  "cvAdminSub": "Every CV in the centre, with its review state.",
+  "createCv": "Create your CV",
+  "editCv": "Edit your CV",
+  "cvSaved": "CV saved",
+  "cvNotAllowedTitle": "The CV form is not open for you yet",
+  "cvNotAllowedSub": "Ask the admin to switch it on for your account.",
+  "allowCv": "CV",
+  "allowCvHint": "Lets this member write a CV",
+  "cvPersonal": "Personal information",
+  "cvProfession": "Profession",
+  "cvSkillsSection": "Skills and languages",
+  "cvLinks": "Links",
+  "cvPhoto": "Photo",
+  "cvLocation": "Governorate",
+  "militaryStatus": "Military status",
+  "graduationYear": "Graduation year",
+  "cvSpecialization": "Specialization",
+  "jobRole": "Role",
+  "proSkills": "Professional skills",
+  "softSkillsLabel": "Soft skills",
+  "languagesLabel": "Languages",
+  "bioLabel": "About you",
+  "bioHint": "Two or three lines. What you do, and what you are looking for.",
+  "facebookLabel": "Facebook",
+  "linkedinLabel": "LinkedIn",
+  "driveLabel": "CV file",
+  "cvFileHint": "Upload the CV itself — PDF or Word, up to 10 MB.",
+  "uploadCvFile": "Upload CV file",
+  "noCvFile": "No file uploaded yet",
+  "removeFile": "Remove the file",
+  "downloadCv": "Download CV",
+  "cvSummary": "Profile",
+  "cvEducation": "Education and status",
+  "portfolioLabel": "Portfolio",
+  "choosePhoto": "Choose a photo",
+  "pickRoleFirst": "Pick a role first — its skills appear here.",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "cvIncomplete": "Fill in every field marked with * before saving.",
+  "pickSome": "Tap to choose",
+  "noneChosen": "Nothing chosen yet",
+  "cvPending": "Pending",
+  "cvReviewed": "Reviewed",
+  "cvShortlisted": "Shortlisted",
+  "cvRejected": "Rejected",
+  "reviewState": "Review",
+  "noCvsTitle": "No CVs yet",
+  "noCvsSubUser": "CVs appear here as members publish them.",
+  "noCvsSubAdmin": "Allow a member to write one from the Members page.",
+  "searchCv": "Search by name, role or skill",
+  "deleteCvBody": "The CV and its photo are deleted. This cannot be undone.",
+  "contactDetails": "Contact",
+  "cvUpdatedOn": "Updated {date}",
+  "@cvUpdatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "yourCvIsLive": "Your CV is visible to the other members.",
+  "enterPhone": "Enter a phone number",
+  "cvAllowed": "Allowed",
+  "cvNotAllowed": "Not allowed",
+  "joinedLabel": "Joined",
+  "cvColumn": "CV form",
+  "searchMembers": "Search a member by name, email or phone"
+}

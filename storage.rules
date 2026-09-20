@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// ASEC — the admin uploads the lesson videos, every signed-in member watches
+// them. Deploy:  firebase deploy --only storage
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'adminamr@gmail.com';
+    }
+
+    // videos/{uid}/{timestamp}_{name}
+    match /videos/{uid}/{fileName} {
+      allow read: if request.auth != null;
+
+      // 500 MB, and it has to actually be a video — the app caps the size
+      // too, but the bucket is the boundary that counts.
+      allow write: if isAdmin()
+        && request.resource.size < 500 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+
+      allow delete: if isAdmin();
+    }
+
+    // cvs/{uid}/{timestamp}_{name} — the member's CV photo. Owned by the
+    // path: only that member writes there, and every signed-in account can
+    // see it, because the CV directory shows it.
+    match /cvs/{uid}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null
+        && (request.auth.uid == uid || isAdmin());
+    }
+
+    // cvs/{uid}/doc/{timestamp}_{name} — the CV DOCUMENT itself, uploaded
+    // rather than linked. A folder of its own because the rule above accepts
+    // `image/*` only, and a PDF written beside the photo would be refused.
+    match /cvs/{uid}/doc/{fileName} {
+      // Every signed-in member can download any CV — that is what the CV
+      // directory is for.
+      allow read: if request.auth != null;
+
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && (
+             request.resource.contentType == 'application/pdf'
+             || request.resource.contentType == 'application/msword'
+             || request.resource.contentType ==
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+           );
+
+      allow delete: if request.auth != null
+        && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Nothing else is writable from a client.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

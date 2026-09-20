@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "484300137942",
+    "project_id": "asec-a811b",
+    "storage_bucket": "asec-a811b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:484300137942:android:3a2d6abacfd159adbe7077",
+        "android_client_info": {
+          "package_name": "com.asec.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKr6nl7Ydxp2b6_eVWyRYgYFPTVrcLA5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

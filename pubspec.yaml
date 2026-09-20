@@ -1,0 +1,113 @@
+name: asec
+description: "ASEC — videos and timed quizzes for members, run by one admin."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # ── Firebase ───────────────────────────────────────────────────────────────
+  firebase_core: ^3.15.2
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.12
+  firebase_storage: ^12.4.10
+
+  # ── State & DI ─────────────────────────────────────────────────────────────
+  # Cubit per feature, GetX for the app-wide theme / locale / session
+  # singletons — the same pair manger_plus uses.
+  flutter_bloc: ^9.1.1
+  get: ^4.7.3
+  get_storage: ^2.1.1
+
+  # ── Functional return types ────────────────────────────────────────────────
+  dartz: ^0.10.1
+
+  # ── UI ─────────────────────────────────────────────────────────────────────
+  flutter_screenutil: ^5.9.3
+  flutter_svg: ^2.3.0
+  flutter_switch: ^0.3.2
+  fl_chart: ^0.69.2
+  lottie: ^3.5.1
+  intl: ^0.20.2
+  flex_color_picker: ^3.8.0
+
+  # ── Content ────────────────────────────────────────────────────────────────
+  file_picker: ^8.1.2                # the admin picks a video file
+  video_player: ^2.9.2               # members watch it
+  url_launcher: ^6.3.1               # "open externally" fallback
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # `flutter gen-l10n` runs on every pub get / build — class `S` in
+  # lib/generated (see l10n.yaml).
+  generate: true
+
+  # A directory entry is NOT recursive, so nested folders are listed one by one.
+  assets:
+    - assets/icons_assets/crm_icons_assets/
+    - assets/icons_assets/form_builder_assets/
+    - assets/icons_assets/home_assets/
+    - assets/icons_assets/hr_assets/
+    - assets/icons_assets/hr_assets/employee_details/
+    - assets/icons_assets/main_icons_assets/
+    - assets/icons_assets/messaging_assets/
+    - assets/icons_assets/onboarding_assets/
+    - assets/icons_assets/calendar_assets/
+    - assets/icons_assets/roles_assets/
+    - assets/icons_assets/services_assets/
+    - assets/icons_assets/settings_assets/
+    - assets/lottie_assets/home_lottie_assets/
+    - assets/lottie_assets/main_lottie_assets/
+
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-Light.ttf
+          weight: 300
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/fonts_english/Cairo/Cairo-Black.ttf
+          weight: 900
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/fonts_english/Tajawal/Tajawal-Light.ttf
+          weight: 300
+        - asset: assets/fonts/fonts_english/Tajawal/Tajawal-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/fonts_english/Tajawal/Tajawal-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/fonts_english/Tajawal/Tajawal-Bold.ttf
+          weight: 700
+    - family: Almarai
+      fonts:
+        - asset: assets/fonts/fonts_arabic/Almarai/Almarai-Light.ttf
+          weight: 300
+        - asset: assets/fonts/fonts_arabic/Almarai/Almarai-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/fonts_arabic/Almarai/Almarai-Bold.ttf
+          weight: 700

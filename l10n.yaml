@@ -1,0 +1,36 @@
+# Localization generation.
+#
+# WHY gen_l10n RATHER THAN flutter_intl / intl_utils
+# --------------------------------------------------
+# knowticed generates its `S` class with the `intl_utils` package driven by
+# the Flutter Intl IDE plugin. That works, but it means the generated file is a
+# committed build artefact that only regenerates when someone with the plugin
+# installed saves an .arb, and it needs a dev dependency to do it.
+#
+# Flutter ships the same capability: `flutter gen-l10n` runs automatically on
+# `flutter pub get` and on every build, with no package to add. The settings
+# below make its output IDENTICAL in shape to knowticed's, so call sites read
+# the same in both codebases and anyone moving between them writes the same
+# code:
+#
+#   * output-class `S`            -> `S.of(context).save`
+#   * output-dir  lib/generated   -> `package:manger_plus/generated/l10n.dart`
+#   * intl_en.arb / intl_ar.arb   -> the filenames the Flutter Intl plugin
+#                                    expects, so that plugin still works for
+#                                    anyone who has it installed.
+#
+# `lib/generated/` is generated code. Do not hand-edit it; edit the .arb files.
+arb-dir: lib/l10n
+template-arb-file: intl_en.arb
+output-dir: lib/generated
+output-localization-file: l10n.dart
+output-class: S
+
+
+# `S.of(context)` returns a non-nullable S. Without this every call site would
+# need a `!`, which is noise on 300 call sites.
+nullable-getter: false
+
+# An Arabic key that has not been written yet falls back to the English string
+# rather than throwing. Keeps a half-translated build runnable.
+untranslated-messages-file: l10n_untranslated.txt

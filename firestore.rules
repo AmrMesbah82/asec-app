@@ -1,0 +1,176 @@
+rules_version = '2';
+
+// ASEC — one admin, many members.
+//
+// THE ADMIN IS AN EMAIL, NOT A FLAG.
+// `adminamr@gmail.com` is the admin, and that is decided by the Auth token,
+// not by a field in a document. A `role: "admin"` written by anybody else is
+// refused below, so nobody can promote themselves by editing their own
+// profile — and no rule has to spend a document read to find out who is
+// asking.
+//
+// Deploy:  firebase deploy --only firestore:rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function callerEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email != null
+        && callerEmail() == 'adminamr@gmail.com';
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── The demo-data button ────────────────────────────────────────────────
+    //
+    // The admin may write a MEMBER's profile, attempt or CV — documents that
+    // otherwise only their owner may write — but ONLY while the document being
+    // written carries `demo: true`. So the sample data can be created, and the
+    // same power cannot be used to forge a real member, a real score or a real
+    // CV: drop the flag and the write is refused like anybody else's.
+    function isDemoWrite() {
+      return isAdmin() && request.resource.data.demo == true;
+    }
+
+    // The role this caller's email entitles them to.
+    function entitledRole() {
+      return isAdmin() ? 'admin' : 'user';
+    }
+
+    // ── users ───────────────────────────────────────────────────────────────
+    //
+    // A member reads only their own profile; the admin reads everybody's
+    // (the members list queries role == 'user', which this allows).
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+
+      // Registration writes the profile from the app. The role has to match
+      // the email, the email has to be the caller's own, and the document may
+      // hold nothing else.
+      allow create: if isSelf(uid)
+        && request.resource.data.role == entitledRole()
+        && request.resource.data.email == callerEmail()
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly([
+             'full_name', 'email', 'phone', 'role', 'active', 'can_create_cv',
+             'created_at', 'updated_at'
+           ])
+        // A member cannot register themselves CV rights; the admin grants
+        // them afterwards.
+        && request.resource.data.can_create_cv == false;
+
+      // A member may change their name and phone — not their role, not their
+      // email, and not the switch that lets them in.
+      allow update: if isSelf(uid)
+        && request.resource.data.diff(resource.data)
+             .affectedKeys().hasOnly(['full_name', 'phone', 'updated_at']);
+
+      // The admin may switch an account on or off, and may open the CV form
+      // for it. Nothing else — not the role, not the email.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data)
+             .affectedKeys().hasOnly(['active', 'can_create_cv', 'updated_at']);
+
+      // The demo button writes whole member profiles. Flagged only — see
+      // isDemoWrite() above.
+      allow create, update: if isDemoWrite();
+
+      allow delete: if isAdmin();
+    }
+
+    // ── videos ──────────────────────────────────────────────────────────────
+    //
+    // Members see published lessons only. The client's query filters on
+    // `published == true`, which is what makes the list legal here.
+    match /videos/{videoId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── quizzes ─────────────────────────────────────────────────────────────
+    //
+    // Same shape. A published quiz carries its correct answers, because the
+    // app marks on the device — so an unpublished draft stays admin-only, and
+    // a quiz outside its window is still readable (the app, not the rules,
+    // decides what "open" means for the UI).
+    match /quizzes/{quizId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── cvs ─────────────────────────────────────────────────────────────────
+    //
+    // The document id IS the owner's uid, so ownership is provable from the
+    // path — no lookup, one CV per account, and no way to write somebody
+    // else's.
+    match /cvs/{uid} {
+      // A DIRECTORY: every signed-in account reads every CV. That is the
+      // feature, not an oversight.
+      allow read: if signedIn();
+
+      // Writing one needs the admin's switch on your OWN user document, which
+      // is the only place this rule set spends a read.
+      allow create, update: if isSelf(uid)
+        && (isAdmin() ||
+            get(/databases/$(database)/documents/users/$(uid))
+              .data.can_create_cv == true)
+        // The owner never sets their own review state. On create the field
+        // must be 'Pending'; on update it must not change at all.
+        && (
+             (request.method == 'create'
+               && request.resource.data.status == 'Pending')
+             || (request.method == 'update'
+               && request.resource.data.status == resource.data.status)
+           );
+
+      // Only the admin marks a CV reviewed / shortlisted / rejected.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data)
+             .affectedKeys().hasOnly(['status', 'updated_at']);
+
+      // The demo button writes CVs for the demo members. Flagged only.
+      allow create, update: if isDemoWrite();
+
+      allow delete: if isSelf(uid) || isAdmin();
+    }
+
+    // ── attempts ────────────────────────────────────────────────────────────
+    //
+    // The document id IS `{quizId}_{uid}`, so ownership is provable from the
+    // path and one member can hold exactly one attempt per quiz.
+    match /attempts/{attemptId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.user_id == request.auth.uid);
+
+      // ONE SITTING. Create is allowed, update is not: a second submission
+      // would overwrite the first, which is how a member would retake a quiz
+      // they have already been marked on. Only the admin can clear one.
+      allow create: if signedIn()
+        && attemptId == request.resource.data.quiz_id + '_' + request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.score is int
+        && request.resource.data.total_points is int;
+
+      // The demo button writes attempts in other members' names, which the
+      // rule above forbids on purpose. Flagged only, and the id still has to
+      // be the {quizId}_{uid} pair so the demo cannot create a second attempt
+      // for somebody who already has one.
+      allow create: if isDemoWrite()
+        && attemptId == request.resource.data.quiz_id + '_'
+             + request.resource.data.user_id;
+
+      allow update, delete: if isAdmin();
+    }
+  }
+}
