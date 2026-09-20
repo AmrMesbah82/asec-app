@@ -1,11 +1,11 @@
 {
-    "name": "asec",
-    "short_name": "asec",
+    "name": "ASEC",
+    "short_name": "ASEC",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "ASEC — lesson videos and timed quizzes for members.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
