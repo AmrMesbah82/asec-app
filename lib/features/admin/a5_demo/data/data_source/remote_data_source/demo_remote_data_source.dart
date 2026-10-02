@@ -21,12 +21,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:asec/core/constants/firebase_collections.dart';
 import 'package:asec/core/network/app_firebase.dart';
+import 'package:asec/features/admin/a5_demo/domain/constants/demo_course_seed.dart';
 import 'package:asec/features/admin/a5_demo/domain/constants/demo_seed.dart';
 import 'package:asec/features/cv/c1_cv/data/models/cv_model.dart';
 import 'package:asec/features/onboarding/o2_authentication/data/models/user_model.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 import 'package:asec/features/quiz/q1_quizzes/data/models/quiz_model.dart';
+import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/video/v1_videos/data/models/video_model.dart';
+import 'package:asec/features/web/data/site_repo.dart';
 
 /// What a run of the button actually wrote or deleted, so the message can say
 /// something truer than "done".
@@ -37,6 +40,8 @@ class DemoCounts {
     this.quizzes = 0,
     this.attempts = 0,
     this.cvs = 0,
+    this.certificates = 0,
+    this.inbox = 0,
     this.accountsMade = 0,
   });
 
@@ -46,12 +51,19 @@ class DemoCounts {
   final int attempts;
   final int cvs;
 
+  /// Certificate exams — one per real course.
+  final int certificates;
+
+  /// Website inbox entries (messages, service and job requests).
+  final int inbox;
+
   /// How many of the members got a real Firebase Auth account, and so can
   /// actually sign in. Fewer than [members] means Auth refused some — the
   /// Firestore side is still complete, the admin views still fill.
   final int accountsMade;
 
-  int get total => members + videos + quizzes + attempts + cvs;
+  int get total =>
+      members + videos + quizzes + attempts + cvs + certificates + inbox;
 }
 
 class DemoRemoteDataSource {
@@ -86,9 +98,15 @@ class DemoRemoteDataSource {
       uidOf[member.slug] = uid;
     }
 
+    // The REAL courses — the Drive folders the videos come from. Read only:
+    // the videos are never written or removed by this button.
+    final Map<String, List<DemoCourseLesson>> courses = await _realCourses();
+    final List<String> courseNames = courses.keys.toList();
+
     final WriteBatch batch = AppFirebase.db.batch();
 
     for (final DemoMember member in DemoSeed.members) {
+      final _DemoAccess access = _accessFor(member.slug, courseNames, now);
       batch.set(
         _col(FirebaseCollections.users).doc(uidOf[member.slug]),
         <String, dynamic>{
@@ -98,6 +116,15 @@ class DemoRemoteDataSource {
           FirebaseCollections.roleField: UserRole.user.key,
           FirebaseCollections.activeField: member.active,
           FirebaseCollections.canCreateCvField: member.canCreateCv,
+          // What the Members screen's access dialog edits: every status
+          // (open, paused, not started, ended, limited devices / courses)
+          // appears at least once.
+          UserModel.coursesAll: access.allCourses,
+          UserModel.courses: access.courses,
+          UserModel.platforms: access.platforms,
+          UserModel.accessFrom: _maybeStamp(access.from),
+          UserModel.accessUntil: _maybeStamp(access.until),
+          UserModel.pausedAt: _maybeStamp(access.pausedAt),
           FirebaseCollections.createdAtField:
               _stamp(now.subtract(Duration(days: member.joinedDaysAgo))),
           FirebaseCollections.updatedAtField: AppFirebase.now,
@@ -106,27 +133,9 @@ class DemoRemoteDataSource {
       );
     }
 
-    // 2. The videos. No Cloud Storage object is written — the urls are public
-    //    sample files — so `storage_path` stays empty and removing a demo
-    //    video removes only its document.
-    for (final DemoVideo video in DemoSeed.videos) {
-      batch.set(
-        _col(FirebaseCollections.videos).doc('demo_v_${video.slug}'),
-        <String, dynamic>{
-          VideoModel.title: video.title,
-          VideoModel.description: video.description,
-          VideoModel.url: video.url,
-          VideoModel.storagePath: '',
-          VideoModel.sizeBytes: video.sizeBytes,
-          FirebaseCollections.publishedField: video.published,
-          VideoModel.createdBy: adminUid,
-          FirebaseCollections.createdAtField:
-              _stamp(now.subtract(Duration(days: video.addedDaysAgo))),
-          FirebaseCollections.updatedAtField: AppFirebase.now,
-          FirebaseCollections.demoField: true,
-        },
-      );
-    }
+    // 2. The videos: none. Lessons come from the shared Google Drive
+    //    folder (see DriveVideoSync), which also clears the old sample
+    //    videos — so demo data no longer adds any.
 
     // 3. The quizzes.
     for (final DemoQuiz quiz in DemoSeed.quizzes) {
@@ -270,14 +279,301 @@ class DemoRemoteDataSource {
 
     await batch.commit();
 
+    // 6. Certificate exams — one per real course — and their results.
+    final WriteBatch certBatch = AppFirebase.db.batch();
+    int certCount = 0;
+    for (int c = 0; c < courseNames.length; c++) {
+      final String course = courseNames[c];
+      final List<DemoCourseLesson> lessons = courses[course]!;
+      final List<String> otherTitles = <String>[
+        for (final MapEntry<String, List<DemoCourseLesson>> e in courses.entries)
+          if (e.key != course) ...e.value.map((DemoCourseLesson l) => l.title),
+      ];
+      final List<DemoQuestion> questions =
+          DemoCourseSeed.questionsFor(course, lessons, otherTitles);
+      if (questions.isEmpty) continue;
+
+      final String quizId = 'demo_cert_${_slug(course)}';
+      final int total = questions.fold<int>(0, (int s, DemoQuestion q) => s + q.points);
+      certBatch.set(
+        _col(FirebaseCollections.quizzes).doc(quizId),
+        <String, dynamic>{
+          QuizModel.title: '$course — final exam',
+          QuizModel.description:
+              'Pass with ${Quiz.passPercent}% to earn the ASEC certificate for $course. '
+              'Opens once every lesson of the course is watched.',
+          QuizModel.durationMinutes: 20,
+          QuizModel.opensAt: null,
+          QuizModel.closesAt: null,
+          FirebaseCollections.publishedField: true,
+          QuizModel.certificate: true,
+          QuizModel.course: course,
+          QuizModel.questions: <Map<String, dynamic>>[
+            for (int i = 0; i < questions.length; i++)
+              <String, dynamic>{
+                QuizModel.qId: _questionId(i),
+                QuizModel.qText: questions[i].text,
+                QuizModel.qOptions: questions[i].options,
+                QuizModel.qCorrectIndex: questions[i].correctIndex,
+                QuizModel.qPoints: questions[i].points,
+              },
+          ],
+          QuizModel.questionCount: questions.length,
+          QuizModel.totalPoints: total,
+          QuizModel.createdBy: adminUid,
+          FirebaseCollections.createdAtField: _stamp(now.subtract(Duration(days: 20 - c))),
+          FirebaseCollections.updatedAtField: AppFirebase.now,
+          FirebaseCollections.demoField: true,
+        },
+      );
+      certCount++;
+
+      // Who sat it: a pass, a fail on the 2nd try, a pass on the 3rd —
+      // so the results table, the certificate and "retake" all show.
+      for (final (String slug, int wrong, int tries, int hoursAgo) in <(String, int, int, int)>[
+        ('sara', 0, 1, 30 + c * 5),
+        ('omar', (questions.length * 0.6).ceil(), 2, 20 + c * 4),
+        ('youssef', 2, 3, 12 + c * 3),
+      ]) {
+        final DemoMember? member = _memberBySlug(slug);
+        final String? uid = uidOf[slug];
+        if (member == null || uid == null) continue;
+        // Skip a member whose demo access does not include this course.
+        final _DemoAccess access = _accessFor(slug, courseNames, now);
+        if (!access.allCourses && !access.courses.contains(course)) continue;
+
+        final Map<String, int> answers = <String, int>{};
+        int score = 0;
+        int correct = 0;
+        for (int i = 0; i < questions.length; i++) {
+          final DemoQuestion q = questions[i];
+          final bool right = i >= wrong; // the first [wrong] answers miss
+          final int chosen = right ? q.correctIndex : (q.correctIndex + 1) % q.options.length;
+          answers[_questionId(i)] = chosen;
+          if (chosen == q.correctIndex) {
+            correct++;
+            score += q.points;
+          }
+        }
+        final DateTime started = now.subtract(Duration(hours: hoursAgo));
+        final DateTime submitted = started.add(Duration(minutes: 9 + c));
+        certBatch.set(
+          _col(FirebaseCollections.attempts).doc(FirebaseCollections.attemptId(quizId, uid)),
+          <String, dynamic>{
+            FirebaseCollections.quizIdField: quizId,
+            QuizAttemptModel.quizTitle: '$course — final exam',
+            FirebaseCollections.userIdField: uid,
+            QuizAttemptModel.userName: member.fullName,
+            QuizAttemptModel.userEmail: member.email,
+            QuizAttemptModel.answers: answers,
+            QuizAttemptModel.score: score,
+            QuizAttemptModel.totalPoints: total,
+            QuizAttemptModel.correctCount: correct,
+            QuizAttemptModel.questionCount: questions.length,
+            QuizAttemptModel.startedAt: _stamp(started),
+            FirebaseCollections.submittedAtField: _stamp(submitted),
+            QuizAttemptModel.autoSubmitted: false,
+            QuizAttemptModel.passed:
+                total > 0 && score * 100 >= Quiz.passPercent * total,
+            QuizAttemptModel.tries: tries,
+            FirebaseCollections.createdAtField: _stamp(submitted),
+            FirebaseCollections.demoField: true,
+          },
+        );
+        attemptCount++;
+      }
+    }
+    if (certCount > 0) await certBatch.commit();
+
+    // 7. The website's inbox: contact messages, service requests and job
+    //    applications, in every status (new / read / done).
+    final int inboxCount = await _fillInbox(now);
+
     return DemoCounts(
       members: DemoSeed.members.length,
-      videos: DemoSeed.videos.length,
+      videos: 0,
       quizzes: DemoSeed.quizzes.length,
       attempts: attemptCount,
       cvs: cvCount,
+      certificates: certCount,
+      inbox: inboxCount,
       accountsMade: accountsMade,
     );
+  }
+
+  /// Course name → its lessons, in lesson order, from the `videos`
+  /// collection (filled from Drive). Read only.
+  Future<Map<String, List<DemoCourseLesson>>> _realCourses() async {
+    final QuerySnapshot<Map<String, dynamic>> snap =
+        await _col(FirebaseCollections.videos).get();
+    final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snap.docs
+        .where((QueryDocumentSnapshot<Map<String, dynamic>> d) =>
+            d.data()[FirebaseCollections.demoField] != true)
+        .toList()
+      ..sort((QueryDocumentSnapshot<Map<String, dynamic>> a,
+              QueryDocumentSnapshot<Map<String, dynamic>> b) {
+        final Object? ta = a.data()[FirebaseCollections.createdAtField];
+        final Object? tb = b.data()[FirebaseCollections.createdAtField];
+        if (ta is Timestamp && tb is Timestamp) return ta.compareTo(tb);
+        return 0;
+      });
+    final Map<String, List<DemoCourseLesson>> out = <String, List<DemoCourseLesson>>{};
+    for (final QueryDocumentSnapshot<Map<String, dynamic>> d in docs) {
+      final Map<String, dynamic> m = d.data();
+      final String course = '${m[VideoModel.category] ?? ''}'.trim();
+      final String title = '${m[VideoModel.title] ?? ''}'.trim();
+      if (course.isEmpty || title.isEmpty) continue;
+      out.putIfAbsent(course, () => <DemoCourseLesson>[]).add(DemoCourseLesson(
+            title: title,
+            part: '${m[VideoModel.subcategory] ?? ''}'.trim(),
+          ));
+    }
+    return out;
+  }
+
+  /// Every access status the Members screen can show, spread over the demo
+  /// members. Sara (the account the "ready" message suggests signing in as)
+  /// is always fully open.
+  static _DemoAccess _accessFor(String slug, List<String> courses, DateTime now) {
+    final List<String> first = courses.take(1).toList();
+    final List<String> firstTwo = courses.take(2).toList();
+    switch (slug) {
+      case 'sara':
+        return _DemoAccess(
+          from: now.subtract(const Duration(days: 90)),
+          until: now.add(const Duration(days: 275)),
+        );
+      case 'omar':
+        return _DemoAccess(
+          allCourses: first.isEmpty,
+          courses: first,
+          platforms: const <String>['android', 'ios'],
+          until: now.add(const Duration(days: 60)),
+        );
+      case 'mona':
+        return _DemoAccess(
+          from: now.subtract(const Duration(days: 45)),
+          until: now.add(const Duration(days: 30)),
+          pausedAt: now.subtract(const Duration(days: 2)),
+        );
+      case 'youssef':
+        return _DemoAccess(
+          allCourses: firstTwo.isEmpty,
+          courses: firstTwo,
+          platforms: const <String>['windows', 'macos'],
+        );
+      case 'nour':
+        return _DemoAccess(
+          from: now.add(const Duration(days: 3)),
+          until: now.add(const Duration(days: 93)),
+        );
+      case 'kareem':
+        return _DemoAccess(
+          from: now.subtract(const Duration(days: 60)),
+          until: now.subtract(const Duration(days: 5)),
+        );
+    }
+    return const _DemoAccess();
+  }
+
+  Future<int> _fillInbox(DateTime now) async {
+    final WriteBatch b = AppFirebase.db.batch();
+    int n = 0;
+    void add(String coll, String id, int hoursAgo, String status, Map<String, dynamic> data) {
+      b.set(_col(coll).doc('demo_$id'), <String, dynamic>{
+        ...data,
+        'status': status,
+        'created_at': _stamp(now.subtract(Duration(hours: hoursAgo))),
+        FirebaseCollections.demoField: true,
+      });
+      n++;
+    }
+
+    add(Coll.messages, 'msg_1', 3, 'new', <String, dynamic>{
+      'name': 'أحمد مصطفى',
+      'phone': '01011122233',
+      'email': 'ahmed.m@example.com',
+      'subject': 'استفسار عن كورس الأوتوكاد',
+      'message': 'السلام عليكم، أريد معرفة مواعيد الكورس القادم وهل يوجد شهادة في النهاية؟',
+    });
+    add(Coll.messages, 'msg_2', 26, 'read', <String, dynamic>{
+      'name': 'Mariam Fathy',
+      'phone': '01198877665',
+      'email': 'mariam.f@example.com',
+      'subject': 'Corporate training',
+      'message': 'We are a contracting company with 12 engineers. Can you run the MEP course for our team on site?',
+    });
+    add(Coll.messages, 'msg_3', 75, 'done', <String, dynamic>{
+      'name': 'محمد عبد الله',
+      'phone': '01277766554',
+      'email': 'm.abdallah@example.com',
+      'subject': 'شكر',
+      'message': 'شكرًا على الشرح الممتاز في فيديوهات التكييف، استفدت جدًا.',
+    });
+    add(Coll.serviceRequests, 'req_1', 8, 'new', <String, dynamic>{
+      'client_name': 'خالد إبراهيم',
+      'company': 'شركة النخبة للمقاولات',
+      'phone': '01022233344',
+      'email': 'k.ibrahim@example.com',
+      'project_name': 'مستشفى خاص — التجمع الخامس',
+      'project_type': 'طبي',
+      'services': <String>['تصميم', 'شوب دروينج'],
+      'floors': '6',
+      'land_area': '2400 م²',
+      'location': 'القاهرة الجديدة',
+      'files_link': 'https://drive.google.com/',
+    });
+    add(Coll.serviceRequests, 'req_2', 50, 'read', <String, dynamic>{
+      'client_name': 'Hany Lotfy',
+      'company': 'Lotfy Developments',
+      'phone': '01155544433',
+      'email': 'hany@example.com',
+      'project_name': 'Residential compound — phase 2',
+      'project_type': 'سكني',
+      'services': <String>['اشراف على التنفيذ'],
+      'floors': '4 buildings × 7',
+      'land_area': '12,000 m²',
+      'location': 'New Alamein',
+      'files_link': '',
+    });
+    add(Coll.jobApplications, 'job_1', 5, 'new', <String, dynamic>{
+      'name': 'ياسمين حسن',
+      'university': 'جامعة عين شمس',
+      'faculty': 'هندسة — قسم ميكانيكا',
+      'residence': 'مدينة نصر',
+      'email': 'yasmin.h@example.com',
+      'phone': '01066655544',
+      'skills': 'AutoCAD, Revit MEP, HAP',
+      'company': '',
+      'projects_link': '',
+      'graduation_date': '2025-07-01',
+      'grade': 'جيد جدا',
+      'request_type': 'معايشة',
+      'skill_level': 'مبتدئ',
+      'experience_role': 'مهندس متدرب',
+      'from': '',
+      'to': '',
+    });
+    add(Coll.jobApplications, 'job_2', 40, 'done', <String, dynamic>{
+      'name': 'Mostafa Adel',
+      'university': 'Cairo University',
+      'faculty': 'Engineering — Electrical Power',
+      'residence': 'Giza',
+      'email': 'mostafa.adel@example.com',
+      'phone': '01233344455',
+      'skills': 'AutoCAD, Dialux, ETAP, shop drawings',
+      'company': 'Delta MEP',
+      'projects_link': 'https://www.linkedin.com/',
+      'graduation_date': '2021-07-01',
+      'grade': 'جيد',
+      'request_type': 'وظيفة',
+      'skill_level': 'متوسط',
+      'experience_role': 'مهندس مكتب فني',
+      'from': '2021-09-01',
+      'to': '2026-06-30',
+    });
+    await b.commit();
+    return n;
   }
 
   // ── Remove ───────────────────────────────────────────────────────────────
@@ -289,18 +585,26 @@ class DemoRemoteDataSource {
   /// without a profile — signing in with one lands on a member view with
   /// nothing in it — and pressing Fill again adopts them back.
   Future<DemoCounts> remove() async {
+    // Videos are NOT touched: they come from the Drive folder only.
     final int members = await _purge(FirebaseCollections.users);
-    final int videos = await _purge(FirebaseCollections.videos);
     final int quizzes = await _purge(FirebaseCollections.quizzes);
     final int attempts = await _purge(FirebaseCollections.attempts);
     final int cvs = await _purge(FirebaseCollections.cvs);
+    int inbox = 0;
+    for (final String coll in <String>[
+      Coll.messages,
+      Coll.serviceRequests,
+      Coll.jobApplications,
+    ]) {
+      inbox += await _purge(coll);
+    }
 
     return DemoCounts(
       members: members,
-      videos: videos,
       quizzes: quizzes,
       attempts: attempts,
       cvs: cvs,
+      inbox: inbox,
     );
   }
 
@@ -333,6 +637,19 @@ class DemoRemoteDataSource {
 
   static Timestamp _stamp(DateTime at) => Timestamp.fromDate(at);
 
+  static Timestamp? _maybeStamp(DateTime? at) =>
+      at == null ? null : Timestamp.fromDate(at);
+
+  /// "Draw and Modify" → "draw_and_modify"; Arabic names keep their letters.
+  static String _slug(String name) {
+    final String s = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\p{L}\p{N}]+', unicode: true), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    return s.isEmpty ? 'course' : s;
+  }
+
   static Timestamp? _offsetStamp(DateTime now, int? hours) =>
       hours == null ? null : Timestamp.fromDate(now.add(Duration(hours: hours)));
 
@@ -355,4 +672,23 @@ class DemoRemoteDataSource {
     }
     return null;
   }
+}
+
+/// One demo member's access settings (see `_accessFor`).
+class _DemoAccess {
+  const _DemoAccess({
+    this.allCourses = true,
+    this.courses = const <String>[],
+    this.platforms = const <String>[],
+    this.from,
+    this.until,
+    this.pausedAt,
+  });
+
+  final bool allCourses;
+  final List<String> courses;
+  final List<String> platforms;
+  final DateTime? from;
+  final DateTime? until;
+  final DateTime? pausedAt;
 }

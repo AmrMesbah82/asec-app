@@ -2,7 +2,7 @@
 ///
 ///*************************** FILE INFO ****************************///
 /// File Name: admin_shell.dart
-/// Purpose: Declares `AdminShell` — what adminamr@gmail.com sees.
+/// Purpose: Declares `AdminShell` — what amrmesbah33@gmail.com sees.
 /// Author: ASEC team
 /// Created: 19/9/2026
 
@@ -19,7 +19,10 @@ import 'package:asec/features/onboarding/o2_authentication/presentation/controll
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/admin_quizzes_page.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/pages/settings_page.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/admin_videos_page.dart';
+import 'package:asec/features/web/web_control_page.dart';
+import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 
 class AdminShell extends StatelessWidget {
   const AdminShell({super.key});
@@ -36,29 +39,42 @@ class AdminShell extends StatelessWidget {
       return AppShell(
         user: admin,
         sections: <ShellSection>[
+          if (admin.can(AdminPermission.dashboard))
           ShellSection(
             icon: Icons.insights_rounded,
             label: s.dashboard,
             page: AdminDashboardPage(admin: admin),
           ),
+          if (admin.can(AdminPermission.videos))
           ShellSection(
             icon: Icons.video_library_rounded,
             label: s.typeVideos,
             page: AdminVideosPage(adminUid: admin.uid),
           ),
+          if (admin.can(AdminPermission.quizzes))
           ShellSection(
             icon: Icons.quiz_outlined,
             label: s.quizzes,
             page: AdminQuizzesPage(adminUid: admin.uid),
           ),
+          // Courses' final exams: pass with 70% → ASEC certificate.
+          if (admin.can(AdminPermission.quizzes))
+          ShellSection(
+            icon: Icons.workspace_premium_rounded,
+            label: s.certificateQuizzes,
+            shortLabel: s.certificateShort,
+            page: AdminQuizzesPage(adminUid: admin.uid, certificate: true),
+          ),
           // Results sits next to the quizzes it reports on, before the
           // people pages: the admin comes here far more often than to
           // Members.
+          if (admin.can(AdminPermission.results))
           ShellSection(
             icon: Icons.insights_outlined,
             label: s.results,
             page: const AdminResultsPage(),
           ),
+          if (admin.can(AdminPermission.members))
           ShellSection(
             icon: Icons.groups_2_rounded,
             label: s.members,
@@ -66,10 +82,24 @@ class AdminShell extends StatelessWidget {
           ),
           // The admin sees every CV with its review state; the switch that
           // lets a member write one lives on the Members page.
+          if (admin.can(AdminPermission.cvs))
           ShellSection(
             icon: Icons.assignment_outlined,
             label: s.cvs,
             page: const CvDirectoryPage(isAdmin: true),
+          ),
+          // The asecbim website: its whole control panel (content, inbox,
+          // control centre, admins, import) on the page beside the drawer.
+          if (admin.can(AdminPermission.website))
+          ShellSection(
+            icon: Icons.language_rounded,
+            label: s.permWebsite,
+            page: const WebControlPage(),
+          ),
+          ShellSection(
+            icon: Icons.calculate_rounded,
+            label: s.unitConverter,
+            page: const UnitConverterPage(),
           ),
           ShellSection(
             icon: Icons.settings_rounded,

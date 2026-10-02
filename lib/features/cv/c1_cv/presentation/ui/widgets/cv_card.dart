@@ -76,13 +76,13 @@ class CvCard extends StatelessWidget {
                     padding:
                         EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: cv.status.color.withOpacity(0.12),
+                      color: AppColors.chip,
                       borderRadius: AppRadius.buttonR,
                     ),
                     child: Text(
                       cv.status.label(context),
                       style: StyleText.fontSize10Weight600
-                          .copyWith(color: cv.status.color),
+                          .copyWith(color: AppColors.onChip),
                     ),
                   ),
               ],
@@ -170,7 +170,7 @@ class CvAvatar extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primary.withOpacity(0.12),
+        color: AppColors.chip,
       ),
       child: Image.network(
         cv.photoUrl,
@@ -192,11 +192,11 @@ class _SkillChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = muted ? AppColors.secondaryText : AppColors.primary;
+    final Color color = muted ? AppColors.secondaryText : AppColors.onChip;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(

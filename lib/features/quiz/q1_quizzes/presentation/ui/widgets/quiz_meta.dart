@@ -21,7 +21,10 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/enums/quiz_window_state.dart';
 import 'package:asec/generated/l10n.dart';
 
-/// An icon and a word on a soft tint — "12 questions", "20 min", "Open now".
+/// An icon and a word on the shared chip ground — "12 questions", "20 min",
+/// "Open now". Every chip looks the same: [AppColors.chip] behind,
+/// [AppColors.onChip] ink. [color] is kept for callers but no longer paints
+/// the chip — the icon and the word already say which state it is.
 class QuizChip extends StatelessWidget {
   const QuizChip({
     super.key,
@@ -36,11 +39,11 @@ class QuizChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color c = color ?? AppColors.secondaryText;
+    final Color c = AppColors.onChip;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.1),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
       ),
       child: Row(
@@ -116,13 +119,14 @@ class CountdownPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = urgent ? AppColors.red : AppColors.primary;
+    // Chip ground and ink like every other pill; only the last minute
+    // turns the time red, because that IS the message.
+    final Color color = urgent ? AppColors.red : AppColors.onChip;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
-        border: Border.all(color: color.withOpacity(0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -24,6 +24,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart'
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempt_page.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_card.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 /// The quizzes and this member's attempts, as one value.
 class _QuizFeed {
@@ -77,8 +78,9 @@ class _UserQuizzesPageState extends State<UserQuizzesPage> {
           final _QuizFeed feed = snapshot.data!;
           // A quiz with no questions is a draft in all but name; it never
           // reaches a member's list.
+          // Certificate quizzes (courses' final exams) live in their own tab.
           final List<Quiz> quizzes = feed.quizzes
-              .where((Quiz q) => q.questionCount > 0)
+              .where((Quiz q) => q.questionCount > 0 && !q.certificate)
               .toList();
 
           if (quizzes.isEmpty) {
@@ -101,7 +103,7 @@ class _UserQuizzesPageState extends State<UserQuizzesPage> {
                 padding: EdgeInsets.only(bottom: 24.h),
                 gridDelegate: CrossAxisCountHelper.gridDelegate(
                   context,
-                  mainAxisExtent: 210,
+                  mainAxisExtent: 112,
                   minCellWidth: 320,
                   availableWidth: constraints.maxWidth,
                 ),
@@ -110,7 +112,7 @@ class _UserQuizzesPageState extends State<UserQuizzesPage> {
                   final Quiz quiz = quizzes[index];
                   final QuizAttempt? attempt = feed.attempts[quiz.id];
 
-                  return QuizCard(
+                  return FadeSlideIn(delay: staggerDelay(index, stepMs: 55), child: HoverLift(child: QuizCard(
                     quiz: quiz,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
@@ -123,7 +125,7 @@ class _UserQuizzesPageState extends State<UserQuizzesPage> {
                     trailing: attempt == null
                         ? null
                         : _ScoreBadge(attempt: attempt),
-                  );
+                  )));
                 },
               );
             },
@@ -142,14 +144,12 @@ class _ScoreBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = attempt.percent >= 80
-        ? AppColors.green
-        : (attempt.percent >= 50 ? AppColors.statusPending : AppColors.red);
+    final Color color = AppColors.onChip;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: AppColors.chip,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(

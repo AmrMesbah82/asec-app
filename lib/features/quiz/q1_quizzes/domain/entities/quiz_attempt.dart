@@ -37,6 +37,13 @@ class QuizAttempt {
   /// True when the countdown ran out and the app submitted for them.
   final bool autoSubmitted;
 
+  /// Certificate quizzes: the score reached [Quiz.passPercent]. A passed
+  /// attempt is final — it is the certificate.
+  final bool passed;
+
+  /// Certificate quizzes: how many times the member has sat it (1 = first).
+  final int tries;
+
   const QuizAttempt({
     required this.id,
     required this.quizId,
@@ -52,6 +59,8 @@ class QuizAttempt {
     this.startedAt,
     this.submittedAt,
     this.autoSubmitted = false,
+    this.passed = false,
+    this.tries = 1,
   });
 
   double get percent => totalPoints == 0 ? 0 : (score / totalPoints) * 100;
@@ -78,6 +87,7 @@ class QuizAttempt {
     required DateTime startedAt,
     required DateTime submittedAt,
     bool autoSubmitted = false,
+    int tries = 1,
   }) {
     int score = 0;
     int correct = 0;
@@ -102,6 +112,9 @@ class QuizAttempt {
       startedAt: startedAt,
       submittedAt: submittedAt,
       autoSubmitted: autoSubmitted,
+      passed: quiz.totalPoints > 0 &&
+          score * 100 >= Quiz.passPercent * quiz.totalPoints,
+      tries: tries,
     );
   }
 }

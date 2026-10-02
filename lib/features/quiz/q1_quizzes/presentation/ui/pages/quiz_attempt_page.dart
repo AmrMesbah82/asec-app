@@ -26,6 +26,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_question.dart
 import 'package:asec/features/quiz/q1_quizzes/domain/enums/quiz_window_state.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/controller/quiz_attempt_cubit.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
 import 'package:asec/generated/l10n.dart';
 
 class QuizAttemptPage extends StatelessWidget {
@@ -213,8 +214,19 @@ class _Intro extends StatelessWidget {
                       : s.untimed,
                 ),
                 QuizWindowLabel(quiz: quiz),
+                if (quiz.certificate)
+                  QuizChip(
+                    icon: Icons.workspace_premium_rounded,
+                    label: s.passMark,
+                  ),
               ],
             ),
+            if (state.previous != null) ...<Widget>[
+              SizedBox(height: 16.h),
+              InfoBanner.error(
+                s.lastTry('${state.previous!.percent.round()}'),
+              ),
+            ],
             SizedBox(height: 16.h),
             InfoBanner(
               icon: Icons.info_outline_rounded,
@@ -301,7 +313,7 @@ class _Questions extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: (state.currentIndex + 1) / quiz.questionCount,
                   minHeight: 5.h,
-                  backgroundColor: AppColors.primary.withOpacity(0.12),
+                  backgroundColor: AppColors.chip,
                   valueColor:
                       AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
@@ -392,9 +404,7 @@ class _OptionTile extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: Material(
-        color: selected
-            ? AppColors.primary.withOpacity(0.08)
-            : AppColors.transparent,
+        color: selected ? AppColors.chip : AppColors.transparent,
         borderRadius: AppRadius.containerR,
         child: InkWell(
           borderRadius: AppRadius.containerR,
@@ -447,9 +457,18 @@ class _Result extends StatelessWidget {
     final QuizAttempt attempt = state.attempt!;
     final Quiz quiz = state.quiz;
     final double percent = attempt.percent;
-    final Color color = percent >= 80
-        ? AppColors.green
-        : (percent >= 50 ? AppColors.statusPending : AppColors.red);
+    final bool cert = quiz.certificate;
+    final Color color = cert
+        ? (attempt.passed ? AppColors.green : AppColors.red)
+        : percent >= 80
+            ? AppColors.green
+            : (percent >= 50 ? AppColors.statusPending : AppColors.red);
+    final String heading = cert
+        ? (attempt.passed ? s.passedTitle : s.failedTitle)
+        : (attempt.autoSubmitted ? s.timeUp : s.submittedTitle);
+    final String sub = cert
+        ? (attempt.passed ? s.yourScore : s.failedBody)
+        : (state.wasAlreadyTaken ? s.alreadyTakenBody : s.yourScore);
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: AppPadding.h, vertical: 20.h),
@@ -460,13 +479,25 @@ class _Result extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
+                if (cert)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: Icon(
+                      attempt.passed
+                          ? Icons.workspace_premium_rounded
+                          : Icons.refresh_rounded,
+                      size: 44,
+                      color: color,
+                    ),
+                  ),
                 Text(
-                  attempt.autoSubmitted ? s.timeUp : s.submittedTitle,
+                  heading,
+                  textAlign: TextAlign.center,
                   style: StyleText.fontSize20Weight600,
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  state.wasAlreadyTaken ? s.alreadyTakenBody : s.yourScore,
+                  sub,
                   textAlign: TextAlign.center,
                   style: StyleText.fontSize13Weight400
                       .copyWith(color: AppColors.secondaryText),
@@ -482,7 +513,7 @@ class _Result extends StatelessWidget {
                         child: CircularProgressIndicator(
                           value: percent / 100,
                           strokeWidth: 8.r,
-                          backgroundColor: color.withOpacity(0.15),
+                          backgroundColor: AppColors.chip,
                           valueColor: AlwaysStoppedAnimation<Color>(color),
                         ),
                       ),
@@ -513,6 +544,29 @@ class _Result extends StatelessWidget {
                   style: StyleText.fontSize14Weight600,
                 ),
                 SizedBox(height: 18.h),
+                if (cert && attempt.passed) ...<Widget>[
+                  AppButton(
+                    label: s.viewCertificate,
+                    icon: Icons.workspace_premium_rounded,
+                    expand: true,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            CertificatePage(quiz: quiz, attempt: attempt),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                ],
+                if (cert && !attempt.passed) ...<Widget>[
+                  AppButton(
+                    label: s.tryAgain,
+                    icon: Icons.refresh_rounded,
+                    expand: true,
+                    onPressed: context.read<QuizAttemptCubit>().retake,
+                  ),
+                  SizedBox(height: 10.h),
+                ],
                 AppButton(
                   label: s.backToQuizzes,
                   icon: Icons.arrow_back_rounded,
@@ -523,15 +577,19 @@ class _Result extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 18.h),
-          AppSectionHeader(title: s.review),
-          SizedBox(height: 10.h),
-          for (int i = 0; i < quiz.questions.length; i++)
-            _ReviewRow(
-              index: i,
-              question: quiz.questions[i],
-              answer: attempt.answers[quiz.questions[i].id],
-            ),
+          // A certificate exam that can still be retaken does not reveal its
+          // answers — that would turn the retake into copying.
+          if (!cert || attempt.passed) ...<Widget>[
+            SizedBox(height: 18.h),
+            AppSectionHeader(title: s.review),
+            SizedBox(height: 10.h),
+            for (int i = 0; i < quiz.questions.length; i++)
+              _ReviewRow(
+                index: i,
+                question: quiz.questions[i],
+                answer: attempt.answers[quiz.questions[i].id],
+              ),
+          ],
         ],
       ),
     );

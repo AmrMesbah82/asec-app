@@ -22,19 +22,32 @@ import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/controller/video_form_cubit.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/generated/l10n.dart';
 
 class VideoFormPage extends StatelessWidget {
-  const VideoFormPage({super.key, this.video, required this.adminUid});
+  const VideoFormPage({
+    super.key,
+    this.video,
+    required this.adminUid,
+    this.category = '',
+  });
 
   /// Null = a new video.
   final VideoItem? video;
   final String adminUid;
 
+  /// The category a NEW video starts in (the one the admin had open).
+  final String category;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<VideoFormCubit>(
-      create: (_) => VideoFormCubit(existing: video, adminUid: adminUid),
+      create: (_) => VideoFormCubit(
+        existing: video,
+        adminUid: adminUid,
+        category: category,
+      ),
       child: const _VideoFormView(),
     );
   }
@@ -53,11 +66,20 @@ class _VideoFormViewState extends State<_VideoFormView> {
       TextEditingController(text: _cubit.state.video.title);
   late final TextEditingController _description =
       TextEditingController(text: _cubit.state.video.description);
+  late final TextEditingController _category =
+      TextEditingController(text: _cubit.state.video.category);
+
+  /// Prefilled only when the saved video is a link, not an uploaded file.
+  late final TextEditingController _link = TextEditingController(
+    text: _cubit.state.video.storagePath.isEmpty ? _cubit.state.video.url : '',
+  );
 
   @override
   void dispose() {
     _title.dispose();
     _description.dispose();
+    _category.dispose();
+    _link.dispose();
     super.dispose();
   }
 
@@ -70,6 +92,8 @@ class _VideoFormViewState extends State<_VideoFormView> {
         return s.chooseVideoFile;
       case VideoFormError.tooLarge:
         return s.fileTooLarge('${AppConstants.maxUploadMb}');
+      case VideoFormError.badLink:
+        return s.videoLinkInvalid;
     }
   }
 
@@ -160,16 +184,39 @@ class _VideoFormViewState extends State<_VideoFormView> {
                               maxLines: 3,
                               onChanged: _cubit.setDescription,
                             ),
+                            SizedBox(height: 12.h),
+                            CustomTextField(
+                              controller: _category,
+                              label: s.videoCategory,
+                              hint: s.videoCategoryHint,
+                              onChanged: _cubit.setCategory,
+                            ),
                           ],
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      // The link and the file — where a video comes from —
+                      // only amrmesbah33@gmail.com may set. Other admins edit
+                      // the title, description, category and publishing.
+                      if (SessionController.to.current.isSuperAdmin) ...<Widget>[
+                      AppCard(
+                        title: s.videoLinkTitle,
+                        caption: s.videoLinkCaption,
+                        child: CustomTextField(
+                          controller: _link,
+                          label: s.videoLinkLabel,
+                          hint: 'https://example.com/lesson.mp4',
+                          onChanged: _cubit.setLink,
                         ),
                       ),
                       SizedBox(height: 16.h),
                       AppCard(
                         title: s.file,
-                        caption: '${AppConstants.maxUploadMb} MB max',
+                        caption: '${s.videoOrUpload} · ${AppConstants.maxUploadMb} MB max',
                         child: _FileSection(state: state),
                       ),
                       SizedBox(height: 16.h),
+                      ],
                       AppCard(
                         child: Material(
                           color: AppColors.transparent,
@@ -186,7 +233,7 @@ class _VideoFormViewState extends State<_VideoFormView> {
                             ),
                             trailing: Switch.adaptive(
                               value: state.video.published,
-                              activeTrackColor: AppColors.primary,
+                              activeTrackColor: AppColors.secondaryPrimary,
                               onChanged: _cubit.setPublished,
                             ),
                           ),
@@ -272,7 +319,7 @@ class _FileSection extends StatelessWidget {
             child: LinearProgressIndicator(
               value: state.progress == 0 ? null : state.progress,
               minHeight: 6.h,
-              backgroundColor: AppColors.primary.withOpacity(0.12),
+              backgroundColor: AppColors.chip,
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),

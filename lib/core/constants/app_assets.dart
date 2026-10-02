@@ -31,6 +31,9 @@
 /// purpose-drawn artwork arrives.
 abstract class AppAssets {
   // ─────────────────────────── BRAND ────────────────────────────────────────
+  /// The ASEC mark, the same file the website uses (asecbim.com).
+  static const String brandLogo = 'assets/web/images/logo.png';
+
   static const String logo =
       'assets/icons_assets/main_icons_assets/logo_app.svg';
   static const String logoAlt =

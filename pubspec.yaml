@@ -2,7 +2,7 @@ name: asec
 description: "ASEC — videos and timed quizzes for members, run by one admin."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.2
@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
+    sdk: flutter
+  flutter_web_plugins:               # the website's clean URLs (web_main.dart)
     sdk: flutter
 
   cupertino_icons: ^1.0.8
@@ -43,7 +45,16 @@ dependencies:
   # ── Content ────────────────────────────────────────────────────────────────
   file_picker: ^8.1.2                # the admin picks a video file
   video_player: ^2.9.2               # members watch it
+  chewie: ^1.8.5                     # player UI: scrubbing, speed, volume, full screen
   url_launcher: ^6.3.1               # "open externally" fallback
+  path_provider: ^2.1.4              # the app's private folder for offline lessons
+
+  # ── Website (lib/features/web — the asecbim site and its control panel) ────
+  go_router: ">=14.6.2 <18.0.0"            # the site's real URLs: /projects/p01, /admin/…
+  flutter_widget_from_html_core: ^0.15.2   # article bodies are HTML
+  http: ^1.2.2                             # WordPress importer
+  pdf: ^3.11.3                             # the ASEC certificate as a PDF
+  printing: ^5.14.2                        # save / share / print that PDF
 
 dev_dependencies:
   flutter_test:
@@ -71,8 +82,12 @@ flutter:
     - assets/icons_assets/roles_assets/
     - assets/icons_assets/services_assets/
     - assets/icons_assets/settings_assets/
+    - assets/icons_assets/web_assets/
     - assets/lottie_assets/home_lottie_assets/
     - assets/lottie_assets/main_lottie_assets/
+    - assets/web/images/
+    - assets/web/seed/
+    - assets/certificate/
 
   fonts:
     - family: Cairo

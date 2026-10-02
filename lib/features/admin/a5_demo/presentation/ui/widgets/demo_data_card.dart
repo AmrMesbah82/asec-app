@@ -106,10 +106,11 @@ class _DemoDataView extends StatelessWidget {
                         : AppColors.green,
                     message: s.demoCounts(
                       '${counts.members}',
-                      '${counts.videos}',
                       '${counts.quizzes}',
+                      '${counts.certificates}',
                       '${counts.attempts}',
                       '${counts.cvs}',
+                      '${counts.inbox}',
                     ),
                   ),
                   SizedBox(height: 12.h),

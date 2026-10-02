@@ -29,6 +29,8 @@ import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_pag
 import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/base_repository/auth_base_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/admin/a2_members/presentation/ui/pages/member_access_page.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
 import 'package:asec/generated/l10n.dart';
 
 class MembersPage extends StatefulWidget {
@@ -232,6 +234,20 @@ class _MembersPageState extends State<MembersPage> {
                               _repository.setCanCreateCv(u.uid, value),
                         ),
                       ),
+                      // What the member may use: courses · devices · period,
+                      // or "Paused". Tap to edit.
+                      AppTableColumn<AppUser>(
+                        label: s.memberAccess,
+                        fixedWidth: 240.w,
+                        cell: (BuildContext context, AppUser u) => _AccessCell(
+                          member: u,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => MemberAccessPage(member: u),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -264,13 +280,12 @@ class _ChoiceCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = value ? trueColor : AppColors.secondaryText;
-
+    // Same ground and ink as every chip; the word says the state.
     return CustomDropdown<bool>(
       value: value,
       height: 34.h,
-      fillColor: color.withOpacity(0.10),
-      valueStyle: StyleText.fontSize12Weight600.copyWith(color: color),
+      fillColor: AppColors.chip,
+      valueStyle: StyleText.fontSize12Weight600.copyWith(color: AppColors.onChip),
       itemStyle: StyleText.fontSize12Weight500,
       onChanged: (bool? next) {
         if (next != null && next != value) onChanged(next);
@@ -279,6 +294,71 @@ class _ChoiceCell extends StatelessWidget {
         DropdownItem<bool>(value: true, label: trueLabel),
         DropdownItem<bool>(value: false, label: falseLabel),
       ],
+    );
+  }
+}
+
+/// "All courses · All devices · Permanent", "2 courses · Android · until 1 Nov",
+/// or "Paused" — with a pencil to open the access page.
+class _AccessCell extends StatelessWidget {
+  const _AccessCell({required this.member, required this.onTap});
+
+  final AppUser member;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    final DateTime now = DateTime.now();
+    final bool expired = member.accessUntil != null && now.isAfter(member.accessUntil!);
+
+    final String courses = member.allCourses
+        ? s.accessAllCourses
+        : s.accessCoursesCount(member.courses.length);
+    final String devices = member.platforms.isEmpty
+        ? s.accessAllPlatforms
+        : member.platforms.map(MemberAccess.platformLabel).join(', ');
+    final String period = member.isPaused
+        ? s.accessPaused
+        : expired
+            ? s.accessExpiredShort
+            : member.accessUntil != null
+                ? s.accessUntilShort(AppDates.day(context, member.accessUntil))
+                : s.accessPermanent;
+    final Color periodColor = member.isPaused
+        ? AppColors.statusPending
+        : expired
+            ? AppColors.red
+            : AppColors.secondaryText;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(8.r),
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '$courses · $devices',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: StyleText.fontSize12Weight600.copyWith(color: AppColors.text),
+                ),
+                Text(
+                  period,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: StyleText.fontSize11Weight600.copyWith(color: periodColor),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.edit_rounded, size: 16, color: AppColors.primary),
+        ],
+      ),
     );
   }
 }

@@ -34,6 +34,10 @@ abstract class AuthBaseRepository {
   Future<Either<AuthFailureType, Unit>> sendPasswordReset(String email);
 
   Future<void> signOut();
+
+  /// Deletes the signed-in account (profile, CV and Auth user) after
+  /// re-checking [password]. On success nobody is signed in any more.
+  Future<Either<AuthFailureType, Unit>> deleteAccount(String password);
 }
 
 /// Everybody's profiles — what the admin looks at, and what a member may
@@ -49,4 +53,12 @@ abstract class UsersBaseRepository {
 
   /// The admin's CV switch for one member.
   Future<Either<AppFailure, Unit>> setCanCreateCv(String uid, bool allowed);
+
+  /// Courses, devices and access period for one member.
+  Future<Either<AppFailure, Unit>> setAccess(String uid, Map<String, dynamic> access);
+
+  Future<Either<AppFailure, Unit>> pauseAccess(String uid);
+
+  /// Resumes and adds the paused time to the end date.
+  Future<Either<AppFailure, Unit>> resumeAccess(AppUser member);
 }

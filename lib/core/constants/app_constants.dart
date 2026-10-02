@@ -33,7 +33,7 @@ abstract class AppConstants {
   ///   * firestore.rules — `isAdminEmail()` refuses an admin profile written
   ///     by any other email, which is the boundary that actually matters
   ///     (this constant is only what the client believes).
-  static const String adminEmail = 'adminamr@gmail.com';
+  static const String adminEmail = 'amrmesbah33@gmail.com';
 
   static bool isAdminEmail(String email) =>
       email.trim().toLowerCase() == adminEmail;

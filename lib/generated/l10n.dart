@@ -742,7 +742,7 @@ abstract class S {
   /// No description provided for @demoBody.
   ///
   /// In en, this message translates to:
-  /// **'Fills every section with sample members, lessons, quizzes, results and CVs, so you can see each screen with real content in it. Every demo account signs in with the password {password}.'**
+  /// **'Fills every section except Videos with sample data: members with course access, quizzes, a certificate exam for each of your real courses, results, CVs and website requests. Videos stay exactly as they are — they come from your Drive folder. Every demo account signs in with the password {password}.'**
   String demoBody(String password);
 
   /// No description provided for @removeDemo.
@@ -784,13 +784,14 @@ abstract class S {
   /// No description provided for @demoCounts.
   ///
   /// In en, this message translates to:
-  /// **'{members} members · {videos} videos · {quizzes} quizzes · {results} results · {cvs} CVs'**
+  /// **'{members} members · {quizzes} quizzes · {certificates} certificate exams · {results} results · {cvs} CVs · {inbox} website requests'**
   String demoCounts(
     String members,
-    String videos,
     String quizzes,
+    String certificates,
     String results,
     String cvs,
+    String inbox,
   );
 
   /// No description provided for @demoAccountsHint.
@@ -2857,6 +2858,24 @@ abstract class S {
   /// **'Add a video'**
   String get addVideo;
 
+  /// No description provided for @videoLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading lesson'**
+  String get videoLoading;
+
+  /// No description provided for @importDriveLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Drive lessons'**
+  String get importDriveLessons;
+
+  /// No description provided for @driveLessonsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons added from Google Drive'**
+  String driveLessonsAdded(int count);
+
   /// No description provided for @editVideo.
   ///
   /// In en, this message translates to:
@@ -3564,6 +3583,1410 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Search a member by name, email or phone'**
   String get searchMembers;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger zone'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently remove your account and profile.'**
+  String get deleteAccountHint;
+
+  /// No description provided for @deleteAccountQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountQuestion;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile and CV are deleted and you are signed out. This cannot be undone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to confirm.'**
+  String get deleteAccountPasswordBody;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the account'**
+  String get deleteAccountFailed;
+
+  /// No description provided for @kpiNewThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} this week'**
+  String kpiNewThisWeek(int count);
+
+  /// No description provided for @kpiNewThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} this month'**
+  String kpiNewThisMonth(int count);
+
+  /// No description provided for @kpiOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open now'**
+  String kpiOpenNow(int count);
+
+  /// No description provided for @kpiCvAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'CV access'**
+  String get kpiCvAccess;
+
+  /// No description provided for @kpiDrafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get kpiDrafts;
+
+  /// No description provided for @kpiLibrarySize.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get kpiLibrarySize;
+
+  /// No description provided for @kpiUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get kpiUpcoming;
+
+  /// No description provided for @kpiTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed out'**
+  String get kpiTimedOut;
+
+  /// No description provided for @videoLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Video link'**
+  String get videoLinkTitle;
+
+  /// No description provided for @videoLinkCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a direct .mp4 link or a Google Drive link (shared as “Anyone with the link”) — no upload needed.'**
+  String get videoLinkCaption;
+
+  /// No description provided for @videoLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get videoLinkLabel;
+
+  /// No description provided for @videoLinkInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full link that starts with https://'**
+  String get videoLinkInvalid;
+
+  /// No description provided for @videoOrUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Or upload a file'**
+  String get videoOrUpload;
+
+  /// No description provided for @playerSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get playerSpeed;
+
+  /// No description provided for @playerLoop.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop'**
+  String get playerLoop;
+
+  /// No description provided for @playerRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get playerRestart;
+
+  /// No description provided for @playerMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get playerMute;
+
+  /// No description provided for @playerFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get playerFullScreen;
+
+  /// No description provided for @playerResumedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Resumed at {time}'**
+  String playerResumedAt(String time);
+
+  /// No description provided for @playerStartOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get playerStartOver;
+
+  /// No description provided for @playerDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get playerDuration;
+
+  /// No description provided for @playerShortcuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Space: play / pause · ← →: 10 s · ↑ ↓: volume · F: full screen · M: mute'**
+  String get playerShortcuts;
+
+  /// No description provided for @agoJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get agoJustNow;
+
+  /// No description provided for @agoMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String agoMinutes(int count);
+
+  /// No description provided for @agoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hours ago'**
+  String agoHours(int count);
+
+  /// No description provided for @agoDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String agoDays(int count);
+
+  /// No description provided for @agoWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks ago'**
+  String agoWeeks(int count);
+
+  /// No description provided for @agoMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months ago'**
+  String agoMonths(int count);
+
+  /// No description provided for @agoYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} years ago'**
+  String agoYears(int count);
+
+  /// No description provided for @nowPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW PLAYING'**
+  String get nowPlaying;
+
+  /// No description provided for @videoNewTag.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get videoNewTag;
+
+  /// No description provided for @autoplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay'**
+  String get autoplay;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get filterRecent;
+
+  /// No description provided for @filterContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue watching'**
+  String get filterContinue;
+
+  /// No description provided for @filterWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get filterWatched;
+
+  /// No description provided for @noLessonsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons found'**
+  String get noLessonsMatch;
+
+  /// No description provided for @noLessonsMatchSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another word or filter.'**
+  String get noLessonsMatchSub;
+
+  /// No description provided for @searchVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Search videos'**
+  String get searchVideos;
+
+  /// No description provided for @lessonNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {n}'**
+  String lessonNumber(int n);
+
+  /// No description provided for @finishLessonFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish lesson {n} first'**
+  String finishLessonFirst(int n);
+
+  /// No description provided for @watchedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get watchedBadge;
+
+  /// No description provided for @finishThisLessonFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish this lesson first to unlock the next one.'**
+  String get finishThisLessonFirst;
+
+  /// No description provided for @noSkipAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t skip ahead — watch the lesson to unlock the rest.'**
+  String get noSkipAhead;
+
+  /// No description provided for @lessonCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get lessonCompleted;
+
+  /// No description provided for @courseProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{watched} of {total} lessons watched'**
+  String courseProgress(int watched, int total);
+
+  /// No description provided for @courseComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Course complete — every lesson watched!'**
+  String get courseComplete;
+
+  /// No description provided for @permVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get permVideos;
+
+  /// No description provided for @permQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get permQuizzes;
+
+  /// No description provided for @permResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get permResults;
+
+  /// No description provided for @permMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get permMembers;
+
+  /// No description provided for @permCvs.
+  ///
+  /// In en, this message translates to:
+  /// **'CVs'**
+  String get permCvs;
+
+  /// No description provided for @permWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get permWebsite;
+
+  /// No description provided for @ctlGroupSections.
+  ///
+  /// In en, this message translates to:
+  /// **'Member menu'**
+  String get ctlGroupSections;
+
+  /// No description provided for @ctlGroupVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Video lessons'**
+  String get ctlGroupVideos;
+
+  /// No description provided for @ctlGroupGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole app'**
+  String get ctlGroupGeneral;
+
+  /// No description provided for @ctlGroupDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin dashboard'**
+  String get ctlGroupDashboard;
+
+  /// No description provided for @controlCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Control centre'**
+  String get controlCentre;
+
+  /// No description provided for @controlCentreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn parts of the app on or off for everybody. Changes apply instantly.'**
+  String get controlCentreHint;
+
+  /// No description provided for @ctlTurnAllOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn all on'**
+  String get ctlTurnAllOn;
+
+  /// No description provided for @ctlSectionVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get ctlSectionVideos;
+
+  /// No description provided for @ctlSectionVideosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members see the Videos page.'**
+  String get ctlSectionVideosHint;
+
+  /// No description provided for @ctlSectionQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get ctlSectionQuizzes;
+
+  /// No description provided for @ctlSectionQuizzesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members see the Quizzes page.'**
+  String get ctlSectionQuizzesHint;
+
+  /// No description provided for @ctlSectionCvDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'CV directory'**
+  String get ctlSectionCvDirectory;
+
+  /// No description provided for @ctlSectionCvDirectoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members can browse everyone\'s CVs.'**
+  String get ctlSectionCvDirectoryHint;
+
+  /// No description provided for @ctlSectionMyCv.
+  ///
+  /// In en, this message translates to:
+  /// **'My CV'**
+  String get ctlSectionMyCv;
+
+  /// No description provided for @ctlSectionMyCvHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members allowed a CV see the CV form.'**
+  String get ctlSectionMyCvHint;
+
+  /// No description provided for @ctlVideoSequential.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock lessons in order'**
+  String get ctlVideoSequential;
+
+  /// No description provided for @ctlVideoSequentialHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A lesson opens only after the previous one is watched.'**
+  String get ctlVideoSequentialHint;
+
+  /// No description provided for @ctlVideoBlockSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Block skipping ahead'**
+  String get ctlVideoBlockSkip;
+
+  /// No description provided for @ctlVideoBlockSkipHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members can\'t jump past what they\'ve watched.'**
+  String get ctlVideoBlockSkipHint;
+
+  /// No description provided for @ctlVideoAutoplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay next lesson'**
+  String get ctlVideoAutoplay;
+
+  /// No description provided for @ctlVideoAutoplayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The next lesson starts when one ends.'**
+  String get ctlVideoAutoplayHint;
+
+  /// No description provided for @ctlVideoUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next list'**
+  String get ctlVideoUpNext;
+
+  /// No description provided for @ctlVideoUpNextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the other lessons beside the player.'**
+  String get ctlVideoUpNextHint;
+
+  /// No description provided for @ctlVideoOptionsBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Player options bar'**
+  String get ctlVideoOptionsBar;
+
+  /// No description provided for @ctlVideoOptionsBarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip, loop, restart, volume and speed under the video.'**
+  String get ctlVideoOptionsBarHint;
+
+  /// No description provided for @ctlVideoSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback speed'**
+  String get ctlVideoSpeed;
+
+  /// No description provided for @ctlVideoSpeedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Members can watch at 0.5x – 2x.'**
+  String get ctlVideoSpeedHint;
+
+  /// No description provided for @ctlVideoResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume where you stopped'**
+  String get ctlVideoResume;
+
+  /// No description provided for @ctlVideoResumeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopening a lesson jumps to the last position.'**
+  String get ctlVideoResumeHint;
+
+  /// No description provided for @ctlVideoSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search and filters'**
+  String get ctlVideoSearch;
+
+  /// No description provided for @ctlVideoSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search box and filter chips on the Videos page.'**
+  String get ctlVideoSearchHint;
+
+  /// No description provided for @ctlVideoCourseProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Course progress bar'**
+  String get ctlVideoCourseProgress;
+
+  /// No description provided for @ctlVideoCourseProgressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'\"3 of 10 lessons watched\" at the top.'**
+  String get ctlVideoCourseProgressHint;
+
+  /// No description provided for @ctlAnimations.
+  ///
+  /// In en, this message translates to:
+  /// **'Animations'**
+  String get ctlAnimations;
+
+  /// No description provided for @ctlAnimationsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Page transitions and entrance animations.'**
+  String get ctlAnimationsHint;
+
+  /// No description provided for @ctlRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'New sign-ups'**
+  String get ctlRegistration;
+
+  /// No description provided for @ctlRegistrationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show \"Register\" on the sign-in screen.'**
+  String get ctlRegistrationHint;
+
+  /// No description provided for @ctlScreenProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Block screenshots'**
+  String get ctlScreenProtection;
+
+  /// No description provided for @ctlScreenProtectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On: screenshots and screen recordings of the app come out black (Android, iOS, macOS, Windows). Off: allowed.'**
+  String get ctlScreenProtectionHint;
+
+  /// No description provided for @ctlDashboardCharts.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard charts'**
+  String get ctlDashboardCharts;
+
+  /// No description provided for @ctlDashboardChartsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The four charts under the numbers.'**
+  String get ctlDashboardChartsHint;
+
+  /// No description provided for @ctlDashboardTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest attempts table'**
+  String get ctlDashboardTable;
+
+  /// No description provided for @ctlDashboardTableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The table at the bottom of the dashboard.'**
+  String get ctlDashboardTableHint;
+
+  /// No description provided for @adminsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins'**
+  String get adminsTitle;
+
+  /// No description provided for @adminsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create admins and choose what each one can manage.'**
+  String get adminsHint;
+
+  /// No description provided for @addAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Add admin'**
+  String get addAdmin;
+
+  /// No description provided for @createAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Create admin'**
+  String get createAdmin;
+
+  /// No description provided for @noAdminsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No other admins yet.'**
+  String get noAdminsYet;
+
+  /// No description provided for @editPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit permissions'**
+  String get editPermissions;
+
+  /// No description provided for @removeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove admin'**
+  String get removeAdmin;
+
+  /// No description provided for @removeAdminQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this admin?'**
+  String get removeAdminQuestion;
+
+  /// No description provided for @noPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'No permissions — can only open Settings.'**
+  String get noPermissions;
+
+  /// No description provided for @permissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get permissionsTitle;
+
+  /// No description provided for @adminCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin created. They can sign in now.'**
+  String get adminCreated;
+
+  /// No description provided for @permissionsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions saved'**
+  String get permissionsSaved;
+
+  /// No description provided for @adminFormInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name and a valid email.'**
+  String get adminFormInvalid;
+
+  /// No description provided for @adminPasswordShort.
+  ///
+  /// In en, this message translates to:
+  /// **'The password needs at least 6 characters.'**
+  String get adminPasswordShort;
+
+  /// No description provided for @adminEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This email already has an account.'**
+  String get adminEmailInUse;
+
+  /// No description provided for @removeAdminBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer be able to use the admin console. Their login can be deleted from the Firebase console.'**
+  String removeAdminBody(String name);
+
+  /// No description provided for @videoCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get videoCategoriesTitle;
+
+  /// No description provided for @videoCategoryGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get videoCategoryGeneral;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get allCategories;
+
+  /// No description provided for @videoCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get videoCategory;
+
+  /// No description provided for @videoCategoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos with the same category are grouped together (e.g. GENERAL NOTES).'**
+  String get videoCategoryHint;
+
+  /// No description provided for @videoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} videos'**
+  String videoCount(int count);
+
+  /// No description provided for @securityBlockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This device is not safe for ASEC'**
+  String get securityBlockedTitle;
+
+  /// No description provided for @securityBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To protect the lessons, ASEC does not run while any of the following is on. Turn it off, then tap Check again.'**
+  String get securityBlockedBody;
+
+  /// No description provided for @securityCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get securityCheckAgain;
+
+  /// No description provided for @integrityDeveloperOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer options are on (Settings → System → Developer options)'**
+  String get integrityDeveloperOptions;
+
+  /// No description provided for @integrityUsbDebugging.
+  ///
+  /// In en, this message translates to:
+  /// **'USB debugging is on'**
+  String get integrityUsbDebugging;
+
+  /// No description provided for @integrityDebugger.
+  ///
+  /// In en, this message translates to:
+  /// **'A debugger is attached to the app'**
+  String get integrityDebugger;
+
+  /// No description provided for @integrityDebuggable.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app has been modified — install it from the official source'**
+  String get integrityDebuggable;
+
+  /// No description provided for @integrityRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'The device is rooted'**
+  String get integrityRoot;
+
+  /// No description provided for @integrityJailbreak.
+  ///
+  /// In en, this message translates to:
+  /// **'The device is jailbroken'**
+  String get integrityJailbreak;
+
+  /// No description provided for @integrityHooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Hacking / hooking tools are running'**
+  String get integrityHooking;
+
+  /// No description provided for @certificateQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate quizzes'**
+  String get certificateQuizzes;
+
+  /// No description provided for @certificateQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate quiz'**
+  String get certificateQuiz;
+
+  /// No description provided for @certificateQuizzesAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'One final exam per course. Members who score 70% or more get an ASEC certificate.'**
+  String get certificateQuizzesAdminSub;
+
+  /// No description provided for @certificateQuizzesUserSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish every lesson of a course, then pass its final exam with 70% to earn your ASEC certificate.'**
+  String get certificateQuizzesUserSub;
+
+  /// No description provided for @newCertificateQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'New certificate quiz'**
+  String get newCertificateQuiz;
+
+  /// No description provided for @noCertificateQuizzesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No certificate quizzes yet'**
+  String get noCertificateQuizzesTitle;
+
+  /// No description provided for @noCertificateQuizzesAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one final exam for each course.'**
+  String get noCertificateQuizzesAdminSub;
+
+  /// No description provided for @noCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses yet'**
+  String get noCoursesTitle;
+
+  /// No description provided for @noCoursesUserSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses and their final exams appear here.'**
+  String get noCoursesUserSub;
+
+  /// No description provided for @courseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get courseLabel;
+
+  /// No description provided for @courseCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Members unlock this exam after watching every lesson of the course. Pass mark: 70%.'**
+  String get courseCaption;
+
+  /// No description provided for @chooseCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a course'**
+  String get chooseCourse;
+
+  /// No description provided for @errChooseCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the course this exam belongs to.'**
+  String get errChooseCourse;
+
+  /// No description provided for @certLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch all lessons first · {watched}/{total}'**
+  String certLocked(int watched, int total);
+
+  /// No description provided for @certReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready — start the final exam'**
+  String get certReady;
+
+  /// No description provided for @certFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Last try {percent}% · you need 70% — try again'**
+  String certFailed(String percent);
+
+  /// No description provided for @certPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed with {percent}% · view your certificate'**
+  String certPassed(String percent);
+
+  /// No description provided for @certNoExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Final exam coming soon'**
+  String get certNoExam;
+
+  /// No description provided for @certLockedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish every lesson in this course to unlock its exam.'**
+  String get certLockedSnack;
+
+  /// No description provided for @passedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations, you passed!'**
+  String get passedTitle;
+
+  /// No description provided for @failedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed yet'**
+  String get failedTitle;
+
+  /// No description provided for @failedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You need 70% to pass. Review the lessons and try again.'**
+  String get failedBody;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @viewCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'View certificate'**
+  String get viewCertificate;
+
+  /// No description provided for @lastTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last try: {percent}% — you need 70% to pass.'**
+  String lastTry(String percent);
+
+  /// No description provided for @certificateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your certificate'**
+  String get certificateTitle;
+
+  /// No description provided for @downloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get downloadPdf;
+
+  /// No description provided for @passMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass mark 70%'**
+  String get passMark;
+
+  /// No description provided for @certificateBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get certificateBadge;
+
+  /// No description provided for @unitConverter.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit converter'**
+  String get unitConverter;
+
+  /// No description provided for @unitConverterSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Main engineering units — works without internet.'**
+  String get unitConverterSub;
+
+  /// No description provided for @unitFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get unitFrom;
+
+  /// No description provided for @unitTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get unitTo;
+
+  /// No description provided for @unitValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value'**
+  String get unitValue;
+
+  /// No description provided for @swapUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap units'**
+  String get swapUnits;
+
+  /// No description provided for @allConversions.
+  ///
+  /// In en, this message translates to:
+  /// **'All conversions'**
+  String get allConversions;
+
+  /// No description provided for @openUnitConverter.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit converter (works offline)'**
+  String get openUnitConverter;
+
+  /// No description provided for @copiedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {value}'**
+  String copiedValue(String value);
+
+  /// No description provided for @offlineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get offlineTitle;
+
+  /// No description provided for @offlineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the unit converter works without internet. The app comes back as soon as you\'re online.'**
+  String get offlineBody;
+
+  /// No description provided for @offlineRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get offlineRetry;
+
+  /// No description provided for @moreTab.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get moreTab;
+
+  /// No description provided for @certificateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get certificateShort;
+
+  /// No description provided for @memberAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Access'**
+  String get memberAccess;
+
+  /// No description provided for @editAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit access'**
+  String get editAccess;
+
+  /// No description provided for @accessCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get accessCourses;
+
+  /// No description provided for @accessAllCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get accessAllCourses;
+
+  /// No description provided for @accessCoursesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the courses this member can watch. \"All courses\" also includes any course added later.'**
+  String get accessCoursesCaption;
+
+  /// No description provided for @accessPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get accessPlatforms;
+
+  /// No description provided for @accessPlatformsCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'The member can open the app only on the checked devices.'**
+  String get accessPlatformsCaption;
+
+  /// No description provided for @accessAllPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'All devices'**
+  String get accessAllPlatforms;
+
+  /// No description provided for @accessPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Access period'**
+  String get accessPeriod;
+
+  /// No description provided for @accessPermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent'**
+  String get accessPermanent;
+
+  /// No description provided for @accessDates.
+  ///
+  /// In en, this message translates to:
+  /// **'From – to'**
+  String get accessDates;
+
+  /// No description provided for @accessFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get accessFrom;
+
+  /// No description provided for @accessUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get accessUntil;
+
+  /// No description provided for @accessPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause access'**
+  String get accessPause;
+
+  /// No description provided for @accessResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume access'**
+  String get accessResume;
+
+  /// No description provided for @accessPauseCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Freezes the member\'s access now. When you resume, the paused days are added back to the end date.'**
+  String get accessPauseCaption;
+
+  /// No description provided for @accessPausedSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused since {date}'**
+  String accessPausedSince(String date);
+
+  /// No description provided for @accessPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get accessPaused;
+
+  /// No description provided for @accessUntilShort.
+  ///
+  /// In en, this message translates to:
+  /// **'until {date}'**
+  String accessUntilShort(String date);
+
+  /// No description provided for @accessCoursesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} courses'**
+  String accessCoursesCount(int count);
+
+  /// No description provided for @accessSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Access saved'**
+  String get accessSaved;
+
+  /// No description provided for @accessPickPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one device.'**
+  String get accessPickPlatform;
+
+  /// No description provided for @accessPickCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one course, or All courses.'**
+  String get accessPickCourse;
+
+  /// No description provided for @accessDatesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date must be after the start date.'**
+  String get accessDatesInvalid;
+
+  /// No description provided for @accessExpiredShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get accessExpiredShort;
+
+  /// No description provided for @blockedTitlePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access is paused'**
+  String get blockedTitlePaused;
+
+  /// No description provided for @blockedBodyPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'ASEC has paused your access for now. Contact ASEC to resume it — you won\'t lose the paused days.'**
+  String get blockedBodyPaused;
+
+  /// No description provided for @blockedTitleExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access has ended'**
+  String get blockedTitleExpired;
+
+  /// No description provided for @blockedBodyExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access ended on {date}. Contact ASEC to renew it.'**
+  String blockedBodyExpired(String date);
+
+  /// No description provided for @blockedTitleNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access hasn\'t started yet'**
+  String get blockedTitleNotStarted;
+
+  /// No description provided for @blockedBodyNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access starts on {date}.'**
+  String blockedBodyNotStarted(String date);
+
+  /// No description provided for @blockedTitlePlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available on this device'**
+  String get blockedTitlePlatform;
+
+  /// No description provided for @blockedBodyPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account can be used on: {platforms}.'**
+  String blockedBodyPlatform(String platforms);
+
+  /// No description provided for @tbMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get tbMember;
+
+  /// No description provided for @tbThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get tbThisDevice;
+
+  /// No description provided for @tbAllowedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed on'**
+  String get tbAllowedOn;
+
+  /// No description provided for @tbStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get tbStatus;
+
+  /// No description provided for @tbStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts'**
+  String get tbStarts;
+
+  /// No description provided for @tbEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends'**
+  String get tbEnds;
+
+  /// No description provided for @tbWrongDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong device'**
+  String get tbWrongDevice;
+
+  /// No description provided for @tbNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get tbNotStarted;
+
+  /// No description provided for @downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloads;
+
+  /// No description provided for @downloadsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons saved inside ASEC to watch without internet. They stay in the app only.'**
+  String get downloadsSub;
+
+  /// No description provided for @downloadVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline'**
+  String get downloadVideo;
+
+  /// No description provided for @downloadStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading — you\'ll find it in Downloads'**
+  String get downloadStarted;
+
+  /// No description provided for @downloadCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get downloadCancel;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed — tap to try again'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded — tap to remove'**
+  String get downloadDone;
+
+  /// No description provided for @downloadRemoveQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove “{title}” from downloads?'**
+  String downloadRemoveQuestion(String title);
+
+  /// No description provided for @downloadRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The lesson stays in Videos; it just won\'t play without internet any more.'**
+  String get downloadRemoveBody;
+
+  /// No description provided for @downloadRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get downloadRemove;
+
+  /// No description provided for @downloadsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get downloadsEmptyTitle;
+
+  /// No description provided for @downloadsEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the download icon on a lesson in Videos to watch it without internet.'**
+  String get downloadsEmptySub;
+
+  /// No description provided for @downloadsStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used on this device'**
+  String downloadsStorage(String size);
+
+  /// No description provided for @downloadsRemoveAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all'**
+  String get downloadsRemoveAll;
+
+  /// No description provided for @downloadsRemoveAllQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all downloads?'**
+  String get downloadsRemoveAllQuestion;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

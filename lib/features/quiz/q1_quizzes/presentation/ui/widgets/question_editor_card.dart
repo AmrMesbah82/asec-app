@@ -117,13 +117,13 @@ class _QuestionEditorCardState extends State<QuestionEditorCard> {
                   height: 26.r,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.chip,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${widget.index + 1}',
                     style: StyleText.fontSize12Weight700
-                        .copyWith(color: AppColors.primary),
+                        .copyWith(color: AppColors.onChip),
                   ),
                 ),
                 SizedBox(width: 10.w),

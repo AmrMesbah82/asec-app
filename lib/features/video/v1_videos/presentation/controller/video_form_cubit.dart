@@ -24,7 +24,7 @@ import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 
 enum VideoFormStatus { editing, uploading, saving, saved, failure }
 
-enum VideoFormError { titleEmpty, noFile, tooLarge }
+enum VideoFormError { titleEmpty, noFile, tooLarge, badLink }
 
 class VideoFormState {
   final VideoItem video;
@@ -82,11 +82,18 @@ class VideoFormCubit extends Cubit<VideoFormState> {
   VideoFormCubit({
     VideoItem? existing,
     required this.adminUid,
+    String category = '',
     VideoBaseRepository? repository,
   })  : _repository = repository ?? VideoRepository(),
         _isNew = existing == null,
         super(VideoFormState(
-          video: existing ?? VideoItem(id: '', title: '', createdBy: adminUid),
+          video: existing ??
+              VideoItem(
+                id: '',
+                title: '',
+                category: category,
+                createdBy: adminUid,
+              ),
         ));
 
   final VideoBaseRepository _repository;
@@ -113,6 +120,9 @@ class VideoFormCubit extends Cubit<VideoFormState> {
   void setDescription(String value) =>
       emit(state.copyWith(video: state.video.copyWith(description: value)));
 
+  void setCategory(String value) =>
+      emit(state.copyWith(video: state.video.copyWith(category: value)));
+
   void setPublished(bool value) =>
       emit(state.copyWith(video: state.video.copyWith(published: value)));
 
@@ -138,6 +148,22 @@ class VideoFormCubit extends Cubit<VideoFormState> {
     ));
   }
 
+  /// A video hosted anywhere (YouTube-style pages will NOT play — it must be
+  /// a direct .mp4 / .m3u8 link, or a Google Drive file link shared as
+  /// "Anyone with the link", which the player converts — see VideoLink). Typing a link drops any picked file, and a
+  /// link has no Storage object behind it.
+  void setLink(String value) => emit(VideoFormState(
+        video: state.video.copyWith(url: value.trim(), storagePath: ''),
+        status: VideoFormStatus.editing,
+      ));
+
+  static bool isValidLink(String value) {
+    final Uri? uri = Uri.tryParse(value.trim());
+    return uri != null &&
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host.isNotEmpty;
+  }
+
   void clearFile() => emit(VideoFormState(
         video: state.video,
         status: VideoFormStatus.editing,
@@ -147,7 +173,11 @@ class VideoFormCubit extends Cubit<VideoFormState> {
 
   VideoFormError? _validate() {
     if (state.video.title.trim().isEmpty) return VideoFormError.titleEmpty;
-    if (_isNew && state.file == null) return VideoFormError.noFile;
+    if (state.file == null) {
+      final String link = state.video.url;
+      if (link.isEmpty) return VideoFormError.noFile;
+      if (!isValidLink(link)) return VideoFormError.badLink;
+    }
     if ((state.file?.size ?? 0) > _maxBytes) return VideoFormError.tooLarge;
     return null;
   }
@@ -164,9 +194,29 @@ class VideoFormCubit extends Cubit<VideoFormState> {
       return;
     }
 
-    // Nothing new to upload: just the details.
+    // Nothing to upload — a pasted link, or an edit of the details only.
     if (state.file == null) {
       emit(state.copyWith(status: VideoFormStatus.saving, clearErrors: true));
+      if (_isNew) {
+        final VideoItem video = state.video.copyWith(createdBy: adminUid);
+        final Either<AppFailure, String> created =
+            await _repository.create(video);
+        if (isClosed) return;
+        created.fold(
+          (AppFailure f) => emit(state.copyWith(
+            status: VideoFormStatus.failure,
+            failure: f,
+          )),
+          (String id) {
+            _isNew = false;
+            emit(state.copyWith(
+              status: VideoFormStatus.saved,
+              video: video.copyWith(id: id),
+            ));
+          },
+        );
+        return;
+      }
       final Either<AppFailure, Unit> result =
           await _repository.updateDetails(state.video);
       if (isClosed) return;

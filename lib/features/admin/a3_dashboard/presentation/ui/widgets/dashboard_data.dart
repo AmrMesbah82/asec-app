@@ -15,6 +15,7 @@
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart';
+import 'package:asec/features/quiz/q1_quizzes/domain/enums/quiz_window_state.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 
 /// One bar / slice: a label and a number, before any widget sees it.
@@ -98,6 +99,33 @@ class DashboardData {
     ];
   }
 
+  /// How a total grew over the last [days] days, oldest first: for each day,
+  /// how many items existed by its end. Items with no date count as older
+  /// than the window. Drives the line on the Members / Videos / Quizzes cards.
+  static List<double> growth(Iterable<DateTime?> createdAt, {int days = 14}) {
+    final DateTime today = DateTime.now();
+    final DateTime start = DateTime(today.year, today.month, today.day)
+        .subtract(Duration(days: days - 1));
+    final List<DateTime?> all = createdAt.toList();
+    return <double>[
+      for (int i = 0; i < days; i++)
+        all
+            .where((DateTime? at) =>
+                at == null || at.isBefore(start.add(Duration(days: i + 1))))
+            .length
+            .toDouble(),
+    ];
+  }
+
+  List<double> membersGrowth({int days = 14}) =>
+      growth(members.map((AppUser m) => m.createdAt), days: days);
+
+  List<double> videosGrowth({int days = 14}) =>
+      growth(videos.map((VideoItem v) => v.createdAt), days: days);
+
+  List<double> quizzesGrowth({int days = 14}) =>
+      growth(quizzes.map((Quiz q) => q.createdAt), days: days);
+
   /// Average percentage per quiz, best first. Quizzes nobody has sat are left
   /// out: a zero bar would read as "everybody failed it".
   List<Series> averageByQuiz({int take = 6}) {
@@ -156,6 +184,72 @@ class DashboardData {
     }
     return null;
   }
+
+
+  // ── KPI card facts ─────────────────────────────────────────────────────────
+  // Everything the four cards at the top of the page show besides the total.
+
+  static DateTime _daysAgo(int days) {
+    final DateTime now = DateTime.now();
+    return DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: days - 1));
+  }
+
+  static bool _since(DateTime? at, DateTime from) =>
+      at != null && !at.isBefore(from);
+
+  // Members
+  int get activeMembers => members.where((AppUser m) => m.active).length;
+  int get inactiveMembers => members.length - activeMembers;
+  int get cvMembers => members.where((AppUser m) => m.canCreateCv).length;
+  int get newMembersThisWeek =>
+      members.where((AppUser m) => _since(m.createdAt, _daysAgo(7))).length;
+
+  // Videos
+  int get publishedVideos => videos.where((VideoItem v) => v.published).length;
+  int get draftVideos => videos.length - publishedVideos;
+  int get newVideosThisMonth =>
+      videos.where((VideoItem v) => _since(v.createdAt, _daysAgo(30))).length;
+
+  /// "1.2 GB" / "340 MB" — the whole library on disk.
+  String get librarySize {
+    final int bytes =
+        videos.fold<int>(0, (int total, VideoItem v) => total + v.sizeBytes);
+    const int mb = 1024 * 1024;
+    if (bytes >= 1024 * mb) return '${(bytes / (1024 * mb)).toStringAsFixed(1)} GB';
+    return '${(bytes / mb).toStringAsFixed(bytes >= 10 * mb ? 0 : 1)} MB';
+  }
+
+  // Quizzes — every quiz lands in exactly one bucket, so the bar adds up.
+  int get draftQuizzes => quizzes.where((Quiz q) => !q.published).length;
+  int _quizzesIn(QuizWindowState state) {
+    final DateTime now = DateTime.now();
+    return quizzes
+        .where((Quiz q) => q.published && q.windowStateAt(now) == state)
+        .length;
+  }
+
+  int get openQuizzes => _quizzesIn(QuizWindowState.open);
+  int get upcomingQuizzes => _quizzesIn(QuizWindowState.notOpenYet);
+  int get closedQuizzes => _quizzesIn(QuizWindowState.closed);
+  int get totalQuestions =>
+      quizzes.fold<int>(0, (int total, Quiz q) => total + q.questionCount);
+
+  // Attempts
+  int get attemptsThisWeek => attempts
+      .where((QuizAttempt a) => _since(a.submittedAt, _daysAgo(7)))
+      .length;
+
+  /// Share of attempts at 50% or more — the same line the results page uses.
+  int get passRatePercent {
+    if (attempts.isEmpty) return 0;
+    final int passed =
+        attempts.where((QuizAttempt a) => a.percent >= 50).length;
+    return (passed * 100 / attempts.length).round();
+  }
+
+  int get autoSubmittedAttempts =>
+      attempts.where((QuizAttempt a) => a.autoSubmitted).length;
 
   static String _key(DateTime day) => '${day.year}-${day.month}-${day.day}';
 

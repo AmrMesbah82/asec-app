@@ -26,6 +26,18 @@ class Quiz {
   /// Members only ever see published quizzes; the admin sees drafts too.
   final bool published;
 
+  /// A CERTIFICATE QUIZ is a course's final exam: it lives in its own drawer
+  /// tab, opens once every lesson of [course] is watched, may be retaken
+  /// until passed, and a score of [passPercent] or more earns the member an
+  /// ASEC certificate.
+  final bool certificate;
+
+  /// The video category (Drive folder) this exam closes. Certificate quizzes
+  /// only.
+  final String course;
+
+  static const int passPercent = 70;
+
   final List<QuizQuestion> questions;
   final String createdBy;
   final DateTime? createdAt;
@@ -39,6 +51,8 @@ class Quiz {
     this.opensAt,
     this.closesAt,
     this.published = false,
+    this.certificate = false,
+    this.course = '',
     this.questions = const <QuizQuestion>[],
     this.createdBy = '',
     this.createdAt,
@@ -108,6 +122,8 @@ class Quiz {
     Object? opensAt = _keep,
     Object? closesAt = _keep,
     bool? published,
+    bool? certificate,
+    String? course,
     List<QuizQuestion>? questions,
     String? createdBy,
   }) {
@@ -121,6 +137,8 @@ class Quiz {
       opensAt: opensAt == _keep ? this.opensAt : opensAt as DateTime?,
       closesAt: closesAt == _keep ? this.closesAt : closesAt as DateTime?,
       published: published ?? this.published,
+      certificate: certificate ?? this.certificate,
+      course: course ?? this.course,
       questions: questions ?? this.questions,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt,

@@ -58,6 +58,10 @@ class QuizAttemptState {
   /// True when this result is one they took earlier, not one they just sat.
   final bool wasAlreadyTaken;
 
+  /// Certificate quizzes: their last attempt that did NOT pass, shown on the
+  /// intro of a retake ("last try 55% — you need 70%").
+  final QuizAttempt? previous;
+
   final AppFailure? failure;
 
   const QuizAttemptState({
@@ -69,6 +73,7 @@ class QuizAttemptState {
     this.remaining,
     this.attempt,
     this.wasAlreadyTaken = false,
+    this.previous,
     this.failure,
   });
 
@@ -89,6 +94,7 @@ class QuizAttemptState {
     Duration? remaining,
     QuizAttempt? attempt,
     bool? wasAlreadyTaken,
+    QuizAttempt? previous,
     AppFailure? failure,
   }) {
     return QuizAttemptState(
@@ -100,6 +106,7 @@ class QuizAttemptState {
       remaining: remaining ?? this.remaining,
       attempt: attempt ?? this.attempt,
       wasAlreadyTaken: wasAlreadyTaken ?? this.wasAlreadyTaken,
+      previous: previous ?? this.previous,
       failure: failure ?? this.failure,
     );
   }
@@ -143,6 +150,19 @@ class QuizAttemptCubit extends Cubit<QuizAttemptState> {
     }
     if (isClosed) return;
 
+    // A certificate quiz not passed yet may be sat again: straight to the
+    // intro, with the last score shown.
+    if (previous != null && quiz.certificate && !previous.passed) {
+      emit(state.copyWith(
+        stage: window.isOpen && quiz.questionCount > 0
+            ? AttemptStage.intro
+            : AttemptStage.unavailable,
+        window: window,
+        previous: previous,
+      ));
+      return;
+    }
+
     if (previous != null) {
       emit(state.copyWith(
         stage: AttemptStage.finished,
@@ -159,6 +179,20 @@ class QuizAttemptCubit extends Cubit<QuizAttemptState> {
           ? AttemptStage.intro
           : AttemptStage.unavailable,
       window: window,
+    ));
+  }
+
+  /// Certificate quizzes: after a failed result, back to the intro for
+  /// another sitting.
+  void retake() {
+    if (!quiz.certificate || state.stage != AttemptStage.finished) return;
+    final QuizAttempt? last = state.attempt;
+    if (last == null || last.passed) return;
+    emit(QuizAttemptState(
+      stage: AttemptStage.intro,
+      quiz: quiz,
+      window: quiz.windowStateAt(DateTime.now()),
+      previous: last,
     ));
   }
 
@@ -220,6 +254,7 @@ class QuizAttemptCubit extends Cubit<QuizAttemptState> {
       startedAt: _startedAt ?? DateTime.now(),
       submittedAt: DateTime.now(),
       autoSubmitted: auto,
+      tries: (state.previous?.tries ?? 0) + 1,
     );
 
     final Either<AppFailure, Unit> result =

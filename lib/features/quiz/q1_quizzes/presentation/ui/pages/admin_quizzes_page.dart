@@ -6,6 +6,8 @@
 ///          the way in to the editor and to the results.
 /// Author: ASEC team
 /// Created: 19/9/2026
+/// Updated: 1/10/2026 - `certificate: true` makes it the "Certificate
+///          quizzes" tab: only courses' final exams, created with a course.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,11 +26,19 @@ import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempt
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_editor_page.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_card.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 class AdminQuizzesPage extends StatefulWidget {
-  const AdminQuizzesPage({super.key, required this.adminUid});
+  const AdminQuizzesPage({
+    super.key,
+    required this.adminUid,
+    this.certificate = false,
+  });
 
   final String adminUid;
+
+  /// True = the "Certificate quizzes" tab; false = the ordinary quizzes.
+  final bool certificate;
 
   @override
   State<AdminQuizzesPage> createState() => _AdminQuizzesPageState();
@@ -40,7 +50,11 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
 
   Future<void> _openEditor([Quiz? quiz]) => Navigator.of(context).push(
         MaterialPageRoute<bool>(
-          builder: (_) => QuizEditorPage(quiz: quiz, adminUid: widget.adminUid),
+          builder: (_) => QuizEditorPage(
+            quiz: quiz,
+            adminUid: widget.adminUid,
+            certificate: widget.certificate,
+          ),
         ),
       );
 
@@ -64,17 +78,23 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
   @override
   Widget build(BuildContext context) {
     final S s = S.of(context);
+    final bool cert = widget.certificate;
+    final String title = cert ? s.certificateQuizzes : s.quizzes;
+    final String subtitle = cert ? s.certificateQuizzesAdminSub : s.quizzesAdminSub;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton.extended(
         // Unique per section: see the videos FAB for why.
-        heroTag: 'asec_fab_quizzes',
+        heroTag: cert ? 'asec_fab_cert_quizzes' : 'asec_fab_quizzes',
         onPressed: _openEditor,
         backgroundColor: AppColors.primary,
-        icon: const AppIcon(Icons.add_rounded, color: Colors.white),
+        icon: AppIcon(
+          cert ? Icons.workspace_premium_rounded : Icons.add_rounded,
+          color: Colors.white,
+        ),
         label: Text(
-          s.newQuiz,
+          cert ? s.newCertificateQuiz : s.newQuiz,
           style: StyleText.fontSize14Weight600.copyWith(color: Colors.white),
         ),
       ),
@@ -86,35 +106,38 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
           }
           if (!snapshot.hasData) return const AppLoading();
 
-          final List<Quiz> quizzes = snapshot.data!;
+          // Each tab shows its own kind.
+          final List<Quiz> quizzes = snapshot.data!
+              .where((Quiz q) => q.certificate == cert)
+              .toList();
           if (quizzes.isEmpty) {
             return ConsolePage(
-              title: s.quizzes,
-              subtitle: s.quizzesAdminSub,
+              title: title,
+              subtitle: subtitle,
               child: AppEmptyView(
-                title: s.noQuizzesTitle,
-                subtitle: s.noQuizzesAdminSub,
+                title: cert ? s.noCertificateQuizzesTitle : s.noQuizzesTitle,
+                subtitle: cert ? s.noCertificateQuizzesAdminSub : s.noQuizzesAdminSub,
               ),
             );
           }
 
           return ConsolePage(
-            title: s.quizzes,
-            subtitle: s.quizzesAdminSub,
+            title: title,
+            subtitle: subtitle,
             child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               return GridView.builder(
                 padding: EdgeInsets.only(bottom: 96.h),
                 gridDelegate: CrossAxisCountHelper.gridDelegate(
                   context,
-                  mainAxisExtent: 210,
+                  mainAxisExtent: 112,
                   minCellWidth: 320,
                   availableWidth: constraints.maxWidth,
                 ),
                 itemCount: quizzes.length,
                 itemBuilder: (BuildContext context, int index) {
                   final Quiz quiz = quizzes[index];
-                  return QuizCard(
+                  return FadeSlideIn(delay: staggerDelay(index, stepMs: 55), child: HoverLift(child: QuizCard(
                     quiz: quiz,
                     onTap: () => _openEditor(quiz),
                     trailing: _QuizMenu(
@@ -131,7 +154,7 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
                       ),
                       onDelete: () => _confirmDelete(quiz),
                     ),
-                  );
+                  )));
                 },
               );
             },

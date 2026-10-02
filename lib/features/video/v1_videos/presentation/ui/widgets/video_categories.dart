@@ -1,0 +1,420 @@
+/// Module: video / v1_videos
+///
+///*************************** FILE INFO ****************************///
+/// File Name: video_categories.dart
+/// Purpose: Declares `VideoCategory` (videos grouped by their Drive
+///          sub-folder), `VideoCategoryGrid` (the category cards shown before
+///          any video) and `VideoCategoryHeader` (the "← All categories" bar
+///          above one category's videos).
+/// Author: ASEC team
+/// Created: 1/10/2026
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/custom/5-custom_button.dart';
+import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_thumbnail.dart';
+import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
+import 'package:asec/generated/l10n.dart';
+
+/// One category and its videos, in the order they were given.
+class VideoCategory {
+  const VideoCategory({
+    required this.name,
+    required this.order,
+    required this.videos,
+  });
+
+  /// The raw category ('' = no category).
+  final String name;
+  final int order;
+  final List<VideoItem> videos;
+
+  String label(S s) => name.isEmpty ? s.videoCategoryGeneral : name;
+
+  int get watched =>
+      videos.where((VideoItem v) => VideoWatchStore.isWatched(v.id)).length;
+
+  /// Groups [videos] by category — categories in folder order (then name),
+  /// each keeping the order the videos came in.
+  ///
+  /// With [bySubcategory], groups ONE category's videos by the Drive folder
+  /// inside it (e.g. AutoCAD → "Introduction-01", "Draw and Modify-02").
+  static List<VideoCategory> group(
+    List<VideoItem> videos, {
+    bool bySubcategory = false,
+  }) {
+    final Map<String, List<VideoItem>> byName = <String, List<VideoItem>>{};
+    final Map<String, int> order = <String, int>{};
+    for (final VideoItem v in videos) {
+      final String key = (bySubcategory ? v.subcategory : v.category).trim();
+      final int folderOrder = bySubcategory ? v.subcategoryOrder : v.categoryOrder;
+      byName.putIfAbsent(key, () => <VideoItem>[]).add(v);
+      // '' (General) first; Drive folders in folder order (1, 2, …); a
+      // category typed by an admin (order 0) after them.
+      final int o = key.isEmpty ? -1 : (folderOrder > 0 ? folderOrder : 1 << 20);
+      order[key] = order.containsKey(key) ? (order[key]! < o ? order[key]! : o) : o;
+    }
+    final List<VideoCategory> out = <VideoCategory>[
+      for (final MapEntry<String, List<VideoItem>> e in byName.entries)
+        VideoCategory(name: e.key, order: order[e.key]!, videos: e.value),
+    ]..sort((VideoCategory a, VideoCategory b) {
+        final int c = a.order.compareTo(b.order);
+        return c != 0 ? c : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      });
+    return out;
+  }
+}
+
+/// The categories as cards; tapping one opens its videos.
+class VideoCategoryGrid extends StatelessWidget {
+  const VideoCategoryGrid({
+    super.key,
+    required this.categories,
+    required this.onOpen,
+    this.header,
+    this.showProgress = true,
+    this.bottomPadding = 24,
+  });
+
+  final List<VideoCategory> categories;
+  final void Function(VideoCategory category) onOpen;
+  final Widget? header;
+
+  /// Members see how much of each category they watched; admins do not.
+  final bool showProgress;
+  final double bottomPadding;
+
+  static const double _minTile = 280;
+  static const double _gap = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double width = constraints.maxWidth;
+        final double gapX = _gap.w;
+        final int columns =
+            ((width + gapX) / (_minTile + gapX)).floor().clamp(1, 6);
+        final double tileWidth = (width - gapX * (columns - 1)) / columns;
+        final double tileHeight = tileWidth * 9 / 16 + 12.h + 64.h;
+
+        return CustomScrollView(
+          slivers: <Widget>[
+            if (header != null) SliverToBoxAdapter(child: header),
+            SliverPadding(
+              padding: EdgeInsets.only(bottom: bottomPadding.h),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  crossAxisSpacing: gapX,
+                  mainAxisSpacing: 20.h,
+                  mainAxisExtent: tileHeight,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    final VideoCategory category = categories[index];
+                    return FadeSlideIn(
+                      delay: staggerDelay(index, stepMs: 60),
+                      child: _CategoryCard(
+                        category: category,
+                        index: index,
+                        showProgress: showProgress,
+                        onTap: () => onOpen(category),
+                      ),
+                    );
+                  },
+                  childCount: categories.length,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CategoryCard extends StatefulWidget {
+  const _CategoryCard({
+    required this.category,
+    required this.index,
+    required this.showProgress,
+    required this.onTap,
+  });
+
+  final VideoCategory category;
+  final int index;
+  final bool showProgress;
+  final VoidCallback onTap;
+
+  @override
+  State<_CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<_CategoryCard> {
+  bool _hover = false;
+
+  static const List<List<Color>> _palettes = <List<Color>>[
+    <Color>[Color(0xFF1E3A8A), Color(0xFF2563EB)],
+    <Color>[Color(0xFF7F1D1D), Color(0xFFDC2626)],
+    <Color>[Color(0xFF064E3B), Color(0xFF059669)],
+    <Color>[Color(0xFF4C1D95), Color(0xFF7C3AED)],
+    <Color>[Color(0xFF78350F), Color(0xFFD97706)],
+    <Color>[Color(0xFF134E4A), Color(0xFF0D9488)],
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    final VideoCategory c = widget.category;
+    final List<Color> colors = _palettes[widget.index % _palettes.length];
+    final int total = c.videos.length;
+    final int watched = widget.showProgress ? c.watched : 0;
+    final double p = total == 0 ? 0 : watched / total;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            AnimatedScale(
+              duration: const Duration(milliseconds: 160),
+              scale: _hover ? 1.02 : 1,
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  children: <Widget>[
+                    // A second sheet behind — reads as "a stack of videos".
+                    Positioned.fill(
+                      top: 0,
+                      left: 10,
+                      right: 10,
+                      bottom: 6,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.first.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      top: 8,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14.r),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: AlignmentDirectional.topStart,
+                                  end: AlignmentDirectional.bottomEnd,
+                                  colors: colors,
+                                ),
+                              ),
+                            ),
+                            // The first video's cover, darkened so the
+                            // category name stays readable on it.
+                            if (c.videos.isNotEmpty)
+                              VideoCoverImage(
+                                url: c.videos.first.url,
+                                placeholder: const SizedBox.shrink(),
+                                shade: false,
+                              ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: AlignmentDirectional.topEnd,
+                                  end: AlignmentDirectional.bottomStart,
+                                  colors: <Color>[
+                                    colors.first.withOpacity(0.35),
+                                    Colors.black.withOpacity(0.7),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                        padding: EdgeInsets.all(14.r),
+                        child: Stack(
+                          children: <Widget>[
+                            PositionedDirectional(
+                              end: -8,
+                              bottom: -12,
+                              child: Icon(
+                                Icons.video_library_rounded,
+                                size: 96,
+                                color: Colors.white.withOpacity(0.14),
+                              ),
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                c.label(s),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: StyleText.fontSize22Weight700.copyWith(
+                                  color: Colors.white,
+                                  height: 1.2,
+                                ),
+                              ),
+                            ),
+                            PositionedDirectional(
+                              end: 0,
+                              top: 0,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.35),
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    const Icon(Icons.playlist_play_rounded,
+                                        size: 16, color: Colors.white),
+                                    SizedBox(width: 4.w),
+                                    Text(
+                                      '$total',
+                                      style: StyleText.fontSize12Weight600
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Row(
+              children: <Widget>[
+                AppIcon(Icons.folder_rounded, size: 20.sp, color: colors.last),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    c.label(s),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: StyleText.fontSize15Weight600
+                        .copyWith(color: AppColors.text),
+                  ),
+                ),
+                Text(
+                  s.videoCount(total),
+                  style: StyleText.fontSize12Weight400
+                      .copyWith(color: AppColors.secondaryText),
+                ),
+              ],
+            ),
+            if (widget.showProgress) ...<Widget>[
+              SizedBox(height: 8.h),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6.r),
+                      child: LinearProgressIndicator(
+                        value: p,
+                        minHeight: 5.h,
+                        backgroundColor:
+                            AppColors.secondaryText.withOpacity(0.15),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          p >= 1 ? const Color(0xFF16A34A) : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '$watched/$total',
+                    style: StyleText.fontSize11Weight600
+                        .copyWith(color: AppColors.secondaryText),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "← All categories   GENERAL NOTES · 16 videos" above a category's videos.
+class VideoCategoryHeader extends StatelessWidget {
+  const VideoCategoryHeader({
+    super.key,
+    required this.category,
+    required this.onBack,
+    this.backLabel,
+  });
+
+  final VideoCategory category;
+  final VoidCallback onBack;
+
+  /// What the back button says; defaults to "All categories". Inside a
+  /// sub-folder it names the category it goes back to (e.g. "AutoCAD").
+  final String? backLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    final bool rtl = Directionality.of(context) == TextDirection.rtl;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12.w,
+        runSpacing: 8.h,
+        children: <Widget>[
+          customButton(
+            title: '${rtl ? '→' : '←'}  ${backLabel ?? s.allCategories}',
+            function: onBack,
+            wrapContent: true,
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AppIcon(Icons.folder_open_rounded,
+                  size: 20.sp, color: AppColors.primary),
+              SizedBox(width: 6.w),
+              Text(
+                category.label(s),
+                style: StyleText.fontSize18Weight600
+                    .copyWith(color: AppColors.text),
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                s.videoCount(category.videos.length),
+                style: StyleText.fontSize13Weight400
+                    .copyWith(color: AppColors.secondaryText),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

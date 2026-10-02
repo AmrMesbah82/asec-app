@@ -28,6 +28,8 @@ abstract final class QuizModel {
   static const String questionCount = 'question_count';
   static const String totalPoints = 'total_points';
   static const String createdBy = 'created_by';
+  static const String certificate = 'certificate';
+  static const String course = 'course';
 
   // Inside one element of `questions`.
   static const String qId = 'id';
@@ -48,6 +50,8 @@ abstract final class QuizModel {
       opensAt: data.date(opensAt),
       closesAt: data.date(closesAt),
       published: data.boolean(FirebaseCollections.publishedField),
+      certificate: data.boolean(certificate),
+      course: data.str(course).trim(),
       questions: rawQuestions is List
           ? rawQuestions
               .whereType<Map<dynamic, dynamic>>()
@@ -87,6 +91,8 @@ abstract final class QuizModel {
       closesAt:
           quiz.closesAt == null ? null : Timestamp.fromDate(quiz.closesAt!),
       FirebaseCollections.publishedField: quiz.published,
+      certificate: quiz.certificate,
+      course: quiz.course.trim(),
       questions: <Map<String, dynamic>>[
         for (final QuizQuestion q in quiz.questions)
           <String, dynamic>{
@@ -124,6 +130,8 @@ abstract final class QuizAttemptModel {
   static const String questionCount = 'question_count';
   static const String startedAt = 'started_at';
   static const String autoSubmitted = 'auto_submitted';
+  static const String passed = 'passed';
+  static const String tries = 'tries';
 
   static QuizAttempt fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final Map<String, dynamic> data = doc.safeData;
@@ -147,6 +155,8 @@ abstract final class QuizAttemptModel {
       startedAt: data.date(startedAt),
       submittedAt: data.date(FirebaseCollections.submittedAtField),
       autoSubmitted: data.boolean(autoSubmitted),
+      passed: data.boolean(passed),
+      tries: data.integer(tries, 1),
     );
   }
 
@@ -166,6 +176,8 @@ abstract final class QuizAttemptModel {
             : Timestamp.fromDate(attempt.startedAt!),
         FirebaseCollections.submittedAtField: FieldValue.serverTimestamp(),
         autoSubmitted: attempt.autoSubmitted,
+        passed: attempt.passed,
+        tries: attempt.tries,
         FirebaseCollections.createdAtField: FieldValue.serverTimestamp(),
       };
 }

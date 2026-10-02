@@ -3,6 +3,9 @@ import FlutterMacOS
 
 // Window sizing ported from manger_plus/macos/Runner/MainFlutterWindow.swift.
 class MainFlutterWindow: NSWindow {
+  /// `asec/screen_protection` — the Control centre's "Block screenshots".
+  private var screenChannel: FlutterMethodChannel?
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
 
@@ -47,6 +50,38 @@ class MainFlutterWindow: NSWindow {
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
+    // SCREEN CAPTURE PROTECTION: screenshots, screen recordings and screen
+    // sharing leave this window out (it captures as empty / black).
+    // Starts protected; the Control centre switch can lift it
+    // (lib/core/settings/screen_protection.dart).
+    self.sharingType = .none
+    let channel = FlutterMethodChannel(
+      name: "asec/screen_protection",
+      binaryMessenger: flutterViewController.engine.binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] call, result in
+      if call.method == "setEnabled" {
+        let on = (call.arguments as? Bool) ?? true
+        self?.sharingType = on ? .none : .readOnly
+        result(nil)
+      } else if call.method == "integrity" {
+        // lib/core/settings/app_integrity.dart
+        result(MainFlutterWindow.debuggerAttached() ? ["debugger"] : [String]())
+      } else {
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    screenChannel = channel
+
     super.awakeFromNib()
+  }
+
+  /// True while a debugger (lldb, Xcode) is attached to the app.
+  static func debuggerAttached() -> Bool {
+    var info = kinfo_proc()
+    var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+    var size = MemoryLayout<kinfo_proc>.stride
+    let rc = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+    return rc == 0 && (info.kp_proc.p_flag & P_TRACED) != 0
   }
 }

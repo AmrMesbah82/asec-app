@@ -358,7 +358,7 @@ class SAr extends S {
 
   @override
   String demoBody(String password) {
-    return 'يملأ كل الأقسام ببيانات تجريبية: أعضاء وفيديوهات واختبارات ونتائج وسير ذاتية، حتى ترى كل شاشة وبها محتوى حقيقي. كل حساب تجريبي يدخل بكلمة المرور $password.';
+    return 'يملأ كل الأقسام ما عدا الفيديوهات ببيانات تجريبية: أعضاء بصلاحيات كورسات، واختبارات، واختبار شهادة لكل كورس حقيقي، ونتائج، وسير ذاتية، وطلبات الموقع. الفيديوهات تبقى كما هي — تأتي من مجلد Drive. كل حساب تجريبي يدخل بكلمة المرور $password.';
   }
 
   @override
@@ -385,12 +385,13 @@ class SAr extends S {
   @override
   String demoCounts(
     String members,
-    String videos,
     String quizzes,
+    String certificates,
     String results,
     String cvs,
+    String inbox,
   ) {
-    return '$members عضو · $videos فيديو · $quizzes اختبار · $results نتيجة · $cvs سيرة ذاتية';
+    return '$members عضو · $quizzes اختبار · $certificates اختبار شهادة · $results نتيجة · $cvs سيرة ذاتية · $inbox طلب من الموقع';
   }
 
   @override
@@ -1537,6 +1538,17 @@ class SAr extends S {
   String get addVideo => 'إضافة فيديو';
 
   @override
+  String get videoLoading => 'جارٍ تحميل الدرس';
+
+  @override
+  String get importDriveLessons => 'إضافة دروس Drive';
+
+  @override
+  String driveLessonsAdded(int count) {
+    return 'تمت إضافة $count درسًا من Google Drive';
+  }
+
+  @override
   String get editVideo => 'تعديل الفيديو';
 
   @override
@@ -1911,4 +1923,784 @@ class SAr extends S {
 
   @override
   String get searchMembers => 'ابحث عن عضو بالاسم أو البريد أو الهاتف';
+
+  @override
+  String get dangerZone => 'منطقة الخطر';
+
+  @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get deleteAccountHint => 'حذف حسابك وملفك الشخصي نهائيًا.';
+
+  @override
+  String get deleteAccountQuestion => 'حذف حسابك؟';
+
+  @override
+  String get deleteAccountBody =>
+      'سيتم حذف ملفك الشخصي وسيرتك الذاتية وتسجيل خروجك. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get deleteAccountPasswordBody => 'أدخل كلمة المرور للتأكيد.';
+
+  @override
+  String get deleteAccountFailed => 'تعذّر حذف الحساب';
+
+  @override
+  String kpiNewThisWeek(int count) {
+    return '+$count هذا الأسبوع';
+  }
+
+  @override
+  String kpiNewThisMonth(int count) {
+    return '+$count هذا الشهر';
+  }
+
+  @override
+  String kpiOpenNow(int count) {
+    return '$count متاح الآن';
+  }
+
+  @override
+  String get kpiCvAccess => 'صلاحية السيرة';
+
+  @override
+  String get kpiDrafts => 'مسودات';
+
+  @override
+  String get kpiLibrarySize => 'حجم المكتبة';
+
+  @override
+  String get kpiUpcoming => 'قادم';
+
+  @override
+  String get kpiTimedOut => 'انتهى وقتها';
+
+  @override
+  String get videoLinkTitle => 'رابط الفيديو';
+
+  @override
+  String get videoLinkCaption =>
+      'الصق رابطًا مباشرًا لملف ‎.mp4‎ أو رابط Google Drive (مشارك لـ «أي شخص لديه الرابط») — دون رفع.';
+
+  @override
+  String get videoLinkLabel => 'الرابط';
+
+  @override
+  String get videoLinkInvalid => 'أدخل رابطًا كاملًا يبدأ بـ https://';
+
+  @override
+  String get videoOrUpload => 'أو ارفع ملفًا';
+
+  @override
+  String get playerSpeed => 'السرعة';
+
+  @override
+  String get playerLoop => 'تكرار';
+
+  @override
+  String get playerRestart => 'من البداية';
+
+  @override
+  String get playerMute => 'كتم الصوت';
+
+  @override
+  String get playerFullScreen => 'ملء الشاشة';
+
+  @override
+  String playerResumedAt(String time) {
+    return 'استكمال من $time';
+  }
+
+  @override
+  String get playerStartOver => 'ابدأ من جديد';
+
+  @override
+  String get playerDuration => 'المدة';
+
+  @override
+  String get playerShortcuts =>
+      'مسافة: تشغيل / إيقاف · ← →: ١٠ ثوانٍ · ↑ ↓: الصوت · F: ملء الشاشة · M: كتم';
+
+  @override
+  String get agoJustNow => 'الآن';
+
+  @override
+  String agoMinutes(int count) {
+    return 'منذ $count دقيقة';
+  }
+
+  @override
+  String agoHours(int count) {
+    return 'منذ $count ساعة';
+  }
+
+  @override
+  String agoDays(int count) {
+    return 'منذ $count يوم';
+  }
+
+  @override
+  String agoWeeks(int count) {
+    return 'منذ $count أسبوع';
+  }
+
+  @override
+  String agoMonths(int count) {
+    return 'منذ $count شهر';
+  }
+
+  @override
+  String agoYears(int count) {
+    return 'منذ $count سنة';
+  }
+
+  @override
+  String get nowPlaying => 'يعمل الآن';
+
+  @override
+  String get videoNewTag => 'جديد';
+
+  @override
+  String get autoplay => 'تشغيل تلقائي';
+
+  @override
+  String get filterAll => 'الكل';
+
+  @override
+  String get filterRecent => 'أضيف حديثًا';
+
+  @override
+  String get filterContinue => 'متابعة المشاهدة';
+
+  @override
+  String get filterWatched => 'تمت مشاهدته';
+
+  @override
+  String get noLessonsMatch => 'لا توجد دروس';
+
+  @override
+  String get noLessonsMatchSub => 'جرّب كلمة أو فلترًا آخر.';
+
+  @override
+  String get searchVideos => 'ابحث في الفيديوهات';
+
+  @override
+  String lessonNumber(int n) {
+    return 'الدرس $n';
+  }
+
+  @override
+  String finishLessonFirst(int n) {
+    return 'أكمل الدرس $n أولًا';
+  }
+
+  @override
+  String get watchedBadge => 'تمت المشاهدة';
+
+  @override
+  String get finishThisLessonFirst => 'أكمل هذا الدرس أولًا لفتح الدرس التالي.';
+
+  @override
+  String get noSkipAhead => 'لا يمكنك التقديم — شاهد الدرس لفتح الباقي.';
+
+  @override
+  String get lessonCompleted => 'مكتمل';
+
+  @override
+  String courseProgress(int watched, int total) {
+    return 'شاهدت $watched من $total دروس';
+  }
+
+  @override
+  String get courseComplete => 'اكتملت الدورة — شاهدت كل الدروس!';
+
+  @override
+  String get permVideos => 'الفيديوهات';
+
+  @override
+  String get permQuizzes => 'الاختبارات';
+
+  @override
+  String get permResults => 'النتائج';
+
+  @override
+  String get permMembers => 'الأعضاء';
+
+  @override
+  String get permCvs => 'السير الذاتية';
+
+  @override
+  String get permWebsite => 'الموقع الإلكتروني';
+
+  @override
+  String get ctlGroupSections => 'قائمة الأعضاء';
+
+  @override
+  String get ctlGroupVideos => 'دروس الفيديو';
+
+  @override
+  String get ctlGroupGeneral => 'التطبيق كله';
+
+  @override
+  String get ctlGroupDashboard => 'لوحة المدير';
+
+  @override
+  String get controlCentre => 'مركز التحكم';
+
+  @override
+  String get controlCentreHint =>
+      'شغّل أو أوقف أجزاء التطبيق للجميع. التغيير فوري.';
+
+  @override
+  String get ctlTurnAllOn => 'تشغيل الكل';
+
+  @override
+  String get ctlSectionVideos => 'الفيديوهات';
+
+  @override
+  String get ctlSectionVideosHint => 'يرى الأعضاء صفحة الفيديوهات.';
+
+  @override
+  String get ctlSectionQuizzes => 'الاختبارات';
+
+  @override
+  String get ctlSectionQuizzesHint => 'يرى الأعضاء صفحة الاختبارات.';
+
+  @override
+  String get ctlSectionCvDirectory => 'دليل السير الذاتية';
+
+  @override
+  String get ctlSectionCvDirectoryHint => 'يتصفح الأعضاء سير الجميع.';
+
+  @override
+  String get ctlSectionMyCv => 'سيرتي الذاتية';
+
+  @override
+  String get ctlSectionMyCvHint => 'يرى الأعضاء المسموح لهم نموذج السيرة.';
+
+  @override
+  String get ctlVideoSequential => 'فتح الدروس بالترتيب';
+
+  @override
+  String get ctlVideoSequentialHint => 'لا يُفتح الدرس إلا بعد مشاهدة السابق.';
+
+  @override
+  String get ctlVideoBlockSkip => 'منع التقديم';
+
+  @override
+  String get ctlVideoBlockSkipHint => 'لا يمكن تجاوز ما لم يُشاهد.';
+
+  @override
+  String get ctlVideoAutoplay => 'تشغيل الدرس التالي تلقائيًا';
+
+  @override
+  String get ctlVideoAutoplayHint => 'يبدأ الدرس التالي عند انتهاء الحالي.';
+
+  @override
+  String get ctlVideoUpNext => 'قائمة التالي';
+
+  @override
+  String get ctlVideoUpNextHint => 'عرض باقي الدروس بجانب المشغّل.';
+
+  @override
+  String get ctlVideoOptionsBar => 'شريط خيارات المشغّل';
+
+  @override
+  String get ctlVideoOptionsBarHint =>
+      'تقديم وتكرار وإعادة وصوت وسرعة تحت الفيديو.';
+
+  @override
+  String get ctlVideoSpeed => 'سرعة التشغيل';
+
+  @override
+  String get ctlVideoSpeedHint => 'يمكن المشاهدة من 0.5x إلى 2x.';
+
+  @override
+  String get ctlVideoResume => 'استكمال من حيث توقفت';
+
+  @override
+  String get ctlVideoResumeHint => 'إعادة فتح الدرس تبدأ من آخر موضع.';
+
+  @override
+  String get ctlVideoSearch => 'البحث والفلاتر';
+
+  @override
+  String get ctlVideoSearchHint => 'مربع البحث والفلاتر في صفحة الفيديوهات.';
+
+  @override
+  String get ctlVideoCourseProgress => 'شريط تقدم الدورة';
+
+  @override
+  String get ctlVideoCourseProgressHint => '\"شاهدت 3 من 10\" في الأعلى.';
+
+  @override
+  String get ctlAnimations => 'الحركات';
+
+  @override
+  String get ctlAnimationsHint => 'انتقالات الصفحات وحركات الظهور.';
+
+  @override
+  String get ctlRegistration => 'التسجيل الجديد';
+
+  @override
+  String get ctlRegistrationHint => 'إظهار \"تسجيل\" في شاشة الدخول.';
+
+  @override
+  String get ctlScreenProtection => 'منع لقطات الشاشة';
+
+  @override
+  String get ctlScreenProtectionHint =>
+      'تشغيل: لقطات الشاشة وتسجيل الشاشة للتطبيق تظهر سوداء (أندرويد، iOS، ماك، ويندوز). إيقاف: مسموح.';
+
+  @override
+  String get ctlDashboardCharts => 'رسوم لوحة المدير';
+
+  @override
+  String get ctlDashboardChartsHint => 'الرسوم الأربعة تحت الأرقام.';
+
+  @override
+  String get ctlDashboardTable => 'جدول آخر المحاولات';
+
+  @override
+  String get ctlDashboardTableHint => 'الجدول أسفل لوحة المدير.';
+
+  @override
+  String get adminsTitle => 'المديرون';
+
+  @override
+  String get adminsHint => 'أنشئ مديرين واختر ما يديره كل منهم.';
+
+  @override
+  String get addAdmin => 'إضافة مدير';
+
+  @override
+  String get createAdmin => 'إنشاء المدير';
+
+  @override
+  String get noAdminsYet => 'لا يوجد مديرون آخرون بعد.';
+
+  @override
+  String get editPermissions => 'تعديل الصلاحيات';
+
+  @override
+  String get removeAdmin => 'حذف المدير';
+
+  @override
+  String get removeAdminQuestion => 'حذف هذا المدير؟';
+
+  @override
+  String get noPermissions => 'بلا صلاحيات — يفتح الإعدادات فقط.';
+
+  @override
+  String get permissionsTitle => 'الصلاحيات';
+
+  @override
+  String get adminCreated => 'تم إنشاء المدير ويمكنه الدخول الآن.';
+
+  @override
+  String get permissionsSaved => 'تم حفظ الصلاحيات';
+
+  @override
+  String get adminFormInvalid => 'أدخل اسمًا وبريدًا صحيحًا.';
+
+  @override
+  String get adminPasswordShort => 'كلمة المرور 6 أحرف على الأقل.';
+
+  @override
+  String get adminEmailInUse => 'هذا البريد له حساب بالفعل.';
+
+  @override
+  String removeAdminBody(String name) {
+    return 'لن يتمكن $name من استخدام لوحة الإدارة. يمكن حذف حساب الدخول من Firebase.';
+  }
+
+  @override
+  String get videoCategoriesTitle => 'الأقسام';
+
+  @override
+  String get videoCategoryGeneral => 'عام';
+
+  @override
+  String get allCategories => 'كل الأقسام';
+
+  @override
+  String get videoCategory => 'القسم';
+
+  @override
+  String get videoCategoryHint =>
+      'الفيديوهات التي لها نفس القسم تظهر معًا (مثل GENERAL NOTES).';
+
+  @override
+  String videoCount(int count) {
+    return '$count فيديو';
+  }
+
+  @override
+  String get securityBlockedTitle => 'هذا الجهاز غير آمن لتشغيل ASEC';
+
+  @override
+  String get securityBlockedBody =>
+      'لحماية الدروس لا يعمل ASEC أثناء تفعيل أيٍّ مما يلي. أوقفه ثم اضغط إعادة الفحص.';
+
+  @override
+  String get securityCheckAgain => 'إعادة الفحص';
+
+  @override
+  String get integrityDeveloperOptions =>
+      'خيارات المطوّر مفعّلة (الإعدادات ← النظام ← خيارات المطوّر)';
+
+  @override
+  String get integrityUsbDebugging => 'تصحيح أخطاء USB مفعّل';
+
+  @override
+  String get integrityDebugger => 'يوجد مصحّح أخطاء متصل بالتطبيق';
+
+  @override
+  String get integrityDebuggable =>
+      'هذه النسخة من التطبيق معدّلة — ثبّته من المصدر الرسمي';
+
+  @override
+  String get integrityRoot => 'الجهاز عليه صلاحيات روت';
+
+  @override
+  String get integrityJailbreak => 'الجهاز عليه جيلبريك';
+
+  @override
+  String get integrityHooking => 'توجد أدوات اختراق تعمل على الجهاز';
+
+  @override
+  String get certificateQuizzes => 'اختبارات الشهادات';
+
+  @override
+  String get certificateQuiz => 'اختبار الشهادة';
+
+  @override
+  String get certificateQuizzesAdminSub =>
+      'اختبار نهائي واحد لكل كورس. من يحصل على 70% أو أكثر ينال شهادة من ASEC.';
+
+  @override
+  String get certificateQuizzesUserSub =>
+      'أكمل كل دروس الكورس ثم اجتز اختباره النهائي بنسبة 70% لتحصل على شهادتك من ASEC.';
+
+  @override
+  String get newCertificateQuiz => 'اختبار شهادة جديد';
+
+  @override
+  String get noCertificateQuizzesTitle => 'لا توجد اختبارات شهادات بعد';
+
+  @override
+  String get noCertificateQuizzesAdminSub => 'أنشئ اختبارًا نهائيًا لكل كورس.';
+
+  @override
+  String get noCoursesTitle => 'لا توجد كورسات بعد';
+
+  @override
+  String get noCoursesUserSub => 'تظهر هنا الكورسات واختباراتها النهائية.';
+
+  @override
+  String get courseLabel => 'الكورس';
+
+  @override
+  String get courseCaption =>
+      'يُفتح هذا الاختبار للعضو بعد مشاهدة كل دروس الكورس. درجة النجاح: 70%.';
+
+  @override
+  String get chooseCourse => 'اختر الكورس';
+
+  @override
+  String get errChooseCourse => 'اختر الكورس الذي يتبعه هذا الاختبار.';
+
+  @override
+  String certLocked(int watched, int total) {
+    return 'شاهد كل الدروس أولًا · $watched/$total';
+  }
+
+  @override
+  String get certReady => 'جاهز — ابدأ الاختبار النهائي';
+
+  @override
+  String certFailed(String percent) {
+    return 'آخر محاولة $percent% · تحتاج 70% — حاول مرة أخرى';
+  }
+
+  @override
+  String certPassed(String percent) {
+    return 'نجحت بنسبة $percent% · اعرض شهادتك';
+  }
+
+  @override
+  String get certNoExam => 'الاختبار النهائي قريبًا';
+
+  @override
+  String get certLockedSnack => 'أكمل كل دروس هذا الكورس ليُفتح اختباره.';
+
+  @override
+  String get passedTitle => 'مبروك، لقد نجحت!';
+
+  @override
+  String get failedTitle => 'لم تنجح بعد';
+
+  @override
+  String get failedBody => 'تحتاج 70% للنجاح. راجع الدروس ثم حاول مرة أخرى.';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get viewCertificate => 'عرض الشهادة';
+
+  @override
+  String lastTry(String percent) {
+    return 'محاولتك الأخيرة: $percent% — تحتاج 70% للنجاح.';
+  }
+
+  @override
+  String get certificateTitle => 'شهادتك';
+
+  @override
+  String get downloadPdf => 'تحميل PDF';
+
+  @override
+  String get passMark => 'درجة النجاح 70%';
+
+  @override
+  String get certificateBadge => 'شهادة';
+
+  @override
+  String get unitConverter => 'محوّل الوحدات';
+
+  @override
+  String get unitConverterSub => 'أهم الوحدات الهندسية — يعمل بدون إنترنت.';
+
+  @override
+  String get unitFrom => 'من';
+
+  @override
+  String get unitTo => 'إلى';
+
+  @override
+  String get unitValue => 'أدخل قيمة';
+
+  @override
+  String get swapUnits => 'تبديل الوحدتين';
+
+  @override
+  String get allConversions => 'كل التحويلات';
+
+  @override
+  String get openUnitConverter => 'محوّل الوحدات (يعمل بدون إنترنت)';
+
+  @override
+  String copiedValue(String value) {
+    return 'تم نسخ $value';
+  }
+
+  @override
+  String get offlineTitle => 'أنت غير متصل بالإنترنت';
+
+  @override
+  String get offlineBody =>
+      'يعمل محوّل الوحدات فقط بدون إنترنت. يعود التطبيق تلقائيًا فور عودة الاتصال.';
+
+  @override
+  String get offlineRetry => 'إعادة المحاولة';
+
+  @override
+  String get moreTab => 'المزيد';
+
+  @override
+  String get certificateShort => 'الشهادة';
+
+  @override
+  String get memberAccess => 'الصلاحية';
+
+  @override
+  String get editAccess => 'تعديل الصلاحية';
+
+  @override
+  String get accessCourses => 'الكورسات';
+
+  @override
+  String get accessAllCourses => 'كل الكورسات';
+
+  @override
+  String get accessCoursesCaption =>
+      'اختر الكورسات التي يشاهدها هذا العضو. \"كل الكورسات\" تشمل أيضًا أي كورس يُضاف لاحقًا.';
+
+  @override
+  String get accessPlatforms => 'الأجهزة';
+
+  @override
+  String get accessPlatformsCaption =>
+      'يستطيع العضو فتح التطبيق على الأجهزة المحددة فقط.';
+
+  @override
+  String get accessAllPlatforms => 'كل الأجهزة';
+
+  @override
+  String get accessPeriod => 'مدة الصلاحية';
+
+  @override
+  String get accessPermanent => 'دائمة';
+
+  @override
+  String get accessDates => 'من – إلى';
+
+  @override
+  String get accessFrom => 'من';
+
+  @override
+  String get accessUntil => 'إلى';
+
+  @override
+  String get accessPause => 'إيقاف مؤقت';
+
+  @override
+  String get accessResume => 'استئناف الصلاحية';
+
+  @override
+  String get accessPauseCaption =>
+      'يوقف صلاحية العضو الآن. عند الاستئناف تُضاف أيام الإيقاف إلى تاريخ الانتهاء.';
+
+  @override
+  String accessPausedSince(String date) {
+    return 'موقوف منذ $date';
+  }
+
+  @override
+  String get accessPaused => 'موقوف مؤقتًا';
+
+  @override
+  String accessUntilShort(String date) {
+    return 'حتى $date';
+  }
+
+  @override
+  String accessCoursesCount(int count) {
+    return '$count كورس';
+  }
+
+  @override
+  String get accessSaved => 'تم حفظ الصلاحية';
+
+  @override
+  String get accessPickPlatform => 'اختر جهازًا واحدًا على الأقل.';
+
+  @override
+  String get accessPickCourse => 'اختر كورسًا واحدًا على الأقل أو كل الكورسات.';
+
+  @override
+  String get accessDatesInvalid =>
+      'يجب أن يكون تاريخ الانتهاء بعد تاريخ البداية.';
+
+  @override
+  String get accessExpiredShort => 'منتهية';
+
+  @override
+  String get blockedTitlePaused => 'تم إيقاف صلاحيتك مؤقتًا';
+
+  @override
+  String get blockedBodyPaused =>
+      'أوقفت ASEC صلاحيتك مؤقتًا. تواصل مع ASEC لاستئنافها — لن تخسر أيام الإيقاف.';
+
+  @override
+  String get blockedTitleExpired => 'انتهت مدة صلاحيتك';
+
+  @override
+  String blockedBodyExpired(String date) {
+    return 'انتهت صلاحيتك في $date. تواصل مع ASEC لتجديدها.';
+  }
+
+  @override
+  String get blockedTitleNotStarted => 'لم تبدأ صلاحيتك بعد';
+
+  @override
+  String blockedBodyNotStarted(String date) {
+    return 'تبدأ صلاحيتك في $date.';
+  }
+
+  @override
+  String get blockedTitlePlatform => 'غير متاح على هذا الجهاز';
+
+  @override
+  String blockedBodyPlatform(String platforms) {
+    return 'يمكن استخدام حسابك على: $platforms.';
+  }
+
+  @override
+  String get tbMember => 'العضو';
+
+  @override
+  String get tbThisDevice => 'هذا الجهاز';
+
+  @override
+  String get tbAllowedOn => 'مسموح على';
+
+  @override
+  String get tbStatus => 'الحالة';
+
+  @override
+  String get tbStarts => 'تبدأ';
+
+  @override
+  String get tbEnds => 'تنتهي';
+
+  @override
+  String get tbWrongDevice => 'جهاز غير مسموح';
+
+  @override
+  String get tbNotStarted => 'لم تبدأ';
+
+  @override
+  String get downloads => 'التنزيلات';
+
+  @override
+  String get downloadsSub =>
+      'دروس محفوظة داخل تطبيق ASEC لمشاهدتها بدون إنترنت. تبقى داخل التطبيق فقط.';
+
+  @override
+  String get downloadVideo => 'تنزيل للمشاهدة بدون إنترنت';
+
+  @override
+  String get downloadStarted => 'جارٍ التنزيل — ستجده في التنزيلات';
+
+  @override
+  String get downloadCancel => 'إلغاء التنزيل';
+
+  @override
+  String get downloadFailed => 'فشل التنزيل — اضغط للمحاولة مرة أخرى';
+
+  @override
+  String get downloadDone => 'تم التنزيل — اضغط للحذف';
+
+  @override
+  String downloadRemoveQuestion(String title) {
+    return 'حذف «$title» من التنزيلات؟';
+  }
+
+  @override
+  String get downloadRemoveBody =>
+      'سيبقى الدرس في الفيديوهات، لكنه لن يعمل بدون إنترنت بعد الآن.';
+
+  @override
+  String get downloadRemove => 'حذف';
+
+  @override
+  String get downloadsEmptyTitle => 'لا توجد تنزيلات بعد';
+
+  @override
+  String get downloadsEmptySub =>
+      'اضغط على أيقونة التنزيل في أي درس داخل الفيديوهات لمشاهدته بدون إنترنت.';
+
+  @override
+  String downloadsStorage(String size) {
+    return '$size مستخدمة على هذا الجهاز';
+  }
+
+  @override
+  String get downloadsRemoveAll => 'حذف الكل';
+
+  @override
+  String get downloadsRemoveAllQuestion => 'حذف كل التنزيلات؟';
 }

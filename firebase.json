@@ -1,1 +1,84 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"asec-a811b","appId":"1:484300137942:android:5b22873fcadfa14fbe7077","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"asec-a811b","appId":"1:484300137942:ios:04379e647b756c7ebe7077","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"asec-a811b","appId":"1:484300137942:ios:04379e647b756c7ebe7077","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"asec-a811b","configurations":{"android":"1:484300137942:android:5b22873fcadfa14fbe7077","ios":"1:484300137942:ios:04379e647b756c7ebe7077","macos":"1:484300137942:ios:04379e647b756c7ebe7077","web":"1:484300137942:web:11ccc78572f55104be7077","windows":"1:484300137942:web:5cb5b0da1451a146be7077"}}}}},"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"storage":{"rules":"storage.rules"}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "asec-a811b",
+          "appId": "1:484300137942:android:5b22873fcadfa14fbe7077",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "asec-a811b",
+          "appId": "1:484300137942:ios:04379e647b756c7ebe7077",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "asec-a811b",
+          "appId": "1:484300137942:ios:04379e647b756c7ebe7077",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "asec-a811b",
+          "configurations": {
+            "android": "1:484300137942:android:5b22873fcadfa14fbe7077",
+            "ios": "1:484300137942:ios:04379e647b756c7ebe7077",
+            "macos": "1:484300137942:ios:04379e647b756c7ebe7077",
+            "web": "1:484300137942:web:11ccc78572f55104be7077",
+            "windows": "1:484300137942:web:5cb5b0da1451a146be7077"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": {
+    "target": "web",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|wasm|mjs|json|png|jpg|webp|svg|ttf|otf|woff|woff2)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800"
+          }
+        ]
+      },
+      {
+        "source": "/@(index.html|flutter_bootstrap.js|flutter_service_worker.js|version.json|main.dart.js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
+  }
+}

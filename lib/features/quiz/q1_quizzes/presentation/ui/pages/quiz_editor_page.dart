@@ -15,6 +15,7 @@ import 'package:asec/core/constants/app_constants.dart';
 import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/custom/1-custom_dropdown.dart';
 import 'package:asec/core/custom/2-custom_textfield.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
@@ -24,19 +25,33 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_question.dart
 import 'package:asec/features/quiz/q1_quizzes/presentation/controller/quiz_editor_cubit.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/date_time_field.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/question_editor_card.dart';
+import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
+import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/generated/l10n.dart';
 
 class QuizEditorPage extends StatelessWidget {
-  const QuizEditorPage({super.key, this.quiz, required this.adminUid});
+  const QuizEditorPage({
+    super.key,
+    this.quiz,
+    required this.adminUid,
+    this.certificate = false,
+  });
 
   /// Null = a new quiz.
   final Quiz? quiz;
   final String adminUid;
 
+  /// A NEW quiz starts as a certificate quiz (a course's final exam).
+  final bool certificate;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<QuizEditorCubit>(
-      create: (_) => QuizEditorCubit(existing: quiz, adminUid: adminUid),
+      create: (_) => QuizEditorCubit(
+        existing: quiz,
+        adminUid: adminUid,
+        certificate: certificate,
+      ),
       child: const _QuizEditorView(),
     );
   }
@@ -59,6 +74,8 @@ class _QuizEditorView extends StatelessWidget {
         return s.questionsIncomplete;
       case QuizFormError.windowBackwards:
         return s.errWindowBackwards;
+      case QuizFormError.courseMissing:
+        return s.errChooseCourse;
     }
   }
 
@@ -207,6 +224,17 @@ class _SettingsColumnState extends State<_SettingsColumn> {
           ),
         ),
         SizedBox(height: 16.h),
+        if (quiz.certificate) ...<Widget>[
+          AppCard(
+            title: s.courseLabel,
+            caption: s.courseCaption,
+            child: _CoursePicker(
+              value: quiz.course,
+              onChanged: cubit.setCourse,
+            ),
+          ),
+          SizedBox(height: 16.h),
+        ],
         AppCard(
           title: s.timeLimit,
           caption: s.zeroUntimed,
@@ -259,7 +287,7 @@ class _SettingsColumnState extends State<_SettingsColumn> {
                   ),
                   trailing: Switch.adaptive(
                     value: quiz.published,
-                    activeTrackColor: AppColors.primary,
+                    activeTrackColor: AppColors.secondaryPrimary,
                     onChanged: cubit.setPublished,
                   ),
                 ),
@@ -332,6 +360,61 @@ class _QuestionsColumn extends StatelessWidget {
               .copyWith(color: AppColors.secondaryText),
         ),
       ],
+    );
+  }
+}
+
+/// The course a certificate quiz closes: one of the video categories (Drive
+/// sub-folders). A course that no longer has videos is still offered, so an
+/// existing quiz never loses its value.
+class _CoursePicker extends StatefulWidget {
+  const _CoursePicker({required this.value, required this.onChanged});
+
+  final String value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  State<_CoursePicker> createState() => _CoursePickerState();
+}
+
+class _CoursePickerState extends State<_CoursePicker> {
+  late final Stream<List<VideoItem>> _videos = VideoRepository().watchAll();
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return StreamBuilder<List<VideoItem>>(
+      stream: _videos,
+      builder: (BuildContext context, AsyncSnapshot<List<VideoItem>> snap) {
+        final Map<String, int> order = <String, int>{};
+        for (final VideoItem v in snap.data ?? const <VideoItem>[]) {
+          final String c = v.category.trim();
+          if (c.isEmpty) continue;
+          final int o = v.categoryOrder > 0 ? v.categoryOrder : 1 << 20;
+          if (!order.containsKey(c) || o < order[c]!) order[c] = o;
+        }
+        final List<String> courses = order.keys.toList()
+          ..sort((String a, String b) {
+            final int c = order[a]!.compareTo(order[b]!);
+            return c != 0 ? c : a.toLowerCase().compareTo(b.toLowerCase());
+          });
+        final String current = widget.value.trim();
+        if (current.isNotEmpty && !courses.contains(current)) {
+          courses.insert(0, current);
+        }
+
+        return CustomDropdown<String>(
+          value: current.isEmpty ? null : current,
+          hint: s.chooseCourse,
+          required: true,
+          prefixIcon: Icon(Icons.folder_rounded, color: AppColors.primary, size: 20),
+          items: <DropdownItem<String>>[
+            for (final String c in courses)
+              DropdownItem<String>(value: c, label: c),
+          ],
+          onChanged: widget.onChanged,
+        );
+      },
     );
   }
 }

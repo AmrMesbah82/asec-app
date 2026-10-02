@@ -158,6 +158,30 @@ class AuthRepository implements AuthBaseRepository {
 
   @override
   Future<void> signOut() => _remote.signOut();
+
+  @override
+  Future<Either<AuthFailureType, Unit>> deleteAccount(String password) async {
+    if (AppFirebase.notConfigured) {
+      return const Left(AuthFailureType.notConfigured);
+    }
+    try {
+      await _remote.deleteAccount(password).timeout(_timeout);
+      return const Right(unit);
+    } on TimeoutException {
+      return const Left(AuthFailureType.network);
+    } on FirebaseAuthException catch (error) {
+      _log('delete account failed: ${error.code}');
+      return Left(AuthFailureType.fromCode(error.code));
+    } on FirebaseException catch (error) {
+      _log('delete account data failed: ${error.code}');
+      return Left(error.code == 'permission-denied'
+          ? AuthFailureType.rulesDenied
+          : AuthFailureType.firestoreUnavailable);
+    } catch (error) {
+      _log('unexpected: $error');
+      return const Left(AuthFailureType.unknown);
+    }
+  }
 }
 
 class UsersRepository implements UsersBaseRepository {
@@ -183,4 +207,16 @@ class UsersRepository implements UsersBaseRepository {
   @override
   Future<Either<AppFailure, Unit>> setCanCreateCv(String uid, bool allowed) =>
       guardUnit(() => _remote.setCanCreateCv(uid, allowed));
+
+  @override
+  Future<Either<AppFailure, Unit>> setAccess(String uid, Map<String, dynamic> access) =>
+      guardUnit(() => _remote.setAccess(uid, access));
+
+  @override
+  Future<Either<AppFailure, Unit>> pauseAccess(String uid) =>
+      guardUnit(() => _remote.pauseAccess(uid));
+
+  @override
+  Future<Either<AppFailure, Unit>> resumeAccess(AppUser member) =>
+      guardUnit(() => _remote.resumeAccess(member));
 }

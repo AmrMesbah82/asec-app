@@ -264,8 +264,8 @@ abstract final class DemoSeed {
           'What every engineer does in their first hour on a site: the walk, '
           'the permits, the personal protective equipment and who to report to.',
       url:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      sizeBytes: 2299653,
+          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4',
+      sizeBytes: 1978137,
       addedDaysAgo: 41,
     ),
     DemoVideo(
@@ -276,8 +276,8 @@ abstract final class DemoSeed {
           'takes one page apart: item, unit, quantity, rate and what each of '
           'them binds you to.',
       url:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-      sizeBytes: 2634010,
+          'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_2MB.mp4',
+      sizeBytes: 2096842,
       addedDaysAgo: 27,
     ),
     DemoVideo(
@@ -287,8 +287,8 @@ abstract final class DemoSeed {
           'The four things a consultant checks first, and the comments you can '
           'answer before they are ever written.',
       url:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-      sizeBytes: 2969487,
+          'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_2MB.mp4',
+      sizeBytes: 2094185,
       addedDaysAgo: 14,
     ),
     DemoVideo(
@@ -298,9 +298,75 @@ abstract final class DemoSeed {
           'Activities, relationships, calendars and the one mistake that makes '
           'every later update lie to you.',
       url:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      sizeBytes: 16906956,
+          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_10MB.mp4',
+      sizeBytes: 10218838,
       addedDaysAgo: 6,
+    ),
+    DemoVideo(
+      slug: 'concrete',
+      title: 'Concrete pouring and curing',
+      description:
+          'Slump test, vibration, cold joints and the seven days after the '
+          'pour that decide how strong the slab really is.',
+      url:
+          'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4',
+      sizeBytes: 1047967,
+      addedDaysAgo: 38,
+    ),
+    DemoVideo(
+      slug: 'rebar',
+      title: 'Checking rebar before the pour',
+      description:
+          'Cover, spacing, laps and chairs: the inspection you sign for, and '
+          'the photos that prove you did it.',
+      url:
+          'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4',
+      sizeBytes: 1047954,
+      addedDaysAgo: 33,
+    ),
+    DemoVideo(
+      slug: 'surveying',
+      title: 'Site surveying and setting out',
+      description:
+          'Benchmarks, grid lines and levels — how a building gets from the '
+          'drawing onto the ground in the right place.',
+      url:
+          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4',
+      sizeBytes: 4999379,
+      addedDaysAgo: 21,
+    ),
+    DemoVideo(
+      slug: 'variations',
+      title: 'Variation orders without the argument',
+      description:
+          'What counts as a variation, how to price it, and the notice letter '
+          'that protects your entitlement to time and money.',
+      url:
+          'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_5MB.mp4',
+      sizeBytes: 5241877,
+      addedDaysAgo: 17,
+    ),
+    DemoVideo(
+      slug: 'qaqc',
+      title: 'QA/QC: inspection requests that pass',
+      description:
+          'Writing an inspection request, the checklist the consultant uses, '
+          'and closing a non-conformance report properly.',
+      url:
+          'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_5MB.mp4',
+      sizeBytes: 5242780,
+      addedDaysAgo: 10,
+    ),
+    DemoVideo(
+      slug: 'reporting',
+      title: 'Daily and weekly site reports',
+      description:
+          'Manpower, equipment, progress and delays — a report the project '
+          'manager can read in two minutes and trust.',
+      url:
+          'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_10MB.mp4',
+      sizeBytes: 10485794,
+      addedDaysAgo: 4,
     ),
     // Unpublished on purpose: members must NOT see this one, and the admin's
     // list must show it as a draft.
@@ -311,8 +377,8 @@ abstract final class DemoSeed {
           'Not finished yet — it is here so the admin list has a draft in it '
           'and the member list can be checked for hiding it.',
       url:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      sizeBytes: 158008374,
+          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
+      sizeBytes: 969201,
       addedDaysAgo: 2,
       published: false,
     ),

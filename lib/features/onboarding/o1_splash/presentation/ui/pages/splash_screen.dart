@@ -7,14 +7,17 @@
 /// Author: ASEC team
 /// Created: 19/9/2026
 
+import 'package:dartz/dartz.dart' show Either, Unit;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:asec/core/constants/app_constants.dart';
+import 'package:asec/core/custom/83-loading.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/pages/admin_shell.dart';
 import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_failure_type.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/pages/sign_in_screen.dart';
@@ -71,6 +74,30 @@ abstract final class AppRouter {
     navigator.pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const SignInScreen()),
       (Route<dynamic> _) => false,
+    );
+  }
+
+  /// Deletes the signed-in account and, on success, returns to the sign-in
+  /// screen with nothing behind it. On failure nothing moves and the failure
+  /// comes back for the caller to show.
+  static Future<AuthFailureType?> deleteAccount(
+    BuildContext context,
+    String password,
+  ) async {
+    final NavigatorState navigator = Navigator.of(context);
+    showLoadingIndicator();
+    final Either<AuthFailureType, Unit> result =
+        await SessionController.to.deleteAccount(password);
+    hideLoadingIndicator();
+    return result.fold(
+      (AuthFailureType failure) => failure,
+      (_) {
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute<void>(builder: (_) => const SignInScreen()),
+          (Route<dynamic> _) => false,
+        );
+        return null;
+      },
     );
   }
 }

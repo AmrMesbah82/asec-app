@@ -1,6 +1,6 @@
 # ASEC — setup
 
-Videos and timed quizzes. One admin (`adminamr@gmail.com`), everybody else is a
+Videos and timed quizzes. One admin (`amrmesbah33@gmail.com`), everybody else is a
 member. Same architecture, core widgets and theme as **manger_plus**.
 
 ## 1. First run
@@ -35,7 +35,7 @@ There is no special setup screen. Open the app, tap **Create account**, and
 register with:
 
 ```
-adminamr@gmail.com
+amrmesbah33@gmail.com
 ```
 
 The role follows the email in two places that must stay in step:
@@ -49,6 +49,90 @@ the rules refuse a `role: "admin"` profile written by any other email.
 
 To change the admin address later, change it in **all three** files and
 redeploy the rules.
+
+## 3b. Admins and the control centre
+
+`amrmesbah33@gmail.com` is the **super admin**. In **Settings** it gets two extra
+cards:
+
+* **Admins** — *Add admin* creates a login (name, email, password) and picks
+  what they may manage: Dashboard, Videos, Quizzes, Results, Members, CVs.
+  Each admin only sees the menu items they are allowed, and
+  `firestore.rules` / `storage.rules` enforce the same list. Admins can be
+  switched off, have their permissions edited, or be removed.
+* **Control centre** — switches, saved live in Firestore `settings/app`, that
+  turn parts of the app on or off for everybody: the member menu items,
+  every video option (lock order, block skipping, autoplay, up next, options
+  bar, speed, resume, search, progress bar), animations, new sign-ups, and
+  the dashboard charts / table.
+
+Deploy the rules after updating:
+
+    firebase deploy --only firestore:rules,storage
+
+## 3c. The website and its control panel (lib/features/web/)
+
+The asecbim website (a copy of asecbim.com whose content lives in this same
+Firebase project) and its control panel are now **part of this app** — the
+separate `asec_web/` project is gone (its old copy is in
+`Claude outputs/_to_delete/asec_web`).
+
+```
+lib/features/web/
+  web_control_page.dart   the "Website" tab of the admin drawer
+  web_main.dart           second entry point: the public site + /admin on the web
+  admin/                  panel: session, menu, fields, pages, panel_nav.dart
+  core/                   Doc, L (ar/en), WebColors/WebTheme, router, widgets
+  data/                   SiteRepo (site_* collections), WordPress importers
+  site/                   the public site's pages and widgets
+assets/web/               logo + starter content (site_seed.json)
+web_site/                 host page (index.html, icons) for the site build
+tool/build_site.sh        builds the site with web_site/ as its host page
+```
+
+**In the app.** An admin with the **Website** permission
+(`AdminPermission.website`, Settings → Admins) — and the super admin — gets a
+**Website** item in the drawer. It opens the whole panel beside the drawer:
+Dashboard, Inbox, Site settings, Services, Why us, Projects, Articles,
+Partners, Testimonials, Control centre, Admins (super admin), Import content.
+Its own menu is a side list on a wide screen and a row of chips on a narrow
+one; editors open inside the page. It follows the app's language switch
+(Arabic / English) and its light / dark switch — its neutral colours are the
+app's own (`WebPalette`, `lib/features/web/core/theme.dart`). Every icon is an
+SVG: `AppIcon` draws the file mapped in `AppSvgIcons` (core/custom/
+111-app_svg_icon.dart); the website's own icons are in
+`assets/icons_assets/web_assets/`. A new icon in the web code needs a line
+there too.
+
+**The public site** is still its own web build, served on a subdomain (e.g.
+`app.asecbim.com`); the WordPress site on the root domain is untouched:
+
+    flutter run -d chrome -t lib/features/web/web_main.dart   # try it locally
+    ./tool/build_site.sh                                      # build
+    firebase deploy --only hosting:web                        # publish
+
+`firebase.json` has the `web` hosting target and `.firebaserc` maps it to the
+`asecbim-web` site. Rules for the `site_*` collections and `site/` images are
+at the bottom of `firestore.rules` / `storage.rules`:
+
+    firebase deploy --only firestore:rules,storage
+
+If Storage images do not show in the browser, apply CORS once:
+
+    gsutil cors set storage.cors.json gs://asec-a811b.firebasestorage.app
+
+"View site" in the app's Website tab opens a **preview of the site inside
+the app** (`site_preview_page.dart`) — the real pages with the live content,
+so it works before the site is published. Its "Open live link" button opens
+`kWebsiteUrl` (`lib/features/web/admin/panel_nav.dart`), which shows
+Firebase's "Site Not Found" page until the site has been deployed once:
+
+    firebase hosting:sites:create asecbim-web   # only the first time
+    ./tool/build_site.sh
+    firebase deploy --only hosting:web
+
+Change `kWebsiteUrl` to your domain once it is live. A switch added to `AppFeature` must also be added to `kAppSwitches`
+in `lib/features/web/admin/pages/control_page.dart`.
 
 ## 4. Data
 
@@ -68,7 +152,7 @@ the client.
 
 Signed in as the admin, **Settings → Demo data → Fill demo data** writes a
 complete sample set: six members (one switched off, one without CV rights),
-five videos (one still a draft), five quizzes (timed, untimed, inside a
+eleven videos (ten published, one still a draft), five quizzes (timed, untimed, inside a
 window, already closed, and an unpublished draft), fourteen attempts and four
 CVs — one in each review state. Every screen in both the admin and the member
 side then has something real to draw.
@@ -86,6 +170,26 @@ side then has something real to draw.
 
 * Pressing Fill twice refreshes the same documents — the ids are fixed
   (`demo_q_safety`, `demo_v_boq`, …), so nothing is duplicated.
+
+## 4c. Screen capture protection
+
+Screenshots and screen recordings are blocked app-wide, in native code:
+
+| Platform | Where | What happens |
+|---|---|---|
+| Android | `MainActivity.kt` — `FLAG_SECURE` | Screenshot refused; recordings / casting show black |
+| iOS | `SceneDelegate.swift` — secure-field layer + `isCaptured` cover | Screenshots and recordings come out black |
+| macOS | `MainFlutterWindow.swift` — `sharingType = .none` | Window left out of screenshots / recordings |
+| Windows | `flutter_window.cpp` — `WDA_EXCLUDEFROMCAPTURE` | Window captured as black |
+| Web | — | Not possible in a browser |
+
+Nothing stops a second phone filming the screen.
+
+**Switch.** Settings → Control centre → *Block screenshots* (also in the
+website panel's Control centre). On by default; switched off, every open app
+lifts the block within a second (`lib/core/settings/screen_protection.dart`
+→ channel `asec/screen_protection` → the native files above). Apps always
+start protected and lift it once the setting has loaded.
 
 ## 5. The two times on a quiz
 

@@ -33,6 +33,10 @@ class DashboardCharts extends StatelessWidget {
   final DashboardData data;
 
   static const double _cardHeight = 300;
+
+  /// Phones get a shorter card: a 300-tall chart is most of a phone screen.
+  static double _h(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < 600 ? 220 : _cardHeight;
   static const double _breakpoint = 1000;
 
   @override
@@ -101,7 +105,7 @@ class DashboardCharts extends StatelessWidget {
     return DonutChartCard(
       title: s.scoreBands,
       caption: s.allQuizzesAvg,
-      height: _cardHeight.h,
+      height: _h(context).h,
       expandChild: true,
       chartSize: 140,
       ringWidth: 26,
@@ -130,7 +134,7 @@ class DashboardCharts extends StatelessWidget {
     return BarChartCard(
       title: s.attemptsByDay,
       caption: s.last7Days,
-      height: _cardHeight.h,
+      height: _h(context).h,
       expandChild: true,
       barColor: AppColors.primary,
       emptyMessage: s.noResultsYet,
@@ -150,7 +154,7 @@ class DashboardCharts extends StatelessWidget {
     return HorizontalBarChartCard(
       title: s.averageByQuiz,
       caption: s.averageScoreLabel,
-      height: _cardHeight.h,
+      height: _h(context).h,
       expandChild: true,
       // Always 0..100: a percentage axis that rescales to the best score makes
       // a class average of 40 look like a full bar.
@@ -172,7 +176,7 @@ class DashboardCharts extends StatelessWidget {
     return HorizontalBarChartCard(
       title: s.topMembers,
       caption: s.averageScoreLabel,
-      height: _cardHeight.h,
+      height: _h(context).h,
       expandChild: true,
       maxX: 100,
       suffix: '%',

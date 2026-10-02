@@ -20,7 +20,15 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_question.dart
 enum QuizEditorStatus { editing, saving, saved, failure }
 
 /// What the form got wrong locally, before anything reached Firestore.
-enum QuizFormError { titleEmpty, noQuestions, questionsIncomplete, windowBackwards }
+enum QuizFormError {
+  titleEmpty,
+  noQuestions,
+  questionsIncomplete,
+  windowBackwards,
+
+  /// A certificate quiz must say which course it closes.
+  courseMissing,
+}
 
 class QuizEditorState {
   final Quiz quiz;
@@ -57,6 +65,7 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
   QuizEditorCubit({
     Quiz? existing,
     required this.adminUid,
+    bool certificate = false,
     QuizBaseRepository? repository,
   })  : _repository = repository ?? QuizRepository(),
         _isNew = existing == null,
@@ -66,6 +75,7 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
                 id: '',
                 title: '',
                 createdBy: adminUid,
+                certificate: certificate,
                 questions: <QuizQuestion>[QuizQuestion.blank(_freshId())],
               ),
         ));
@@ -111,6 +121,11 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
 
   void setClosesAt(DateTime? value) => emit(state.copyWith(
         quiz: state.quiz.copyWith(closesAt: value),
+        clearErrors: true,
+      ));
+
+  void setCourse(String? value) => emit(state.copyWith(
+        quiz: state.quiz.copyWith(course: value ?? ''),
         clearErrors: true,
       ));
 
@@ -183,6 +198,9 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
       return QuizFormError.questionsIncomplete;
     }
     if (!quiz.hasValidWindow) return QuizFormError.windowBackwards;
+    if (quiz.certificate && quiz.course.trim().isEmpty) {
+      return QuizFormError.courseMissing;
+    }
     return null;
   }
 

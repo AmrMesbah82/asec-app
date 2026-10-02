@@ -256,15 +256,36 @@ class CustomColorPickerSection extends StatelessWidget {
       builder: (BuildContext context, BoxConstraints constraints) {
         final bool stacked = constraints.maxWidth < 420;
 
-        final Widget primary = CustomColorPickerField(
-          label: S.of(context).primaryColor,
-          color: primaryColor,
-          onColorSelected: onPrimaryColorSelected,
+        // The name above each field: once a colour is set the field shows
+        // only its hex code, so without it you cannot tell which is which.
+        Widget labelled(String name, Widget field) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  name,
+                  style: StyleText.fontSize12Weight600.copyWith(color: AppColors.text),
+                ),
+                SizedBox(height: 6.h),
+                field,
+              ],
+            );
+
+        final Widget primary = labelled(
+          S.of(context).primaryColor,
+          CustomColorPickerField(
+            label: S.of(context).primaryColor,
+            color: primaryColor,
+            onColorSelected: onPrimaryColorSelected,
+          ),
         );
-        final Widget secondary = CustomColorPickerField(
-          label: S.of(context).secondaryColor,
-          color: secondaryColor,
-          onColorSelected: onSecondaryColorSelected,
+        final Widget secondary = labelled(
+          S.of(context).secondaryColor,
+          CustomColorPickerField(
+            label: S.of(context).secondaryColor,
+            color: secondaryColor,
+            onColorSelected: onSecondaryColorSelected,
+          ),
         );
 
         return Column(

@@ -18,6 +18,7 @@ import 'package:get/get.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:asec/core/animation/app_animations.dart';
 import './app_font_weights.dart';
 
 abstract class AppTheme {
@@ -47,6 +48,7 @@ abstract class AppTheme {
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
 
+    pageTransitionsTheme: appPageTransitions,
     colorScheme: ColorScheme.light(
       primary: AppColors.secondaryPrimary,
       onPrimary: Colors.white,
@@ -137,6 +139,7 @@ abstract class AppTheme {
     splashFactory: NoSplash.splashFactory,  // ADD THIS
     highlightColor: Colors.transparent,     // ADD THIS
     splashColor: Colors.transparent,        // ADD THIS
+    pageTransitionsTheme: appPageTransitions,
     colorScheme: ColorScheme.dark(
       primary: AppColors.secondaryPrimary,
       onPrimary: Colors.white,

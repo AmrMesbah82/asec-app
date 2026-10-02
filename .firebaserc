@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "asec-a811b"
+  },
+  "targets": {
+    "asec-a811b": {
+      "hosting": {
+        "web": [
+          "asecbim-web"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

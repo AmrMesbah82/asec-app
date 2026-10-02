@@ -8,11 +8,14 @@
 
 import 'dart:async';
 
+import 'package:dartz/dartz.dart' show Either, Unit;
 import 'package:get/get.dart';
 
 import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/base_repository/auth_base_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_failure_type.dart';
+import 'package:asec/core/settings/app_features.dart';
 
 /// The signed-in account, app-wide.
 ///
@@ -50,6 +53,7 @@ class SessionController extends GetxController {
   /// Starts following [signedIn]'s profile document.
   void start(AppUser signedIn) {
     user.value = signedIn;
+    AppFeatures.to.listen();
     _sub?.cancel();
     _sub = _users.watchUser(signedIn.uid).listen(
       (AppUser? live) {
@@ -72,6 +76,29 @@ class SessionController extends GetxController {
     // and each would open queries it is no longer allowed to run.
     onDeactivated = null;
     await _auth.signOut();
+  }
+
+  /// Deletes the signed-in account for good.
+  ///
+  /// The live profile subscription is stopped FIRST: deleting `users/{uid}`
+  /// would otherwise fire [onDeactivated] mid-way and race the caller's own
+  /// navigation. If the delete fails, the subscription is started again so
+  /// the session carries on exactly as before.
+  Future<Either<AuthFailureType, Unit>> deleteAccount(String password) async {
+    final AppUser before = current;
+    final void Function()? deactivated = onDeactivated;
+    await _sub?.cancel();
+    _sub = null;
+    onDeactivated = null;
+
+    final Either<AuthFailureType, Unit> result =
+        await _auth.deleteAccount(password);
+
+    if (result.isLeft() && before.uid.isNotEmpty) {
+      onDeactivated = deactivated;
+      start(before);
+    }
+    return result;
   }
 
   @override

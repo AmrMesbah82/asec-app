@@ -91,6 +91,29 @@ class CustomDialogManager {
         lottieAsset: lottieAsset,
       );
 
+  /// One field and a confirm — e.g. the password re-prompt before deleting
+  /// the account. Resolves to the trimmed text, or null if cancelled.
+  static Future<String?> showInput({
+    required BuildContext context,
+    required String title,
+    String subtitle = '',
+    String fieldLabel = '',
+    String hint = '',
+    required String submitLabel,
+    required String cancelLabel,
+    bool obscureText = false,
+  }) =>
+      showInputDialog(
+        context: context,
+        title: title,
+        subtitle: subtitle,
+        fieldLabel: fieldLabel,
+        hint: hint,
+        submitLabel: submitLabel,
+        cancelLabel: cancelLabel,
+        obscureText: obscureText,
+      );
+
   static Future<void> showSuccess({
     required BuildContext context,
     required String title,

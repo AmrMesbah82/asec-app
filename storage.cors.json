@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["https://app.asecbim.com", "https://asecbim-web.web.app", "http://localhost:*"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]

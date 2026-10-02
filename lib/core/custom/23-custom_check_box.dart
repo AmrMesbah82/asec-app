@@ -3,8 +3,10 @@
 ///*************************** FILE INFO ****************************///
 /// File Name: custom_check_box.dart
 /// Purpose: Declares `CustomCheckBox`.
-/// Author: Manger Plus team
+/// Author: Knowticed Plus team
 /// Updated: 11/8/2026 - Added the standard module + FILE INFO header.
+/// Updated: 1/10/2026 - Back to the Knowticed Plus design: an outlined box
+///          when empty, a filled box with a check icon when ticked.
 
 /// ******************* FILE INFO *******************
 /// File Name: custom_check_box.dart
@@ -14,10 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:asec/core/constants/app_assets.dart';
-import 'package:asec/core/custom/32-custom_svg.dart';
 import 'package:asec/core/theme/app_colors.dart';
-import 'package:asec/core/theme/app_radius.dart';
 
 class CustomCheckBox extends StatelessWidget {
   CustomCheckBox(
@@ -31,21 +30,16 @@ class CustomCheckBox extends StatelessWidget {
       width: size ?? 22.sp,
       height: size ?? 22.sp,
       decoration: BoxDecoration(
-        // CHANGED 4/9/2026: unchecked was a 1.5 outline over transparent, the
-        // last outlined control in the app. It is a filled well now — the same
-        // "empty box" reading, drawn the way every other surface here is.
-        color: isSelected ? AppColors.secondaryPrimary : AppColors.field,
-        borderRadius: AppRadius.containerR,
+        color: isSelected ? AppColors.secondaryPrimary : AppColors.transparent,
+        borderRadius: BorderRadius.circular(4.r),
+        border: isSelected
+            ? null
+            : Border.all(color: AppColors.secondaryText.withOpacity(.5), width: 1.5.sp),
       ),
       child: Center(
-        child: CustomSvgImage(
-          assetPath: AppAssets.success,
-          width: (size ?? 22.sp) - 7.sp,
-          height: (size ?? 22.sp) - 7.sp,
-          color: isSelected
-              ? AppColors.secondaryPrimaryText
-              : AppColors.transparent,
-        ),
+        child: Icon(Icons.check_rounded,
+            size: (size ?? 22.sp) - 7.sp,
+            color: isSelected ? AppColors.secondaryPrimaryText : AppColors.transparent),
       ),
     );
   }

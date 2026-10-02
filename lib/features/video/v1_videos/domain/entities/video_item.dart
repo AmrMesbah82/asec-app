@@ -20,6 +20,24 @@ class VideoItem {
   final String storagePath;
 
   final int sizeBytes;
+
+  /// The category (Drive sub-folder) the video belongs to, e.g.
+  /// "GENERAL NOTES". Empty = no category (shown under "General").
+  final String category;
+
+  /// Position of [category] among the categories (folder order), so the
+  /// category list keeps the Drive folder's order.
+  final int categoryOrder;
+
+  /// The sub-folder inside [category] the video sits in, e.g.
+  /// "Introduction-01" inside "AutoCAD". Empty = straight in the category
+  /// folder. A category with more than one sub-folder shows them as a second
+  /// level of folders in the app.
+  final String subcategory;
+
+  /// Position of [subcategory] inside its category (folder order).
+  final int subcategoryOrder;
+
   final bool published;
   final String createdBy;
   final DateTime? createdAt;
@@ -31,6 +49,10 @@ class VideoItem {
     this.url = '',
     this.storagePath = '',
     this.sizeBytes = 0,
+    this.category = '',
+    this.categoryOrder = 0,
+    this.subcategory = '',
+    this.subcategoryOrder = 0,
     this.published = true,
     this.createdBy = '',
     this.createdAt,
@@ -50,6 +72,10 @@ class VideoItem {
     String? url,
     String? storagePath,
     int? sizeBytes,
+    String? category,
+    int? categoryOrder,
+    String? subcategory,
+    int? subcategoryOrder,
     bool? published,
     String? createdBy,
   }) {
@@ -60,6 +86,10 @@ class VideoItem {
       url: url ?? this.url,
       storagePath: storagePath ?? this.storagePath,
       sizeBytes: sizeBytes ?? this.sizeBytes,
+      category: category ?? this.category,
+      categoryOrder: categoryOrder ?? this.categoryOrder,
+      subcategory: subcategory ?? this.subcategory,
+      subcategoryOrder: subcategoryOrder ?? this.subcategoryOrder,
       published: published ?? this.published,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt,

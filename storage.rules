@@ -5,10 +5,27 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    function isAdmin() {
+    function isSuper() {
       return request.auth != null
         && request.auth.token.email != null
-        && request.auth.token.email.lower() == 'adminamr@gmail.com';
+        && request.auth.token.email.lower() == 'amrmesbah33@gmail.com';
+    }
+
+    // An admin created by the super admin, looked up in Firestore.
+    function adminDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function can(p) {
+      return isSuper()
+        || (request.auth != null
+            && adminDoc().role == 'admin'
+            && adminDoc().active == true
+            && adminDoc().get('permissions', []).hasAny([p]));
+    }
+
+    function isAdmin() {
+      return can('videos') || can('cvs');
     }
 
     // videos/{uid}/{timestamp}_{name}
@@ -17,7 +34,7 @@ service firebase.storage {
 
       // 500 MB, and it has to actually be a video — the app caps the size
       // too, but the bucket is the boundary that counts.
-      allow write: if isAdmin()
+      allow write: if can('videos')
         && request.resource.size < 500 * 1024 * 1024
         && request.resource.contentType.matches('video/.*');
 
@@ -57,6 +74,16 @@ service firebase.storage {
 
       allow delete: if request.auth != null
         && (request.auth.uid == uid || isAdmin());
+    }
+
+    // site/{folder}/{timestamp}_{name} — images for the website (asec_web).
+    // Public to read; admins with the 'website' permission upload them.
+    match /site/{folder}/{fileName} {
+      allow read: if true;
+      allow write: if can('website')
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if can('website');
     }
 
     // Nothing else is writable from a client.

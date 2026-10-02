@@ -43,18 +43,33 @@ class QuizCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
+      // COMPACT: title and description on one line each, the chips on one
+      // line that scrolls sideways instead of wrapping — about half the
+      // height the card used to take.
       child: AppCard(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                AppIcon(
-                  Icons.quiz_outlined,
-                  size: 22.sp,
-                  color: AppColors.primary,
+                Container(
+                  width: 36.r,
+                  height: 36.r,
+                  decoration: BoxDecoration(
+                    color: AppColors.chip,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Center(
+                    child: AppIcon(
+                      quiz.certificate
+                          ? Icons.workspace_premium_rounded
+                          : Icons.quiz_outlined,
+                      size: 19.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
@@ -64,52 +79,63 @@ class QuizCard extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         quiz.title,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: StyleText.fontSize16Weight600,
+                        style: StyleText.fontSize15Weight600,
                       ),
-                      if (quiz.description.trim().isNotEmpty) ...<Widget>[
-                        SizedBox(height: 4.h),
+                      if (quiz.description.trim().isNotEmpty)
                         Text(
                           quiz.description,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: StyleText.fontSize13Weight400
+                          style: StyleText.fontSize12Weight400
                               .copyWith(color: AppColors.secondaryText),
                         ),
-                      ],
                     ],
                   ),
                 ),
                 if (trailing != null) trailing!,
               ],
             ),
-            SizedBox(height: 12.h),
-            Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children: <Widget>[
-                QuizChip(
-                  icon: Icons.rule_rounded,
-                  label: s.questionsCount('${quiz.questionCount}'),
-                ),
-                QuizChip(
-                  icon: Icons.timer_outlined,
-                  label: quiz.isTimed
-                      ? s.minutesShort('${quiz.durationMinutes}')
-                      : s.untimed,
-                ),
-                QuizWindowLabel(quiz: quiz),
-                if (!quiz.published)
+            SizedBox(height: 10.h),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: <Widget>[
+                  if (quiz.certificate) ...<Widget>[
+                    QuizChip(
+                      icon: Icons.folder_rounded,
+                      label: quiz.course.isEmpty ? s.chooseCourse : quiz.course,
+                      color: quiz.course.isEmpty ? AppColors.statusPending : null,
+                    ),
+                    SizedBox(width: 6.w),
+                  ],
                   QuizChip(
-                    icon: Icons.edit_note_rounded,
-                    label: s.draft,
-                    color: AppColors.statusPending,
+                    icon: Icons.rule_rounded,
+                    label: s.questionsCount('${quiz.questionCount}'),
                   ),
-              ],
+                  SizedBox(width: 6.w),
+                  QuizChip(
+                    icon: Icons.timer_outlined,
+                    label: quiz.isTimed
+                        ? s.minutesShort('${quiz.durationMinutes}')
+                        : s.untimed,
+                  ),
+                  SizedBox(width: 6.w),
+                  QuizWindowLabel(quiz: quiz),
+                  if (!quiz.published) ...<Widget>[
+                    SizedBox(width: 6.w),
+                    QuizChip(
+                      icon: Icons.edit_note_rounded,
+                      label: s.draft,
+                      color: AppColors.statusPending,
+                    ),
+                  ],
+                ],
+              ),
             ),
             if (footer != null) ...<Widget>[
-              SizedBox(height: 10.h),
+              SizedBox(height: 8.h),
               footer!,
             ],
           ],

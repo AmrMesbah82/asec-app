@@ -9,13 +9,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/constants/app_assets.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
 
-/// A glyph on a brand gradient, with the name beside or beneath it.
-/// Drawn in code so it follows the branding colours automatically.
+/// The ASEC logo (the same as the website's), with the name beside or
+/// beneath it.
 class BrandMark extends StatelessWidget {
   const BrandMark({
     super.key,
@@ -34,30 +34,32 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget mark = Container(
-      width: size.r,
-      height: size.r,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[AppColors.primary, AppColors.secondaryPrimary],
-        ),
-        borderRadius: BorderRadius.circular((size * 0.3).r),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.35),
-            blurRadius: 18.sp,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: AppIcon(
-        Icons.play_circle_fill_rounded,
-        color: Colors.white,
-        size: (size * 0.56).r,
-      ),
+    // The website's logo (asecbim.com). On a dark / gradient background it
+    // sits on a white tile so its blue and red keep their contrast.
+    final Widget logo = Image.asset(
+      AppAssets.brandLogo,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.medium,
     );
+    final Widget mark = onDark
+        ? Container(
+            width: size.r,
+            height: size.r,
+            padding: EdgeInsets.all((size * 0.14).r),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular((size * 0.3).r),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 18.sp,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: logo,
+          )
+        : SizedBox(width: size.r, height: size.r, child: logo);
 
     if (!showName) return mark;
 

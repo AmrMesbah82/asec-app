@@ -23,6 +23,11 @@ import 'package:asec/core/theme/theme_controller.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/core/settings/app_connectivity.dart';
+import 'package:asec/core/settings/app_integrity.dart';
+import 'package:asec/core/settings/screen_protection.dart';
+import 'package:asec/core/settings/super_admin_bootstrap.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,9 +39,22 @@ Future<void> main() async {
   // sign-in screen says so instead of spinning forever.
   await AppFirebase.initialize();
 
+  // Debug only, and only with --dart-define=SUPER_ADMIN_PASSWORD=…: creates
+  // the super admin account on first launch (super_admin_bootstrap.dart).
+  await SuperAdminBootstrap.run();
+
   Get.put(ThemeController(), permanent: true);
   Get.put(HapticController(), permanent: true);
   Get.put(SessionController(), permanent: true);
+  Get.put(AppFeatures(), permanent: true);
+  // Screenshot block on / off, following the Control centre switch.
+  ScreenProtection.start();
+  // Release builds refuse to run with developer options, a debugger, root /
+  // jailbreak or hooking tools (lib/core/settings/app_integrity.dart).
+  AppIntegrity.start();
+  // No internet (phone, tablet, Mac, Windows) → the app closes to the unit converter
+  // until the connection is back (lib/core/settings/app_connectivity.dart).
+  AppConnectivity.start();
 
   runApp(const AsecApp());
 }
@@ -122,7 +140,9 @@ class AsecApp extends StatelessWidget {
             builder: (BuildContext context, Widget? widget) => Directionality(
               textDirection:
                   language == 'ar' ? TextDirection.rtl : TextDirection.ltr,
-              child: widget ?? const SizedBox.shrink(),
+              child: AppIntegrity.gate(
+                AppConnectivity.gate(widget ?? const SizedBox.shrink()),
+              ),
             ),
             home: const SplashScreen(),
           );

@@ -23,6 +23,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart'
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/attempt_detail_page.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 class QuizAttemptsPage extends StatelessWidget {
   QuizAttemptsPage({super.key, required this.quiz});
@@ -83,7 +84,7 @@ class QuizAttemptsPage extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(height: 10.h),
             itemBuilder: (BuildContext context, int index) {
               if (index == 0) {
-                return AppCard(
+                return FadeSlideIn(child: AppCard(
                   child: Row(
                     children: <Widget>[
                       Expanded(
@@ -106,10 +107,10 @@ class QuizAttemptsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                );
+                ));
               }
               final QuizAttempt attempt = attempts[index - 1];
-              return _AttemptRow(
+              return FadeSlideIn(delay: staggerDelay(index, stepMs: 40), child: _AttemptRow(
                 attempt: attempt,
                 // The row answers "how did they do"; the page behind it
                 // answers "what did they actually put".
@@ -121,7 +122,7 @@ class QuizAttemptsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-              );
+              ));
             },
           );
         },

@@ -68,6 +68,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 /// One column of [AppDataTable].
 class AppTableColumn<T> {
@@ -305,7 +306,7 @@ class AppDataTable<T> extends StatelessWidget {
             itemCount: rows.length,
             itemBuilder: (BuildContext context, int index) {
               final T row = rows[index];
-              return _Row<T>(
+              return FadeSlideIn(delay: staggerDelay(index < 15 ? index : 0, stepMs: 30), offset: const Offset(0, 12), scale: 1, child: _Row<T>(
                 row: row,
                 columns: columns,
                 index: index,
@@ -314,7 +315,7 @@ class AppDataTable<T> extends StatelessWidget {
                 horizontalPadding: padding,
                 selected: isRowSelected?.call(row) ?? false,
                 onTap: onRowTap == null ? null : () => onRowTap!(row),
-              );
+              ));
             },
           );
 
@@ -639,9 +640,12 @@ class _CardGrid<T> extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         final T row = table.rows[index];
         if (table.cardBuilder != null) {
-          return table.cardBuilder!(context, row);
+          return FadeSlideIn(
+            delay: staggerDelay(index, stepMs: 45),
+            child: table.cardBuilder!(context, row),
+          );
         }
-        return _RecordCard<T>(
+        return FadeSlideIn(delay: staggerDelay(index, stepMs: 45), child: _RecordCard<T>(
           row: row,
           index: index,
           title: title,
@@ -654,7 +658,7 @@ class _CardGrid<T> extends StatelessWidget {
           lineHeight: _lineHeight,
           footerHeight: _footerHeight,
           verticalPadding: _verticalPadding,
-        );
+        ));
       },
     );
 

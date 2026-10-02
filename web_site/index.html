@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>أسيك للاستشارات الهندسية | ASEC Engineering Consultants</title>
+  <meta name="description" content="أحمد شهيب للاستشارات الهندسية — تصميم متكامل، لوحات تنفيذية، اشراف على التنفيذ. Shuhayb Engineering Consultants — MEP design, shop drawings and site supervision.">
+  <meta property="og:title" content="أسيك للاستشارات الهندسية | ASEC">
+  <meta property="og:description" content="تصميم متكامل · لوحات تنفيذية · اشراف على التنفيذ">
+  <meta property="og:image" content="icons/Icon-512.png">
+  <meta name="theme-color" content="#DD183B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ASEC">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; height: 100%; background: #ffffff; }
+    #boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #fff; transition: opacity .3s; }
+    #boot img { width: 96px; height: 96px; animation: p 1.2s ease-in-out infinite; }
+    @keyframes p { 50% { transform: scale(.9); opacity: .6; } }
+  </style>
+</head>
+<body>
+  <div id="boot"><img src="icons/Icon-192.png" alt="ASEC"></div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var b = document.getElementById('boot'); if (b) { b.style.opacity = 0; setTimeout(function () { b.remove(); }, 300); }
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,15 +1,17 @@
 rules_version = '2';
 
-// ASEC — one admin, many members.
+// ASEC — one super admin, admins with permissions, many members.
 //
 // THE ADMIN IS AN EMAIL, NOT A FLAG.
-// `adminamr@gmail.com` is the admin, and that is decided by the Auth token,
+// `amrmesbah33@gmail.com` is the admin, and that is decided by the Auth token,
 // not by a field in a document. A `role: "admin"` written by anybody else is
 // refused below, so nobody can promote themselves by editing their own
 // profile — and no rule has to spend a document read to find out who is
 // asking.
 //
 // Deploy:  firebase deploy --only firestore:rules
+//
+// The website's collections (site_*) are at the bottom.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -22,10 +24,38 @@ service cloud.firestore {
       return request.auth.token.email.lower();
     }
 
-    function isAdmin() {
+    // THE SUPER ADMIN — the owner email. Every permission, and the only
+    // account that may create admins, change their permissions, write the
+    // control centre (settings/app) or use the demo data.
+    function isSuper() {
       return signedIn()
         && request.auth.token.email != null
-        && callerEmail() == 'adminamr@gmail.com';
+        && callerEmail() == 'amrmesbah33@gmail.com';
+    }
+
+    // ADMINS CREATED BY THE SUPER ADMIN: role 'admin' + switched on, with a
+    // `permissions` list. Costs one document read, only when the caller is
+    // not the super admin.
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isStaff() {
+      return isSuper()
+        || (signedIn()
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && me().role == 'admin'
+            && me().active == true);
+    }
+
+    function can(p) {
+      return isSuper()
+        || (isStaff() && me().get('permissions', []).hasAny([p]));
+    }
+
+    // Kept for readability below: "any admin at all".
+    function isAdmin() {
+      return isStaff();
     }
 
     function isSelf(uid) {
@@ -40,12 +70,13 @@ service cloud.firestore {
     // same power cannot be used to forge a real member, a real score or a real
     // CV: drop the flag and the write is refused like anybody else's.
     function isDemoWrite() {
-      return isAdmin() && request.resource.data.demo == true;
+      return isSuper() && request.resource.data.demo == true;
     }
 
-    // The role this caller's email entitles them to.
+    // The role a SELF-registration may claim: only the owner email becomes
+    // admin by registering; every other admin is created by the super admin.
     function entitledRole() {
-      return isAdmin() ? 'admin' : 'user';
+      return isSuper() ? 'admin' : 'user';
     }
 
     // ── users ───────────────────────────────────────────────────────────────
@@ -53,7 +84,9 @@ service cloud.firestore {
     // A member reads only their own profile; the admin reads everybody's
     // (the members list queries role == 'user', which this allows).
     match /users/{uid} {
-      allow read: if isSelf(uid) || isAdmin();
+      allow read: if isSelf(uid) || isSuper()
+        || ((can('members') || can('dashboard') || can('results') || can('cvs'))
+            && resource.data.role == 'user');
 
       // Registration writes the profile from the app. The role has to match
       // the email, the email has to be the caller's own, and the document may
@@ -76,17 +109,52 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data)
              .affectedKeys().hasOnly(['full_name', 'phone', 'updated_at']);
 
-      // The admin may switch an account on or off, and may open the CV form
-      // for it. Nothing else — not the role, not the email.
-      allow update: if isAdmin()
+      // An admin with the 'members' permission may switch a MEMBER on or
+      // off and open the CV form for them. Nothing else — not the role, not
+      // the email, and never another admin.
+      // ...and set what the member may use: which courses, which devices,
+      // the access period, and the pause.
+      allow update: if can('members')
+        && resource.data.role == 'user'
         && request.resource.data.diff(resource.data)
-             .affectedKeys().hasOnly(['active', 'can_create_cv', 'updated_at']);
+             .affectedKeys().hasOnly([
+               'active', 'can_create_cv', 'updated_at',
+               'courses_all', 'courses', 'platforms',
+               'access_from', 'access_until', 'paused_at'
+             ]);
+
+      // The super admin creates admins and manages them: role 'admin',
+      // a permissions list, switched on or off.
+      allow create: if isSuper()
+        && request.resource.data.role == 'admin'
+        && request.resource.data.permissions is list
+        && request.resource.data.keys().hasOnly([
+             'full_name', 'email', 'phone', 'role', 'active', 'can_create_cv',
+             'permissions', 'created_at', 'updated_at'
+           ]);
+      allow update: if isSuper()
+        && resource.data.role == 'admin'
+        && request.resource.data.role == 'admin'
+        && request.resource.data.diff(resource.data)
+             .affectedKeys().hasOnly(['permissions', 'active', 'updated_at']);
 
       // The demo button writes whole member profiles. Flagged only — see
       // isDemoWrite() above.
       allow create, update: if isDemoWrite();
 
-      allow delete: if isAdmin();
+      // A member may delete their OWN account from Settings; the admin may
+      // delete anybody's.
+      allow delete: if isSelf(uid) || isSuper()
+        || (can('members') && resource.data.role == 'user');
+    }
+
+    // ── settings (control centre) ───────────────────────────────────────────
+    //
+    // Readable by everybody — the sign-in screen needs the registration
+    // switch before anybody signs in, and nothing in it is secret.
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isSuper();
     }
 
     // ── videos ──────────────────────────────────────────────────────────────
@@ -95,7 +163,7 @@ service cloud.firestore {
     // `published == true`, which is what makes the list legal here.
     match /videos/{videoId} {
       allow read: if isAdmin() || (signedIn() && resource.data.published == true);
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if can('videos');
     }
 
     // ── quizzes ─────────────────────────────────────────────────────────────
@@ -106,7 +174,7 @@ service cloud.firestore {
     // decides what "open" means for the UI).
     match /quizzes/{quizId} {
       allow read: if isAdmin() || (signedIn() && resource.data.published == true);
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if can('quizzes');
     }
 
     // ── cvs ─────────────────────────────────────────────────────────────────
@@ -135,14 +203,14 @@ service cloud.firestore {
            );
 
       // Only the admin marks a CV reviewed / shortlisted / rejected.
-      allow update: if isAdmin()
+      allow update: if can('cvs')
         && request.resource.data.diff(resource.data)
              .affectedKeys().hasOnly(['status', 'updated_at']);
 
       // The demo button writes CVs for the demo members. Flagged only.
       allow create, update: if isDemoWrite();
 
-      allow delete: if isSelf(uid) || isAdmin();
+      allow delete: if isSelf(uid) || can('cvs');
     }
 
     // ── attempts ────────────────────────────────────────────────────────────
@@ -150,7 +218,7 @@ service cloud.firestore {
     // The document id IS `{quizId}_{uid}`, so ownership is provable from the
     // path and one member can hold exactly one attempt per quiz.
     match /attempts/{attemptId} {
-      allow read: if isAdmin()
+      allow read: if can('results') || can('quizzes') || can('dashboard')
         || (signedIn() && resource.data.user_id == request.auth.uid);
 
       // ONE SITTING. Create is allowed, update is not: a second submission
@@ -162,6 +230,20 @@ service cloud.firestore {
         && request.resource.data.score is int
         && request.resource.data.total_points is int;
 
+      // CERTIFICATE QUIZZES MAY BE RETAKEN until passed: the member may
+      // overwrite their OWN attempt while it is not a pass, and only when the
+      // quiz is a certificate quiz. A passed attempt is the certificate and
+      // can no longer be replaced by the member.
+      allow update: if signedIn()
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.quiz_id == resource.data.quiz_id
+        && resource.data.get('passed', false) != true
+        && get(/databases/$(database)/documents/quizzes/$(resource.data.quiz_id))
+             .data.get('certificate', false) == true
+        && request.resource.data.score is int
+        && request.resource.data.total_points is int;
+
       // The demo button writes attempts in other members' names, which the
       // rule above forbids on purpose. Flagged only, and the id still has to
       // be the {quizId}_{uid} pair so the demo cannot create a second attempt
@@ -170,7 +252,106 @@ service cloud.firestore {
         && attemptId == request.resource.data.quiz_id + '_'
              + request.resource.data.user_id;
 
-      allow update, delete: if isAdmin();
+      allow update, delete: if can('results');
     }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // THE WEBSITE (asec_web — the Flutter copy of asecbim.com + its /admin).
+    //
+    // Content is public to read once published; the panel writes it. The
+    // panel is open to the super admin and to admins whose `permissions`
+    // hold 'website' (set in the app: Settings → Admins, or in the panel).
+    // Visitors can only CREATE inbox items, never read them back.
+    // ════════════════════════════════════════════════════════════════════════
+
+    function canWeb() {
+      return can('website');
+    }
+
+    match /site_settings/{doc} {
+      allow read: if true;
+      allow write: if canWeb();
+    }
+
+    // Published content. The site's queries filter `published == true`,
+    // which is what makes a public list legal here.
+    match /site_services/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+    match /site_features/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+    match /site_projects/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+    match /site_articles/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+    match /site_partners/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+    match /site_testimonials/{id} {
+      allow read: if canWeb() || resource.data.published == true;
+      allow write: if canWeb();
+    }
+
+    // ── The three public forms ──────────────────────────────────────────────
+    //
+    // Anybody may create ONE document with exactly the form's fields,
+    // status 'new' and the server's time. Short strings only.
+    function inboxCreate(keys) {
+      return request.resource.data.keys().hasOnly(keys)
+        && request.resource.data.status == 'new'
+        && request.resource.data.created_at == request.time;
+    }
+
+    function maxLen(field, max) {
+      return !(field in request.resource.data)
+        || (request.resource.data[field] is string
+            && request.resource.data[field].size() <= max);
+    }
+
+    match /site_messages/{id} {
+      // The demo button's sample entries (flagged — see isDemoWrite()).
+      allow create, update: if isDemoWrite();
+      allow create: if inboxCreate(['name', 'phone', 'email', 'subject', 'message', 'status', 'created_at'])
+        && maxLen('name', 200) && maxLen('phone', 40) && maxLen('email', 200)
+        && maxLen('subject', 300) && maxLen('message', 5000);
+      allow read, update, delete: if canWeb();
+    }
+
+    match /site_service_requests/{id} {
+      // The demo button's sample entries (flagged — see isDemoWrite()).
+      allow create, update: if isDemoWrite();
+      allow create: if inboxCreate(['client_name', 'company', 'phone', 'project_name', 'email',
+                                    'floors', 'land_area', 'location', 'files_link',
+                                    'project_type', 'services', 'status', 'created_at'])
+        && maxLen('client_name', 200) && maxLen('company', 200) && maxLen('phone', 40)
+        && maxLen('project_name', 300) && maxLen('email', 200) && maxLen('floors', 100)
+        && maxLen('land_area', 100) && maxLen('location', 300) && maxLen('files_link', 1000)
+        && maxLen('project_type', 50)
+        && (!('services' in request.resource.data)
+            || (request.resource.data.services is list && request.resource.data.services.size() <= 5));
+      allow read, update, delete: if canWeb();
+    }
+
+    match /site_job_applications/{id} {
+      // The demo button's sample entries (flagged — see isDemoWrite()).
+      allow create, update: if isDemoWrite();
+      allow create: if inboxCreate(['name', 'university', 'faculty', 'residence', 'email', 'phone',
+                                    'skills', 'company', 'projects_link', 'graduation_date', 'grade',
+                                    'request_type', 'skill_level', 'experience_role', 'from', 'to',
+                                    'status', 'created_at'])
+        && maxLen('name', 200) && maxLen('university', 200) && maxLen('faculty', 200)
+        && maxLen('residence', 200) && maxLen('email', 200) && maxLen('phone', 40)
+        && maxLen('skills', 1000) && maxLen('company', 200) && maxLen('projects_link', 1000);
+      allow read, update, delete: if canWeb();
+    }
+
   }
 }

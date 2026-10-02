@@ -158,7 +158,7 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.12),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
       ),
       child: Row(
@@ -167,7 +167,7 @@ class _Chip extends StatelessWidget {
           Text(
             label,
             style: StyleText.fontSize11Weight600
-                .copyWith(color: AppColors.primary),
+                .copyWith(color: AppColors.onChip),
           ),
           if (onRemove != null) ...<Widget>[
             SizedBox(width: 5.w),
@@ -176,7 +176,7 @@ class _Chip extends StatelessWidget {
               child: AppIcon(
                 Icons.close_rounded,
                 size: 12.sp,
-                color: AppColors.primary,
+                color: AppColors.onChip,
               ),
             ),
           ],
@@ -280,9 +280,7 @@ class _Selectable extends StatelessWidget {
     final Color color = selected ? AppColors.primary : AppColors.secondaryText;
 
     return Material(
-      color: selected
-          ? AppColors.primary.withOpacity(0.1)
-          : AppColors.transparent,
+      color: selected ? AppColors.chip : AppColors.transparent,
       borderRadius: AppRadius.buttonR,
       child: InkWell(
         borderRadius: AppRadius.buttonR,

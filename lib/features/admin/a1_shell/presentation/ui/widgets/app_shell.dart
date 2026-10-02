@@ -26,17 +26,25 @@ import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_u
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/brand_mark.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 class ShellSection {
   const ShellSection({
     required this.icon,
     required this.label,
     required this.page,
+    this.shortLabel,
   });
 
   final IconData icon;
   final String label;
   final Widget page;
+
+  /// The name under the icon in the PHONE bar, where a long label wraps
+  /// onto two lines ("Certificate quizzes" → "Certificate").
+  final String? shortLabel;
+
+  String get barLabel => shortLabel ?? label;
 }
 
 /// ONE FRAME, THREE SHAPES — and the WIDTH picks, never the platform. A macOS
@@ -106,17 +114,28 @@ class _AppShellState extends State<AppShell> {
     // pointing past the end would take an IndexedStack down with it.
     final int index = _index.clamp(0, widget.sections.length - 1);
 
-    final Widget body = IndexedStack(
-      index: index,
-      children: <Widget>[
-        for (final ShellSection s in widget.sections) s.page,
-      ],
+    final Widget body = ShellSwitch(
+      switchKey: index,
+      child: IndexedStack(
+        index: index,
+        children: <Widget>[
+          for (final ShellSection s in widget.sections) s.page,
+        ],
+      ),
     );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        // Same surface as the side rail, so bar + rail read as one frame
+        // around the page. No tint or shadow when content scrolls under it.
+        backgroundColor: AppColors.card,
+        surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: AppColors.text),
+        actionsIconTheme: IconThemeData(color: AppColors.text),
         titleSpacing: hasRail ? AppPadding.h : 16,
         // NO TITLE HERE. Every page draws its own, bigger, with the line
         // that says what the page is for — two titles on one screen is one
@@ -142,20 +161,161 @@ class _AppShellState extends State<AppShell> {
               ],
             )
           : body,
-      bottomNavigationBar: hasRail
-          ? null
-          : NavigationBar(
-              selectedIndex: index,
-              onDestinationSelected: _select,
-              backgroundColor: AppColors.card,
-              destinations: <Widget>[
-                for (final ShellSection s in widget.sections)
-                  NavigationDestination(
-                    icon: AppIcon(s.icon),
-                    label: s.label,
+      bottomNavigationBar: hasRail ? null : _bottomBar(context, index),
+    );
+  }
+
+  /// THE PHONE BAR HOLDS FIVE AT MOST. With more sections than that, the
+  /// first four get their own tab and the fifth is "More", which opens a
+  /// sheet with the rest. A section picked from the sheet keeps "More"
+  /// highlighted, so the bar always says where you are.
+  static const int _maxTabs = 5;
+
+  Widget _bottomBar(BuildContext context, int index) {
+    final List<ShellSection> sections = widget.sections;
+    final bool overflow = sections.length > _maxTabs;
+    final int direct = overflow ? _maxTabs - 1 : sections.length;
+    final bool inMore = overflow && index >= direct;
+
+    final int selected = inMore ? direct : index;
+    return Material(
+      color: AppColors.card,
+      elevation: 0,
+      child: SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppColors.secondaryText.withOpacity(0.12)),
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
+          child: Row(
+            children: <Widget>[
+              for (int i = 0; i < direct; i++)
+                Expanded(
+                  child: _BarItem(
+                    icon: sections[i].icon,
+                    label: sections[i].barLabel,
+                    selected: selected == i,
+                    onTap: () => _select(i),
                   ),
+                ),
+              if (overflow)
+                Expanded(
+                  child: _BarItem(
+                    icon: inMore ? sections[index].icon : Icons.more_horiz_rounded,
+                    label: inMore ? sections[index].barLabel : S.of(context).moreTab,
+                    selected: inMore,
+                    onTap: () => _openMore(context, direct, index),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMore(BuildContext context, int first, int current) async {
+    final List<ShellSection> sections = widget.sections;
+    final int? picked = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: AppColors.card,
+      showDragHandle: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
+                child: Text(
+                  S.of(sheetContext).moreTab,
+                  style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
+                ),
+              ),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: <Widget>[
+                    for (int i = first; i < sections.length; i++)
+                      _RailItem(
+                        section: sections[i],
+                        selected: i == current,
+                        showLabel: true,
+                        onTap: () => Navigator.of(sheetContext).pop(i),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked != null) _select(picked);
+  }
+}
+
+/// One phone-bar tab. The selected one sits in a soft pill that wraps the
+/// icon AND its name, not just the icon.
+class _BarItem extends StatelessWidget {
+  const _BarItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = selected ? AppColors.primary : AppColors.secondaryText;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 3.w),
+      child: Material(
+        color: AppColors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14.r),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: AppMotion.fast,
+            curve: AppMotion.curve,
+            padding: EdgeInsets.symmetric(vertical: 7.h, horizontal: 4.w),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary.withOpacity(0.12) : AppColors.transparent,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                AppIcon(icon, size: 21.sp, color: color),
+                SizedBox(height: 3.h),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: (selected
+                          ? StyleText.fontSize11Weight700
+                          : StyleText.fontSize11Weight500)
+                      .copyWith(color: color),
+                ),
               ],
             ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -225,7 +385,9 @@ class _RailItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color color = selected ? AppColors.primary : AppColors.secondaryText;
 
-    final Widget content = Container(
+    final Widget content = AnimatedContainer(
+      duration: AppMotion.fast,
+      curve: AppMotion.curve,
       margin: EdgeInsets.symmetric(vertical: 3.h),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(

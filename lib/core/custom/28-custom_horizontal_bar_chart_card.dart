@@ -216,7 +216,7 @@ class HorizontalBarChartCard extends StatelessWidget {
             for (final double t in ticks) (t / _maxX).clamp(0.0, 1.0),
           ];
 
-          return Column(
+          final Widget rows = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -308,6 +308,12 @@ class HorizontalBarChartCard extends StatelessWidget {
               if (footer != null) ...<Widget>[SizedBox(height: 4.h), footer!],
             ],
           );
+
+          // A card with a fixed height and more rows than fit scrolls its
+          // rows instead of overflowing past the bottom edge.
+          return constraints.hasBoundedHeight
+              ? SingleChildScrollView(child: rows)
+              : rows;
         },
       ),
     );

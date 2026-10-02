@@ -502,13 +502,12 @@ class _Chips extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.09),
+              color: AppColors.chip,
               borderRadius: AppRadius.buttonR,
-              border: Border.all(color: color.withOpacity(0.25)),
             ),
             child: Text(
               value,
-              style: StyleText.fontSize11Weight600.copyWith(color: color),
+              style: StyleText.fontSize11Weight600.copyWith(color: AppColors.onChip),
             ),
           ),
       ],
@@ -573,9 +572,8 @@ class _FileLine extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.06),
+          color: AppColors.chip,
           borderRadius: AppRadius.buttonR,
-          border: Border.all(color: AppColors.primary.withOpacity(0.25)),
         ),
         child: Row(
           children: <Widget>[

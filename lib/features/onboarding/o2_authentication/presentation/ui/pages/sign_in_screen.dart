@@ -21,8 +21,11 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/login_cubit.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/pages/register_screen.dart';
+import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/auth_layout.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/settings/app_features.dart';
+import 'package:get/get.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});
@@ -143,7 +146,9 @@ class _SignInForm extends StatelessWidget {
               onPressed: AppFirebase.notConfigured ? null : cubit.signIn,
             ),
             SizedBox(height: 14.h),
-            Row(
+            Obx(() => !AppFeatures.to.isOn(AppFeature.registration)
+                ? const SizedBox.shrink()
+                : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Flexible(
@@ -168,6 +173,21 @@ class _SignInForm extends StatelessWidget {
                   ),
                 ),
               ],
+            )),
+            // No sign-in, no internet needed: the converter is always here.
+            Center(
+              child: TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const UnitConverterPage(standalone: true),
+                  ),
+                ),
+                icon: Icon(Icons.calculate_rounded, color: AppColors.primary, size: 20),
+                label: Text(
+                  s.openUnitConverter,
+                  style: StyleText.fontSize13Weight600.copyWith(color: AppColors.primary),
+                ),
+              ),
             ),
             Text(
               s.signInAsAdminHint,

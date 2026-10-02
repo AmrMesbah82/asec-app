@@ -379,10 +379,12 @@ class AppStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background = active ? color : color.withOpacity(0.14);
-    // Never `color` outright: a pale brand tone as text on its own tint is
-    // unreadable. See [readableInk].
-    final Color content = active ? readableOn(color) : readableInk(color);
+    // Inactive: the shared chip ground and ink (AppColors.chip / onChip) —
+    // never a tint of the status colour. Active (the chip that is filtering
+    // or selected): the brand primary. [color] no longer paints the chip;
+    // the word says the state.
+    final Color background = active ? AppColors.primary : AppColors.chip;
+    final Color content = active ? AppColors.textButton : AppColors.onChip;
 
     final Widget chip = Container(
       padding: EdgeInsets.symmetric(horizontal: AppPadding.h,
@@ -419,7 +421,7 @@ class AppStatusChip extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active
                     ? AppColors.white.withOpacity(0.25)
-                    : color.withOpacity(0.25),
+                    : AppColors.card,
                 borderRadius: AppRadius.buttonR,
               ),
               child: Text(

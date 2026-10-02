@@ -25,6 +25,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/animation/app_animations.dart';
 
 /// The height every control in a page header is drawn at, so a search box and
 /// a button beside it have their centres in line.
@@ -57,7 +58,12 @@ class ConsolePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget body = Padding(
       padding: EdgeInsets.fromLTRB(AppPadding.h, 0, AppPadding.h, 20.h),
-      child: child,
+      child: FadeSlideIn(
+        delay: const Duration(milliseconds: 90),
+        offset: const Offset(0, 18),
+        scale: 0.99,
+        child: child,
+      ),
     );
 
     return Column(
@@ -71,7 +77,11 @@ class ConsolePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(title, style: StyleText.fontSize26Weight600),
+                  FadeSlideIn(
+                    offset: const Offset(-16, 0),
+                    scale: 1,
+                    child: Text(title, style: StyleText.fontSize26Weight600),
+                  ),
                   if (subtitle != null) ...<Widget>[
                     SizedBox(height: 4.h),
                     Text(
@@ -230,12 +240,12 @@ class StatusPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(
         label,
-        style: StyleText.fontSize12Weight600.copyWith(color: color),
+        style: StyleText.fontSize12Weight600.copyWith(color: AppColors.onChip),
       ),
     );
   }

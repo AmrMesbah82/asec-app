@@ -363,7 +363,7 @@ class SEn extends S {
 
   @override
   String demoBody(String password) {
-    return 'Fills every section with sample members, lessons, quizzes, results and CVs, so you can see each screen with real content in it. Every demo account signs in with the password $password.';
+    return 'Fills every section except Videos with sample data: members with course access, quizzes, a certificate exam for each of your real courses, results, CVs and website requests. Videos stay exactly as they are — they come from your Drive folder. Every demo account signs in with the password $password.';
   }
 
   @override
@@ -390,12 +390,13 @@ class SEn extends S {
   @override
   String demoCounts(
     String members,
-    String videos,
     String quizzes,
+    String certificates,
     String results,
     String cvs,
+    String inbox,
   ) {
-    return '$members members · $videos videos · $quizzes quizzes · $results results · $cvs CVs';
+    return '$members members · $quizzes quizzes · $certificates certificate exams · $results results · $cvs CVs · $inbox website requests';
   }
 
   @override
@@ -1568,6 +1569,17 @@ class SEn extends S {
   String get addVideo => 'Add a video';
 
   @override
+  String get videoLoading => 'Loading lesson';
+
+  @override
+  String get importDriveLessons => 'Add Drive lessons';
+
+  @override
+  String driveLessonsAdded(int count) {
+    return '$count lessons added from Google Drive';
+  }
+
+  @override
   String get editVideo => 'Edit video';
 
   @override
@@ -1950,4 +1962,796 @@ class SEn extends S {
 
   @override
   String get searchMembers => 'Search a member by name, email or phone';
+
+  @override
+  String get dangerZone => 'Danger zone';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountHint =>
+      'Permanently remove your account and profile.';
+
+  @override
+  String get deleteAccountQuestion => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your profile and CV are deleted and you are signed out. This cannot be undone.';
+
+  @override
+  String get deleteAccountPasswordBody => 'Enter your password to confirm.';
+
+  @override
+  String get deleteAccountFailed => 'Could not delete the account';
+
+  @override
+  String kpiNewThisWeek(int count) {
+    return '+$count this week';
+  }
+
+  @override
+  String kpiNewThisMonth(int count) {
+    return '+$count this month';
+  }
+
+  @override
+  String kpiOpenNow(int count) {
+    return '$count open now';
+  }
+
+  @override
+  String get kpiCvAccess => 'CV access';
+
+  @override
+  String get kpiDrafts => 'Drafts';
+
+  @override
+  String get kpiLibrarySize => 'Library';
+
+  @override
+  String get kpiUpcoming => 'Upcoming';
+
+  @override
+  String get kpiTimedOut => 'Timed out';
+
+  @override
+  String get videoLinkTitle => 'Video link';
+
+  @override
+  String get videoLinkCaption =>
+      'Paste a direct .mp4 link or a Google Drive link (shared as “Anyone with the link”) — no upload needed.';
+
+  @override
+  String get videoLinkLabel => 'Link';
+
+  @override
+  String get videoLinkInvalid => 'Enter a full link that starts with https://';
+
+  @override
+  String get videoOrUpload => 'Or upload a file';
+
+  @override
+  String get playerSpeed => 'Speed';
+
+  @override
+  String get playerLoop => 'Loop';
+
+  @override
+  String get playerRestart => 'Restart';
+
+  @override
+  String get playerMute => 'Mute';
+
+  @override
+  String get playerFullScreen => 'Full screen';
+
+  @override
+  String playerResumedAt(String time) {
+    return 'Resumed at $time';
+  }
+
+  @override
+  String get playerStartOver => 'Start over';
+
+  @override
+  String get playerDuration => 'Duration';
+
+  @override
+  String get playerShortcuts =>
+      'Space: play / pause · ← →: 10 s · ↑ ↓: volume · F: full screen · M: mute';
+
+  @override
+  String get agoJustNow => 'just now';
+
+  @override
+  String agoMinutes(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String agoHours(int count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String agoDays(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String agoWeeks(int count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String agoMonths(int count) {
+    return '$count months ago';
+  }
+
+  @override
+  String agoYears(int count) {
+    return '$count years ago';
+  }
+
+  @override
+  String get nowPlaying => 'NOW PLAYING';
+
+  @override
+  String get videoNewTag => 'NEW';
+
+  @override
+  String get autoplay => 'Autoplay';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterRecent => 'Recently added';
+
+  @override
+  String get filterContinue => 'Continue watching';
+
+  @override
+  String get filterWatched => 'Watched';
+
+  @override
+  String get noLessonsMatch => 'No lessons found';
+
+  @override
+  String get noLessonsMatchSub => 'Try another word or filter.';
+
+  @override
+  String get searchVideos => 'Search videos';
+
+  @override
+  String lessonNumber(int n) {
+    return 'Lesson $n';
+  }
+
+  @override
+  String finishLessonFirst(int n) {
+    return 'Finish lesson $n first';
+  }
+
+  @override
+  String get watchedBadge => 'Watched';
+
+  @override
+  String get finishThisLessonFirst =>
+      'Finish this lesson first to unlock the next one.';
+
+  @override
+  String get noSkipAhead =>
+      'You can\'t skip ahead — watch the lesson to unlock the rest.';
+
+  @override
+  String get lessonCompleted => 'Completed';
+
+  @override
+  String courseProgress(int watched, int total) {
+    return '$watched of $total lessons watched';
+  }
+
+  @override
+  String get courseComplete => 'Course complete — every lesson watched!';
+
+  @override
+  String get permVideos => 'Videos';
+
+  @override
+  String get permQuizzes => 'Quizzes';
+
+  @override
+  String get permResults => 'Results';
+
+  @override
+  String get permMembers => 'Members';
+
+  @override
+  String get permCvs => 'CVs';
+
+  @override
+  String get permWebsite => 'Website';
+
+  @override
+  String get ctlGroupSections => 'Member menu';
+
+  @override
+  String get ctlGroupVideos => 'Video lessons';
+
+  @override
+  String get ctlGroupGeneral => 'Whole app';
+
+  @override
+  String get ctlGroupDashboard => 'Admin dashboard';
+
+  @override
+  String get controlCentre => 'Control centre';
+
+  @override
+  String get controlCentreHint =>
+      'Turn parts of the app on or off for everybody. Changes apply instantly.';
+
+  @override
+  String get ctlTurnAllOn => 'Turn all on';
+
+  @override
+  String get ctlSectionVideos => 'Videos';
+
+  @override
+  String get ctlSectionVideosHint => 'Members see the Videos page.';
+
+  @override
+  String get ctlSectionQuizzes => 'Quizzes';
+
+  @override
+  String get ctlSectionQuizzesHint => 'Members see the Quizzes page.';
+
+  @override
+  String get ctlSectionCvDirectory => 'CV directory';
+
+  @override
+  String get ctlSectionCvDirectoryHint => 'Members can browse everyone\'s CVs.';
+
+  @override
+  String get ctlSectionMyCv => 'My CV';
+
+  @override
+  String get ctlSectionMyCvHint => 'Members allowed a CV see the CV form.';
+
+  @override
+  String get ctlVideoSequential => 'Unlock lessons in order';
+
+  @override
+  String get ctlVideoSequentialHint =>
+      'A lesson opens only after the previous one is watched.';
+
+  @override
+  String get ctlVideoBlockSkip => 'Block skipping ahead';
+
+  @override
+  String get ctlVideoBlockSkipHint =>
+      'Members can\'t jump past what they\'ve watched.';
+
+  @override
+  String get ctlVideoAutoplay => 'Autoplay next lesson';
+
+  @override
+  String get ctlVideoAutoplayHint => 'The next lesson starts when one ends.';
+
+  @override
+  String get ctlVideoUpNext => 'Up next list';
+
+  @override
+  String get ctlVideoUpNextHint => 'Show the other lessons beside the player.';
+
+  @override
+  String get ctlVideoOptionsBar => 'Player options bar';
+
+  @override
+  String get ctlVideoOptionsBarHint =>
+      'Skip, loop, restart, volume and speed under the video.';
+
+  @override
+  String get ctlVideoSpeed => 'Playback speed';
+
+  @override
+  String get ctlVideoSpeedHint => 'Members can watch at 0.5x – 2x.';
+
+  @override
+  String get ctlVideoResume => 'Resume where you stopped';
+
+  @override
+  String get ctlVideoResumeHint =>
+      'Reopening a lesson jumps to the last position.';
+
+  @override
+  String get ctlVideoSearch => 'Search and filters';
+
+  @override
+  String get ctlVideoSearchHint =>
+      'Search box and filter chips on the Videos page.';
+
+  @override
+  String get ctlVideoCourseProgress => 'Course progress bar';
+
+  @override
+  String get ctlVideoCourseProgressHint =>
+      '\"3 of 10 lessons watched\" at the top.';
+
+  @override
+  String get ctlAnimations => 'Animations';
+
+  @override
+  String get ctlAnimationsHint => 'Page transitions and entrance animations.';
+
+  @override
+  String get ctlRegistration => 'New sign-ups';
+
+  @override
+  String get ctlRegistrationHint => 'Show \"Register\" on the sign-in screen.';
+
+  @override
+  String get ctlScreenProtection => 'Block screenshots';
+
+  @override
+  String get ctlScreenProtectionHint =>
+      'On: screenshots and screen recordings of the app come out black (Android, iOS, macOS, Windows). Off: allowed.';
+
+  @override
+  String get ctlDashboardCharts => 'Dashboard charts';
+
+  @override
+  String get ctlDashboardChartsHint => 'The four charts under the numbers.';
+
+  @override
+  String get ctlDashboardTable => 'Latest attempts table';
+
+  @override
+  String get ctlDashboardTableHint =>
+      'The table at the bottom of the dashboard.';
+
+  @override
+  String get adminsTitle => 'Admins';
+
+  @override
+  String get adminsHint => 'Create admins and choose what each one can manage.';
+
+  @override
+  String get addAdmin => 'Add admin';
+
+  @override
+  String get createAdmin => 'Create admin';
+
+  @override
+  String get noAdminsYet => 'No other admins yet.';
+
+  @override
+  String get editPermissions => 'Edit permissions';
+
+  @override
+  String get removeAdmin => 'Remove admin';
+
+  @override
+  String get removeAdminQuestion => 'Remove this admin?';
+
+  @override
+  String get noPermissions => 'No permissions — can only open Settings.';
+
+  @override
+  String get permissionsTitle => 'Permissions';
+
+  @override
+  String get adminCreated => 'Admin created. They can sign in now.';
+
+  @override
+  String get permissionsSaved => 'Permissions saved';
+
+  @override
+  String get adminFormInvalid => 'Enter a name and a valid email.';
+
+  @override
+  String get adminPasswordShort => 'The password needs at least 6 characters.';
+
+  @override
+  String get adminEmailInUse => 'This email already has an account.';
+
+  @override
+  String removeAdminBody(String name) {
+    return '$name will no longer be able to use the admin console. Their login can be deleted from the Firebase console.';
+  }
+
+  @override
+  String get videoCategoriesTitle => 'Categories';
+
+  @override
+  String get videoCategoryGeneral => 'General';
+
+  @override
+  String get allCategories => 'All categories';
+
+  @override
+  String get videoCategory => 'Category';
+
+  @override
+  String get videoCategoryHint =>
+      'Videos with the same category are grouped together (e.g. GENERAL NOTES).';
+
+  @override
+  String videoCount(int count) {
+    return '$count videos';
+  }
+
+  @override
+  String get securityBlockedTitle => 'This device is not safe for ASEC';
+
+  @override
+  String get securityBlockedBody =>
+      'To protect the lessons, ASEC does not run while any of the following is on. Turn it off, then tap Check again.';
+
+  @override
+  String get securityCheckAgain => 'Check again';
+
+  @override
+  String get integrityDeveloperOptions =>
+      'Developer options are on (Settings → System → Developer options)';
+
+  @override
+  String get integrityUsbDebugging => 'USB debugging is on';
+
+  @override
+  String get integrityDebugger => 'A debugger is attached to the app';
+
+  @override
+  String get integrityDebuggable =>
+      'This copy of the app has been modified — install it from the official source';
+
+  @override
+  String get integrityRoot => 'The device is rooted';
+
+  @override
+  String get integrityJailbreak => 'The device is jailbroken';
+
+  @override
+  String get integrityHooking => 'Hacking / hooking tools are running';
+
+  @override
+  String get certificateQuizzes => 'Certificate quizzes';
+
+  @override
+  String get certificateQuiz => 'Certificate quiz';
+
+  @override
+  String get certificateQuizzesAdminSub =>
+      'One final exam per course. Members who score 70% or more get an ASEC certificate.';
+
+  @override
+  String get certificateQuizzesUserSub =>
+      'Finish every lesson of a course, then pass its final exam with 70% to earn your ASEC certificate.';
+
+  @override
+  String get newCertificateQuiz => 'New certificate quiz';
+
+  @override
+  String get noCertificateQuizzesTitle => 'No certificate quizzes yet';
+
+  @override
+  String get noCertificateQuizzesAdminSub =>
+      'Create one final exam for each course.';
+
+  @override
+  String get noCoursesTitle => 'No courses yet';
+
+  @override
+  String get noCoursesUserSub => 'Courses and their final exams appear here.';
+
+  @override
+  String get courseLabel => 'Course';
+
+  @override
+  String get courseCaption =>
+      'Members unlock this exam after watching every lesson of the course. Pass mark: 70%.';
+
+  @override
+  String get chooseCourse => 'Choose a course';
+
+  @override
+  String get errChooseCourse => 'Choose the course this exam belongs to.';
+
+  @override
+  String certLocked(int watched, int total) {
+    return 'Watch all lessons first · $watched/$total';
+  }
+
+  @override
+  String get certReady => 'Ready — start the final exam';
+
+  @override
+  String certFailed(String percent) {
+    return 'Last try $percent% · you need 70% — try again';
+  }
+
+  @override
+  String certPassed(String percent) {
+    return 'Passed with $percent% · view your certificate';
+  }
+
+  @override
+  String get certNoExam => 'Final exam coming soon';
+
+  @override
+  String get certLockedSnack =>
+      'Finish every lesson in this course to unlock its exam.';
+
+  @override
+  String get passedTitle => 'Congratulations, you passed!';
+
+  @override
+  String get failedTitle => 'Not passed yet';
+
+  @override
+  String get failedBody =>
+      'You need 70% to pass. Review the lessons and try again.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get viewCertificate => 'View certificate';
+
+  @override
+  String lastTry(String percent) {
+    return 'Your last try: $percent% — you need 70% to pass.';
+  }
+
+  @override
+  String get certificateTitle => 'Your certificate';
+
+  @override
+  String get downloadPdf => 'Download PDF';
+
+  @override
+  String get passMark => 'Pass mark 70%';
+
+  @override
+  String get certificateBadge => 'Certificate';
+
+  @override
+  String get unitConverter => 'Unit converter';
+
+  @override
+  String get unitConverterSub =>
+      'Main engineering units — works without internet.';
+
+  @override
+  String get unitFrom => 'From';
+
+  @override
+  String get unitTo => 'To';
+
+  @override
+  String get unitValue => 'Enter a value';
+
+  @override
+  String get swapUnits => 'Swap units';
+
+  @override
+  String get allConversions => 'All conversions';
+
+  @override
+  String get openUnitConverter => 'Unit converter (works offline)';
+
+  @override
+  String copiedValue(String value) {
+    return 'Copied $value';
+  }
+
+  @override
+  String get offlineTitle => 'You\'re offline';
+
+  @override
+  String get offlineBody =>
+      'Only the unit converter works without internet. The app comes back as soon as you\'re online.';
+
+  @override
+  String get offlineRetry => 'Retry';
+
+  @override
+  String get moreTab => 'More';
+
+  @override
+  String get certificateShort => 'Certificate';
+
+  @override
+  String get memberAccess => 'Access';
+
+  @override
+  String get editAccess => 'Edit access';
+
+  @override
+  String get accessCourses => 'Courses';
+
+  @override
+  String get accessAllCourses => 'All courses';
+
+  @override
+  String get accessCoursesCaption =>
+      'Choose the courses this member can watch. \"All courses\" also includes any course added later.';
+
+  @override
+  String get accessPlatforms => 'Devices';
+
+  @override
+  String get accessPlatformsCaption =>
+      'The member can open the app only on the checked devices.';
+
+  @override
+  String get accessAllPlatforms => 'All devices';
+
+  @override
+  String get accessPeriod => 'Access period';
+
+  @override
+  String get accessPermanent => 'Permanent';
+
+  @override
+  String get accessDates => 'From – to';
+
+  @override
+  String get accessFrom => 'From';
+
+  @override
+  String get accessUntil => 'Until';
+
+  @override
+  String get accessPause => 'Pause access';
+
+  @override
+  String get accessResume => 'Resume access';
+
+  @override
+  String get accessPauseCaption =>
+      'Freezes the member\'s access now. When you resume, the paused days are added back to the end date.';
+
+  @override
+  String accessPausedSince(String date) {
+    return 'Paused since $date';
+  }
+
+  @override
+  String get accessPaused => 'Paused';
+
+  @override
+  String accessUntilShort(String date) {
+    return 'until $date';
+  }
+
+  @override
+  String accessCoursesCount(int count) {
+    return '$count courses';
+  }
+
+  @override
+  String get accessSaved => 'Access saved';
+
+  @override
+  String get accessPickPlatform => 'Choose at least one device.';
+
+  @override
+  String get accessPickCourse => 'Choose at least one course, or All courses.';
+
+  @override
+  String get accessDatesInvalid => 'The end date must be after the start date.';
+
+  @override
+  String get accessExpiredShort => 'Ended';
+
+  @override
+  String get blockedTitlePaused => 'Your access is paused';
+
+  @override
+  String get blockedBodyPaused =>
+      'ASEC has paused your access for now. Contact ASEC to resume it — you won\'t lose the paused days.';
+
+  @override
+  String get blockedTitleExpired => 'Your access has ended';
+
+  @override
+  String blockedBodyExpired(String date) {
+    return 'Your access ended on $date. Contact ASEC to renew it.';
+  }
+
+  @override
+  String get blockedTitleNotStarted => 'Your access hasn\'t started yet';
+
+  @override
+  String blockedBodyNotStarted(String date) {
+    return 'Your access starts on $date.';
+  }
+
+  @override
+  String get blockedTitlePlatform => 'Not available on this device';
+
+  @override
+  String blockedBodyPlatform(String platforms) {
+    return 'Your account can be used on: $platforms.';
+  }
+
+  @override
+  String get tbMember => 'Member';
+
+  @override
+  String get tbThisDevice => 'This device';
+
+  @override
+  String get tbAllowedOn => 'Allowed on';
+
+  @override
+  String get tbStatus => 'Status';
+
+  @override
+  String get tbStarts => 'Starts';
+
+  @override
+  String get tbEnds => 'Ends';
+
+  @override
+  String get tbWrongDevice => 'Wrong device';
+
+  @override
+  String get tbNotStarted => 'Not started';
+
+  @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get downloadsSub =>
+      'Lessons saved inside ASEC to watch without internet. They stay in the app only.';
+
+  @override
+  String get downloadVideo => 'Download for offline';
+
+  @override
+  String get downloadStarted => 'Downloading — you\'ll find it in Downloads';
+
+  @override
+  String get downloadCancel => 'Cancel download';
+
+  @override
+  String get downloadFailed => 'Download failed — tap to try again';
+
+  @override
+  String get downloadDone => 'Downloaded — tap to remove';
+
+  @override
+  String downloadRemoveQuestion(String title) {
+    return 'Remove “$title” from downloads?';
+  }
+
+  @override
+  String get downloadRemoveBody =>
+      'The lesson stays in Videos; it just won\'t play without internet any more.';
+
+  @override
+  String get downloadRemove => 'Remove';
+
+  @override
+  String get downloadsEmptyTitle => 'No downloads yet';
+
+  @override
+  String get downloadsEmptySub =>
+      'Tap the download icon on a lesson in Videos to watch it without internet.';
+
+  @override
+  String downloadsStorage(String size) {
+    return '$size used on this device';
+  }
+
+  @override
+  String get downloadsRemoveAll => 'Remove all';
+
+  @override
+  String get downloadsRemoveAllQuestion => 'Remove all downloads?';
 }

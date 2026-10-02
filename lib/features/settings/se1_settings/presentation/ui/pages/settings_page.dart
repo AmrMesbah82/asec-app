@@ -3,7 +3,7 @@
 ///*************************** FILE INFO ****************************///
 /// File Name: settings_page.dart
 /// Purpose: Declares `SettingsPage` — appearance, language, haptics, the
-///          account, and the way out.
+///          account, the way out, and deleting the account for good.
 /// Author: ASEC team
 /// Created: 19/9/2026
 
@@ -11,11 +11,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'package:asec/core/constants/app_assets.dart';
 import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/custom/112-powered_by_footer.dart';
 import 'package:asec/core/custom/57-custom_dialog_manager.dart';
+import 'package:asec/core/custom/61-custom_color_picker.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
@@ -24,7 +26,10 @@ import 'package:asec/core/theme/theme_controller.dart';
 import 'package:asec/features/admin/a5_demo/presentation/ui/widgets/demo_data_card.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_failure_type.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/admins_card.dart';
+import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/control_centre_card.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.user});
@@ -43,6 +48,50 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// Confirm → password → delete → sign-in screen.
+  ///
+  /// The password prompt is not ceremony: Firebase only deletes an account
+  /// whose sign-in is recent, so re-authenticating here is what makes the
+  /// delete work on every platform without a "sign in again" detour.
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final S s = S.of(context);
+
+    bool confirmed = false;
+    await CustomDialogManager.showConfirm(
+      context: context,
+      title: s.deleteAccountQuestion,
+      subtitle: s.deleteAccountBody,
+      confirmLabel: s.deleteAccount,
+      cancelLabel: s.cancel,
+      lottieAsset: AppAssets.lottieDelete,
+      onConfirm: () => confirmed = true,
+    );
+    if (!confirmed || !context.mounted) return;
+
+    final String? password = await CustomDialogManager.showInput(
+      context: context,
+      title: s.deleteAccount,
+      subtitle: s.deleteAccountPasswordBody,
+      fieldLabel: s.password,
+      hint: s.enterPassword,
+      submitLabel: s.delete,
+      cancelLabel: s.cancel,
+      obscureText: true,
+    );
+    if (password == null || password.isEmpty || !context.mounted) return;
+
+    final AuthFailureType? failure =
+        await AppRouter.deleteAccount(context, password);
+    if (failure == null || !context.mounted) return;
+
+    await CustomDialogManager.showError(
+      context: context,
+      title: s.deleteAccountFailed,
+      subtitle: failure.message(context),
+      closeLabel: s.close,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final S s = S.of(context);
@@ -51,15 +100,12 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 640.w),
-          child: ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppPadding.h,
-              vertical: 16.h,
-            ),
-            children: <Widget>[
+      // FULL WIDTH. On a wide screen the page splits in two: the account
+      // and app preferences on the left, the super admin's tools (admins,
+      // control centre) on the right. Narrow screens stack them.
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final List<Widget> left = <Widget>[
               // ── Who is signed in ─────────────────────────────────────────
               AppCard(
                 child: Row(
@@ -100,13 +146,13 @@ class SettingsPage extends StatelessWidget {
                         vertical: 5.h,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.12),
+                        color: AppColors.chip,
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         user.role.label(context),
                         style: StyleText.fontSize11Weight600
-                            .copyWith(color: AppColors.primary),
+                            .copyWith(color: AppColors.onChip),
                       ),
                     ),
                   ],
@@ -129,7 +175,7 @@ class SettingsPage extends StatelessWidget {
                         title: s.darkMode,
                         trailing: Switch.adaptive(
                           value: theme.isDarkMode.value,
-                          activeTrackColor: AppColors.primary,
+                          activeTrackColor: AppColors.secondaryPrimary,
                           onChanged: theme.setDarkMode,
                         ),
                       ),
@@ -154,7 +200,7 @@ class SettingsPage extends StatelessWidget {
                         title: s.haptics,
                         trailing: Switch.adaptive(
                           value: haptics.isHapticEnabled.value,
-                          activeTrackColor: AppColors.primary,
+                          activeTrackColor: AppColors.secondaryPrimary,
                           onChanged: haptics.toggleHapticFeedback,
                         ),
                       ),
@@ -173,21 +219,28 @@ class SettingsPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
+                      // Tap either colour to change it. Primary paints buttons,
+                      // icons and highlights; secondary paints every switch.
                       Obx(
-                        () => Row(
-                          children: <Widget>[
-                            _Swatch(color: theme.primaryColor.value),
-                            SizedBox(width: 8.w),
-                            _Swatch(color: theme.secondaryColor.value),
-                            const Spacer(),
-                            AppButton(
-                              label: s.resetColors,
-                              icon: Icons.refresh_rounded,
-                              kind: AppButtonKind.subtle,
-                              dense: true,
-                              onPressed: theme.resetBrandingColors,
-                            ),
-                          ],
+                        () => CustomColorPickerSection(
+                          showHeading: false,
+                          primaryColor: theme.primaryColor.value,
+                          secondaryColor: theme.secondaryColor.value,
+                          onPrimaryColorSelected: (Color c) =>
+                              theme.setBrandingColors(c, theme.secondaryColor.value),
+                          onSecondaryColorSelected: (Color c) =>
+                              theme.setBrandingColors(theme.primaryColor.value, c),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: AppButton(
+                          label: s.resetColors,
+                          icon: Icons.refresh_rounded,
+                          kind: AppButtonKind.subtle,
+                          dense: true,
+                          onPressed: theme.resetBrandingColors,
                         ),
                       ),
                     ],
@@ -201,10 +254,11 @@ class SettingsPage extends StatelessWidget {
               // LOOKING at the app, and the dashboard is the screen its
               // numbers change most — a button that rewrites the chart you are
               // reading does not belong on top of that chart.
-              if (user.isAdmin) ...<Widget>[
+              if (user.isSuperAdmin) ...<Widget>[
                 DemoDataCard(adminUid: user.uid),
                 SizedBox(height: 16.h),
               ],
+
 
 
               AppButton(
@@ -214,12 +268,78 @@ class SettingsPage extends StatelessWidget {
                 expand: true,
                 onPressed: () => _confirmSignOut(context),
               ),
-              SizedBox(height: 24.h),
-              const PoweredByFooter(),
+              SizedBox(height: 16.h),
+
+              // ── Delete account — every role, every platform ─────────────
+              AppCard(
+                title: s.dangerZone,
+                caption: s.deleteAccountHint,
+                child: _SettingsTile(
+                  icon: Icons.delete_forever_rounded,
+                  title: s.deleteAccount,
+                  color: AppColors.red,
+                  onTap: () => _confirmDeleteAccount(context),
+                  trailing: AppIcon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.red,
+                    size: 20.sp,
+                  ),
+                ),
+              ),
+          ];
+
+          final List<Widget> right = <Widget>[
+            if (user.isSuperAdmin) ...<Widget>[
+              const AdminsCard(),
+              SizedBox(height: 16.h),
+              const ControlCentreCard(),
               SizedBox(height: 16.h),
             ],
-          ),
-        ),
+          ];
+
+          final List<Widget> footerWidgets = <Widget>[
+            SizedBox(height: 24.h),
+            const PoweredByFooter(),
+            SizedBox(height: 16.h),
+          ];
+
+          final bool split = right.isNotEmpty && constraints.maxWidth >= 1000;
+
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppPadding.h,
+              vertical: 16.h,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                if (split)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: left,
+                        ),
+                      ),
+                      SizedBox(width: 20.w),
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: right,
+                        ),
+                      ),
+                    ],
+                  )
+                else ...<Widget>[...right, ...left],
+                ...footerWidgets,
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -233,12 +353,16 @@ class _SettingsTile extends StatelessWidget {
     required this.title,
     required this.trailing,
     this.onTap,
+    this.color,
   });
 
   final IconData icon;
   final String title;
   final Widget trailing;
   final VoidCallback? onTap;
+
+  /// Tints the icon and label — red for the destructive row.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -247,27 +371,15 @@ class _SettingsTile extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         onTap: onTap,
-        leading: AppIcon(icon),
-        title: Text(title, style: StyleText.fontSize14Weight500),
+        leading: AppIcon(icon, color: color),
+        title: Text(
+          title,
+          style: color == null
+              ? StyleText.fontSize14Weight500
+              : StyleText.fontSize14Weight500.copyWith(color: color),
+        ),
         trailing: trailing,
       ),
     );
   }
-}
-
-class _Swatch extends StatelessWidget {
-  const _Swatch({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 32.r,
-        height: 32.r,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.borderGrey),
-        ),
-      );
 }

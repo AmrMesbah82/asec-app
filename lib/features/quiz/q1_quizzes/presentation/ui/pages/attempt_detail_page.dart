@@ -355,7 +355,7 @@ class _OptionRow extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: highlight ? tint.withOpacity(0.08) : AppColors.transparent,
+          color: highlight ? AppColors.chip : AppColors.transparent,
           borderRadius: AppRadius.containerR,
           border: Border.all(
             color: highlight ? tint.withOpacity(0.4) : AppColors.borderGrey,
@@ -377,7 +377,7 @@ class _OptionRow extends StatelessWidget {
               child: Text(
                 label,
                 style: highlight
-                    ? StyleText.fontSize13Weight600.copyWith(color: tint)
+                    ? StyleText.fontSize13Weight600.copyWith(color: AppColors.onChip)
                     : StyleText.fontSize13Weight400,
               ),
             ),
@@ -385,12 +385,12 @@ class _OptionRow extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                 decoration: BoxDecoration(
-                  color: tint.withOpacity(0.14),
+                  color: AppColors.card,
                   borderRadius: AppRadius.buttonR,
                 ),
                 child: Text(
                   s.theirAnswer,
-                  style: StyleText.fontSize10Weight600.copyWith(color: tint),
+                  style: StyleText.fontSize10Weight600.copyWith(color: AppColors.onChip),
                 ),
               ),
           ],

@@ -6,6 +6,8 @@
 /// Author: ASEC team
 /// Created: 19/9/2026
 
+import 'package:asec/core/constants/app_constants.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 
 class AppUser {
@@ -26,6 +28,30 @@ class AppUser {
 
   final DateTime? createdAt;
 
+  /// For an admin created by the super admin: what they may manage.
+  /// Ignored for the super admin (who may do everything) and for members.
+  final List<AdminPermission> permissions;
+
+  // ── Member access (set by the admin on the Members page) ──────────────────
+
+  /// True = every course, including ones added later. False = only [courses].
+  final bool allCourses;
+
+  /// Video categories this member may watch ('' = the "General" category).
+  final List<String> courses;
+
+  /// Platform keys the member may open the app on (android, ios, macos,
+  /// windows, web). Empty = every platform.
+  final List<String> platforms;
+
+  /// The access window. Both null = permanent.
+  final DateTime? accessFrom;
+  final DateTime? accessUntil;
+
+  /// Set while the admin has paused the access. On resume, the paused time
+  /// is added to [accessUntil].
+  final DateTime? pausedAt;
+
   const AppUser({
     required this.uid,
     required this.email,
@@ -35,13 +61,37 @@ class AppUser {
     this.active = true,
     this.canCreateCv = false,
     this.createdAt,
+    this.permissions = const <AdminPermission>[],
+    this.allCourses = true,
+    this.courses = const <String>[],
+    this.platforms = const <String>[],
+    this.accessFrom,
+    this.accessUntil,
+    this.pausedAt,
   });
+
+  bool get isPaused => pausedAt != null;
+  bool get isPermanent => accessFrom == null && accessUntil == null;
+
+  /// Whether this member may see [category]. Admins see everything.
+  bool canSeeCourse(String category) =>
+      isAdmin || allCourses || courses.contains(category.trim());
+
+  bool allowsPlatform(String platform) =>
+      isAdmin || platforms.isEmpty || platforms.contains(platform);
 
   static const AppUser empty =
       AppUser(uid: '', email: '', role: UserRole.user);
 
   bool get isEmpty => uid.isEmpty;
   bool get isAdmin => role.isAdmin;
+
+  /// The owner account — the one email in AppConstants.adminEmail.
+  bool get isSuperAdmin => isAdmin && AppConstants.isAdminEmail(email);
+
+  /// Whether this account may manage [p]. The super admin always may.
+  bool can(AdminPermission p) =>
+      isSuperAdmin || (isAdmin && permissions.contains(p));
 
   /// Whether the CV form should be offered. The admin needs no permission —
   /// the switch exists to let members in, not to keep the admin out.
@@ -75,6 +125,7 @@ class AppUser {
     UserRole? role,
     bool? active,
     bool? canCreateCv,
+    List<AdminPermission>? permissions,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -85,6 +136,13 @@ class AppUser {
       active: active ?? this.active,
       canCreateCv: canCreateCv ?? this.canCreateCv,
       createdAt: createdAt,
+      permissions: permissions ?? this.permissions,
+      allCourses: allCourses,
+      courses: courses,
+      platforms: platforms,
+      accessFrom: accessFrom,
+      accessUntil: accessUntil,
+      pausedAt: pausedAt,
     );
   }
 }

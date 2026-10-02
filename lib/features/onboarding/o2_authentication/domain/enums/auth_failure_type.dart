@@ -44,6 +44,7 @@ enum AuthFailureType {
   static AuthFailureType fromCode(String code) {
     switch (code) {
       case 'user-not-found':
+      case 'user-mismatch':
       case 'wrong-password':
       case 'invalid-credential':
       case 'invalid-login-credentials':
@@ -58,6 +59,8 @@ enum AuthFailureType {
         return AuthFailureType.userDisabled;
       case 'too-many-requests':
         return AuthFailureType.tooManyRequests;
+      case 'requires-recent-login':
+        return AuthFailureType.wrongCredentials;
       case 'network-request-failed':
       case 'unavailable':
         return AuthFailureType.network;

@@ -367,14 +367,12 @@ class _PercentChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = percent >= 80
-        ? AppColors.green
-        : (percent >= 50 ? AppColors.statusPending : AppColors.red);
+    final Color color = AppColors.onChip;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: AppColors.chip,
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(

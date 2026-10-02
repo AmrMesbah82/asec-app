@@ -201,8 +201,8 @@ class _PhotoCard extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withOpacity(0.1),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              color: AppColors.chip,
+              border: Border.all(color: AppColors.borderGrey),
             ),
             child: state.cv.hasPhoto
                 ? Image.network(state.cv.photoUrl, fit: BoxFit.cover)
@@ -221,7 +221,7 @@ class _PhotoCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: state.progress == 0 ? null : state.progress,
                 minHeight: 5.h,
-                backgroundColor: AppColors.primary.withOpacity(0.12),
+                backgroundColor: AppColors.chip,
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
             ),
@@ -594,15 +594,9 @@ class _CvFileCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: cv.hasCvFile
-                  ? AppColors.green.withOpacity(0.08)
-                  : AppColors.fieldBackGround,
+              color: AppColors.chip,
               borderRadius: AppRadius.buttonR,
-              border: Border.all(
-                color: cv.hasCvFile
-                    ? AppColors.green.withOpacity(0.35)
-                    : AppColors.borderGrey,
-              ),
+              border: Border.all(color: AppColors.borderGrey),
             ),
             child: Row(
               children: <Widget>[
@@ -611,8 +605,7 @@ class _CvFileCard extends StatelessWidget {
                   height: 38.r,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: (cv.hasCvFile ? AppColors.green : AppColors.primary)
-                        .withOpacity(0.12),
+                    color: AppColors.card,
                     borderRadius: AppRadius.buttonR,
                   ),
                   child: AppIcon(
@@ -620,7 +613,7 @@ class _CvFileCard extends StatelessWidget {
                         ? Icons.picture_as_pdf_rounded
                         : Icons.upload_file_rounded,
                     size: 20.sp,
-                    color: cv.hasCvFile ? AppColors.green : AppColors.primary,
+                    color: AppColors.primary,
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -669,7 +662,7 @@ class _CvFileCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: state.progress == 0 ? null : state.progress,
                 minHeight: 5.h,
-                backgroundColor: AppColors.primary.withOpacity(0.12),
+                backgroundColor: AppColors.chip,
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
             ),

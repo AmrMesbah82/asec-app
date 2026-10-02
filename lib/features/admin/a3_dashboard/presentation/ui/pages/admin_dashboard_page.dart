@@ -33,6 +33,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
 import 'package:asec/features/admin/a3_dashboard/presentation/ui/widgets/dashboard_charts.dart';
 import 'package:asec/features/admin/a3_dashboard/presentation/ui/widgets/dashboard_data.dart';
+import 'package:asec/features/admin/a3_dashboard/presentation/ui/widgets/dashboard_kpi_card.dart';
 import 'package:asec/features/admin/a3_dashboard/presentation/ui/widgets/dashboard_table.dart';
 import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/base_repository/auth_base_repository.dart';
@@ -45,6 +46,8 @@ import 'package:asec/features/video/v1_videos/data/repository/video_repository.d
 import 'package:asec/features/video/v1_videos/domain/base_repository/video_base_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/settings/app_features.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key, required this.admin});
@@ -56,6 +59,8 @@ class AdminDashboardPage extends StatefulWidget {
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
+  /// Sky blue: the videos card needs a colour of its own next to the
+  /// primary, orange and green cards.
   final UsersBaseRepository _users = UsersRepository();
   final VideoBaseRepository _videos = VideoRepository();
   final QuizBaseRepository _quizzes = QuizRepository();
@@ -94,58 +99,135 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             subtitle: s.dashboardAsecSub,
             child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
+              final bool phone = constraints.maxWidth < 600;
               return ListView(
                 padding: EdgeInsets.only(bottom: 16.h),
                 children: <Widget>[
                   // ── The four numbers ─────────────────────────────────────
+                  // PHONES: four small tiles, two by two, instead of four
+                  // tall cards stacked down the whole screen.
                   GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: CrossAxisCountHelper.gridDelegate(
-                      context,
-                      mainAxisExtent: 110,
-                      minCellWidth: 170,
-                      availableWidth: constraints.maxWidth,
-                    ),
+                    gridDelegate: phone
+                        ? SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisExtent: 148,
+                            crossAxisSpacing: 10.w,
+                            mainAxisSpacing: 10.h,
+                          )
+                        : CrossAxisCountHelper.gridDelegate(
+                            context,
+                            mainAxisExtent: 196,
+                            minCellWidth: 250,
+                            availableWidth: constraints.maxWidth,
+                          ),
                     children: <Widget>[
-                      StatTile(
+                      FadeSlideIn(
+                        delay: staggerDelay(0, stepMs: 90),
+                        child: KpiCard(
+                        compact: phone,
                         icon: Icons.groups_2_rounded,
+                        accent: AppColors.primary,
                         label: s.totalMembers,
                         value: '${data.members.length}',
+                        badge: data.newMembersThisWeek > 0
+                            ? s.kpiNewThisWeek(data.newMembersThisWeek)
+                            : null,
+                        sparkline: data.membersGrowth(),
+                        facts: <KpiFact>[
+                          KpiFact(s.active, '${data.activeMembers}'),
+                          KpiFact(s.inactive, '${data.inactiveMembers}'),
+                          KpiFact(s.kpiCvAccess, '${data.cvMembers}'),
+                        ],
                       ),
-                      StatTile(
+                      ),
+                      FadeSlideIn(
+                        delay: staggerDelay(1, stepMs: 90),
+                        child: KpiCard(
+                        compact: phone,
                         icon: Icons.video_library_rounded,
+                        accent: AppColors.primary,
                         label: s.totalVideos,
                         value: '${data.videos.length}',
+                        badge: data.newVideosThisMonth > 0
+                            ? s.kpiNewThisMonth(data.newVideosThisMonth)
+                            : null,
+                        sparkline: data.videosGrowth(),
+                        facts: <KpiFact>[
+                          KpiFact(s.published, '${data.publishedVideos}'),
+                          KpiFact(s.kpiDrafts, '${data.draftVideos}'),
+                          KpiFact(s.kpiLibrarySize, data.librarySize),
+                        ],
                       ),
-                      StatTile(
+                      ),
+                      FadeSlideIn(
+                        delay: staggerDelay(2, stepMs: 90),
+                        child: KpiCard(
+                        compact: phone,
                         icon: Icons.quiz_outlined,
+                        accent: AppColors.primary,
                         label: s.totalQuizzes,
                         value: '${data.quizzes.length}',
+                        badge: data.openQuizzes > 0
+                            ? s.kpiOpenNow(data.openQuizzes)
+                            : null,
+                        badgeIcon: Icons.bolt_rounded,
+                        sparkline: data.quizzesGrowth(),
+                        facts: <KpiFact>[
+                          KpiFact(s.open, '${data.openQuizzes}'),
+                          KpiFact(s.quizClosed, '${data.closedQuizzes}'),
+                          KpiFact(s.questions, '${data.totalQuestions}'),
+                        ],
                       ),
-                      StatTile(
+                      ),
+                      FadeSlideIn(
+                        delay: staggerDelay(3, stepMs: 90),
+                        child: KpiCard(
+                        compact: phone,
                         icon: Icons.fact_check_rounded,
+                        accent: AppColors.primary,
                         label: s.totalAttempts,
                         value: '${data.attempts.length}',
-                        caption: data.hasAttempts
-                            ? '${s.average} ${data.averagePercent}%'
+                        badge: data.attemptsThisWeek > 0
+                            ? s.kpiNewThisWeek(data.attemptsThisWeek)
                             : null,
+                        sparkline: data
+                            .attemptsByDay(days: 14)
+                            .map((Series e) => e.value)
+                            .toList(),
+                        facts: <KpiFact>[
+                          KpiFact(s.average, '${data.averagePercent}%'),
+                          KpiFact(s.passRate, '${data.passRatePercent}%'),
+                          KpiFact(s.kpiTimedOut, '${data.autoSubmittedAttempts}'),
+                        ],
+                      ),
                       ),
                     ],
                   ),
                   SizedBox(height: 20.h),
 
+                  if (AppFeatures.to.isOn(AppFeature.dashboardCharts)) ...<Widget>[
                   // ── The charts ───────────────────────────────────────────
                   AppSectionHeader(
                     title: s.charts,
                     caption: data.hasAttempts ? null : s.nothingToChartAsec,
                   ),
                   SizedBox(height: 12.h),
-                  DashboardCharts(data: data),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 380),
+                    child: DashboardCharts(data: data),
+                  ),
                   SizedBox(height: 20.h),
 
+                  ],
+                  if (AppFeatures.to.isOn(AppFeature.dashboardTable)) ...<Widget>[
                   // ── The records ──────────────────────────────────────────
-                  DashboardTable(data: data),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 520),
+                    child: DashboardTable(data: data),
+                  ),
+                  ],
                   SizedBox(height: 24.h),
                 ],
               );
@@ -185,7 +267,7 @@ class StatTile extends StatelessWidget {
             width: 42.r,
             height: 42.r,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.chip,
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Center(

@@ -11,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:asec/core/constants/firebase_collections.dart';
 import 'package:asec/core/helper/main_helper/firestore_mapper.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 
 /// Field names here MUST match the `onlyKeys` lists in firestore.rules — a
@@ -22,6 +23,15 @@ abstract final class UserModel {
   static const String fullName = 'full_name';
   static const String email = 'email';
   static const String phone = 'phone';
+  static const String permissions = 'permissions';
+
+  // Member access — written by an admin with the 'members' permission.
+  static const String coursesAll = 'courses_all';
+  static const String courses = 'courses';
+  static const String platforms = 'platforms';
+  static const String accessFrom = 'access_from';
+  static const String accessUntil = 'access_until';
+  static const String pausedAt = 'paused_at';
 
   static AppUser fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final Map<String, dynamic> data = doc.safeData;
@@ -35,8 +45,32 @@ abstract final class UserModel {
       active: data.boolean(FirebaseCollections.activeField, true),
       canCreateCv: data.boolean(FirebaseCollections.canCreateCvField),
       createdAt: data.date(FirebaseCollections.createdAtField),
+      allCourses: data.boolean(coursesAll, true),
+      courses: data.stringList(courses),
+      platforms: data.stringList(platforms),
+      accessFrom: data.date(accessFrom),
+      accessUntil: data.date(accessUntil),
+      pausedAt: data.date(pausedAt),
+      permissions: AdminPermission.fromKeys(
+        (doc.data()?[permissions] as List<dynamic>? ?? const <dynamic>[])
+            .whereType<String>(),
+      ),
     );
   }
+
+  /// A new admin, written by the super admin. The only map that carries
+  /// `permissions` — a member's own writes never can (see firestore.rules).
+  static Map<String, dynamic> toAdminMap(AppUser admin) => <String, dynamic>{
+        email: admin.email.trim().toLowerCase(),
+        fullName: admin.fullName.trim(),
+        phone: admin.phone.trim(),
+        FirebaseCollections.roleField: 'admin',
+        FirebaseCollections.activeField: true,
+        FirebaseCollections.canCreateCvField: false,
+        permissions: <String>[for (final AdminPermission p in admin.permissions) p.key],
+        FirebaseCollections.createdAtField: FieldValue.serverTimestamp(),
+        FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
+      };
 
   /// The whole profile. Used on register, so no field is ever half-written.
   static Map<String, dynamic> toMap(AppUser user, {bool isCreate = false}) {
@@ -52,6 +86,24 @@ abstract final class UserModel {
       FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
     };
   }
+
+  /// The admin's access settings for one member (not the pause — that has
+  /// its own write, so saving the form never un-pauses anybody).
+  static Map<String, dynamic> toAccessMap({
+    required bool allCourses,
+    required List<String> courseList,
+    required List<String> platformList,
+    required DateTime? from,
+    required DateTime? until,
+  }) =>
+      <String, dynamic>{
+        coursesAll: allCourses,
+        courses: courseList,
+        platforms: platformList,
+        accessFrom: from == null ? null : Timestamp.fromDate(from),
+        accessUntil: until == null ? null : Timestamp.fromDate(until),
+        FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
+      };
 
   /// What a user may change about themselves: name and phone, nothing else.
   /// Not the role — that is the whole point of keeping this map small.

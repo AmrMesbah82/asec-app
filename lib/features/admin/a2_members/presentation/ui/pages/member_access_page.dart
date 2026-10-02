@@ -1,0 +1,412 @@
+/// Module: admin / a2_members
+///
+///*************************** FILE INFO ****************************///
+/// File Name: member_access_page.dart
+/// Purpose: Declares `MemberAccessPage` — what ONE member may use: which
+///          courses, on which devices, for how long, and the pause button.
+/// Author: ASEC team
+/// Created: 1/10/2026
+///
+/// Courses are the video categories (Drive sub-folders). Devices are
+/// Android, iPhone/iPad, Mac and Windows. The period is permanent or
+/// from–to. PAUSE is an immediate action, separate from Save: it locks the
+/// member out now, and Resume adds the paused days to the end date.
+///
+/// The member's app applies all of it live (UserShell → AccessGate), and
+/// firestore.rules lets only an admin with the Members permission write
+/// these fields.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:asec/core/custom/1-custom_dropdown.dart';
+import 'package:asec/core/custom/101-custom_surface.dart';
+import 'package:asec/core/custom/110-app_widgets.dart';
+import 'package:asec/core/custom/23-custom_check_box.dart';
+import 'package:asec/core/custom/5-custom_button.dart';
+import 'package:asec/core/custom/58-default_switch_button.dart';
+import 'package:asec/core/network/app_failure.dart';
+import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/core/theme/app_padding.dart';
+import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/features/onboarding/o2_authentication/data/models/user_model.dart';
+import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_repository.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/base_repository/auth_base_repository.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
+import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/date_time_field.dart';
+import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
+import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+import 'package:asec/generated/l10n.dart';
+
+class MemberAccessPage extends StatefulWidget {
+  const MemberAccessPage({super.key, required this.member});
+
+  final AppUser member;
+
+  @override
+  State<MemberAccessPage> createState() => _MemberAccessPageState();
+}
+
+class _MemberAccessPageState extends State<MemberAccessPage> {
+  final UsersBaseRepository _users = UsersRepository();
+  late final Stream<AppUser?> _live = _users.watchUser(widget.member.uid);
+  late final Stream<List<VideoItem>> _videos = VideoRepository().watchAll();
+
+  late bool _allCourses = widget.member.allCourses;
+  late final Set<String> _courses = widget.member.courses.toSet();
+  late final Set<String> _platforms = widget.member.platforms.isEmpty
+      ? MemberAccess.allPlatforms.toSet()
+      : widget.member.platforms.toSet();
+  late bool _permanent = widget.member.isPermanent;
+  late DateTime? _from = widget.member.accessFrom;
+  late DateTime? _until = widget.member.accessUntil;
+
+  bool _saving = false;
+  bool _pausing = false;
+
+  String? _validate(S s) {
+    if (!_allCourses && _courses.isEmpty) return s.accessPickCourse;
+    if (_platforms.isEmpty) return s.accessPickPlatform;
+    if (!_permanent && _from != null && _until != null && !_until!.isAfter(_from!)) {
+      return s.accessDatesInvalid;
+    }
+    return null;
+  }
+
+  void _toast(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
+
+  Future<void> _save() async {
+    final S s = S.of(context);
+    final String? problem = _validate(s);
+    if (problem != null) {
+      _toast(problem);
+      return;
+    }
+    setState(() => _saving = true);
+    // Every device checked = no restriction (an empty list), so a platform
+    // added to the app later is allowed too.
+    final bool everyPlatform =
+        MemberAccess.allPlatforms.every(_platforms.contains);
+    final result = await _users.setAccess(
+      widget.member.uid,
+      UserModel.toAccessMap(
+        allCourses: _allCourses,
+        courseList: _allCourses ? const <String>[] : _courses.toList(),
+        platformList: everyPlatform ? const <String>[] : _platforms.toList(),
+        from: _permanent ? null : _from,
+        until: _permanent ? null : _until,
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    result.fold(
+      (AppFailure f) => _toast(f.message(context)),
+      (_) {
+        final NavigatorState nav = Navigator.of(context);
+        _toast(s.accessSaved);
+        nav.pop();
+      },
+    );
+  }
+
+  Future<void> _togglePause(AppUser live) async {
+    setState(() => _pausing = true);
+    final result = live.isPaused
+        ? await _users.resumeAccess(live)
+        : await _users.pauseAccess(live.uid);
+    if (!mounted) return;
+    setState(() => _pausing = false);
+    result.fold((AppFailure f) => _toast(f.message(context)), (_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          '${s.editAccess} · ${widget.member.displayName}',
+          style: StyleText.fontSize18Weight600,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints c) {
+          // DESKTOP: two columns — what they may watch (courses) beside
+          // where and when (devices, period, pause). Phone: one column.
+          final bool wide = c.maxWidth >= 1000;
+          final Widget coursesCard = AppCard(
+                title: s.accessCourses,
+                caption: s.accessCoursesCaption,
+                child: StreamBuilder<List<VideoItem>>(
+                  stream: _videos,
+                  builder: (BuildContext context, AsyncSnapshot<List<VideoItem>> snap) {
+                    final List<String> courses = _courseNames(snap.data ?? const <VideoItem>[]);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        _SwitchRow(
+                          label: s.accessAllCourses,
+                          value: _allCourses,
+                          onChanged: (bool v) => setState(() => _allCourses = v),
+                        ),
+                        if (!_allCourses) ...<Widget>[
+                          SizedBox(height: 6.h),
+                          for (final String c in courses)
+                            _CheckRow(
+                              label: c.isEmpty ? s.videoCategoryGeneral : c,
+                              checked: _courses.contains(c),
+                              onTap: () => setState(() {
+                                _courses.contains(c) ? _courses.remove(c) : _courses.add(c);
+                              }),
+                            ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              );
+          final Widget devicesCard = AppCard(
+                title: s.accessPlatforms,
+                caption: s.accessPlatformsCaption,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _SwitchRow(
+                      label: s.accessAllPlatforms,
+                      value: MemberAccess.allPlatforms.every(_platforms.contains),
+                      onChanged: (bool v) => setState(() {
+                        _platforms.clear();
+                        if (v) _platforms.addAll(MemberAccess.allPlatforms);
+                      }),
+                    ),
+                    SizedBox(height: 6.h),
+                    for (final String p in MemberAccess.allPlatforms)
+                      _CheckRow(
+                        label: MemberAccess.platformLabel(p),
+                        icon: _platformIcon(p),
+                        checked: _platforms.contains(p),
+                        onTap: () => setState(() {
+                          _platforms.contains(p) ? _platforms.remove(p) : _platforms.add(p);
+                        }),
+                      ),
+                  ],
+                ),
+              );
+          final Widget periodCard = AppCard(
+                title: s.accessPeriod,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    CustomDropdown<bool>(
+                      value: _permanent,
+                      items: <DropdownItem<bool>>[
+                        DropdownItem<bool>(value: true, label: s.accessPermanent),
+                        DropdownItem<bool>(value: false, label: s.accessDates),
+                      ],
+                      onChanged: (bool v) => setState(() => _permanent = v),
+                    ),
+                    if (!_permanent) ...<Widget>[
+                      SizedBox(height: 12.h),
+                      DateTimeField(
+                        label: s.accessFrom,
+                        value: _from,
+                        icon: Icons.play_circle_outline_rounded,
+                        onChanged: (DateTime? v) => setState(() => _from = v),
+                      ),
+                      SizedBox(height: 12.h),
+                      DateTimeField(
+                        label: s.accessUntil,
+                        value: _until,
+                        icon: Icons.event_busy_rounded,
+                        onChanged: (DateTime? v) => setState(() => _until = v),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+          final Widget pauseCard = StreamBuilder<AppUser?>(
+                stream: _live,
+                builder: (BuildContext context, AsyncSnapshot<AppUser?> snap) {
+                  final AppUser live = snap.data ?? widget.member;
+                  return AppCard(
+                    title: live.isPaused ? s.accessPaused : s.accessPause,
+                    caption: s.accessPauseCaption,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          live.isPaused ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                          color: live.isPaused ? AppColors.statusPending : AppColors.green,
+                          size: 26,
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            live.isPaused
+                                ? s.accessPausedSince(AppDates.day(context, live.pausedAt))
+                                : (live.accessUntil == null
+                                    ? s.accessPermanent
+                                    : s.accessUntilShort(AppDates.day(context, live.accessUntil))),
+                            style: StyleText.fontSize13Weight500.copyWith(color: AppColors.text),
+                          ),
+                        ),
+                        _pausing
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4))
+                            : customButton(
+                                title: live.isPaused ? s.accessResume : s.accessPause,
+                                function: () => _togglePause(live),
+                                wrapContent: true,
+                                color: live.isPaused ? AppColors.green : AppColors.statusPending,
+                              ),
+                      ],
+                    ),
+                  );
+                },
+              );
+          final Widget saveCard = Center(
+                child: _saving
+                    ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5))
+                    : customButton(title: s.save, function: _save, fullWidth: true),
+              );
+          final Widget gap = SizedBox(height: 16.h, width: 16.w);
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: wide ? 1200 : 760.w),
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: AppPadding.h, vertical: 16.h),
+                children: <Widget>[
+                  if (wide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(child: coursesCard),
+                        gap,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[devicesCard, gap, periodCard, gap, pauseCard],
+                          ),
+                        ),
+                      ],
+                    )
+                  else ...<Widget>[
+                    coursesCard, gap, devicesCard, gap, periodCard, gap, pauseCard,
+                  ],
+                  SizedBox(height: 24.h),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: wide ? 360 : double.infinity),
+                      child: saveCard,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Categories from every video, in folder order, plus any course already
+  /// saved on the member that no longer has videos.
+  List<String> _courseNames(List<VideoItem> videos) {
+    final Map<String, int> order = <String, int>{};
+    for (final VideoItem v in videos) {
+      final String c = v.category.trim();
+      final int o = c.isEmpty ? -1 : (v.categoryOrder > 0 ? v.categoryOrder : 1 << 20);
+      if (!order.containsKey(c) || o < order[c]!) order[c] = o;
+    }
+    for (final String c in _courses) {
+      order.putIfAbsent(c, () => 1 << 21);
+    }
+    return order.keys.toList()
+      ..sort((String a, String b) {
+        final int c = order[a]!.compareTo(order[b]!);
+        return c != 0 ? c : a.toLowerCase().compareTo(b.toLowerCase());
+      });
+  }
+
+  static IconData _platformIcon(String p) {
+    switch (p) {
+      case 'android':
+        return Icons.android_rounded;
+      case 'ios':
+        return Icons.phone_iphone_rounded;
+      case 'macos':
+        return Icons.laptop_mac_rounded;
+      case 'windows':
+        return Icons.desktop_windows_rounded;
+      case 'web':
+        return Icons.language_rounded;
+      default:
+        return Icons.devices_rounded;
+    }
+  }
+}
+
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({required this.label, required this.value, required this.onChanged});
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(label, style: StyleText.fontSize14Weight600.copyWith(color: AppColors.text)),
+          ),
+          DefaultSwitchButton(value: value, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckRow extends StatelessWidget {
+  const _CheckRow({required this.label, required this.checked, required this.onTap, this.icon});
+
+  final String label;
+  final bool checked;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10.r),
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+        child: Row(
+          children: <Widget>[
+            CustomCheckBox(isSelected: checked),
+            SizedBox(width: 10.w),
+            if (icon != null) ...<Widget>[
+              Icon(icon, size: 18, color: AppColors.secondaryText),
+              SizedBox(width: 8.w),
+            ],
+            Expanded(
+              child: Text(label, style: StyleText.fontSize14Weight500.copyWith(color: AppColors.text)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

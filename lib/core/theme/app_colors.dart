@@ -124,6 +124,16 @@ abstract class AppColors {
   static Color get message => currentThemeColors['message']!;
   static Color get messageText => currentThemeColors['messageText']!;
   static Color get background => currentThemeColors['background']!;
+
+  // ----------------- Chips & badges -----------------
+  /// THE fill of every chip, badge, tag, status pill and icon tile. They sit
+  /// on a card ([card]), so their ground is the page [background], slightly
+  /// see-through — never a tint of a status colour (green / red / orange on
+  /// its own 12 % tint was unreadable, above all in dark mode).
+  static Color get chip => background.withOpacity(0.75);
+
+  /// The ink (text and glyph) on a [chip]. Always [text].
+  static Color get onChip => text;
   static Color get switchOff => currentThemeColors['switchOff']!;
 
   static Color get indicator => currentThemeColors['indicator']!;

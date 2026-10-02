@@ -1,0 +1,465 @@
+{
+ "_about": "English versions of the starter content (site_seed.json), by document id. Only *_en fields are written (and label_en on the counters, matched by their Arabic label), so Arabic edits made in the panel are kept. Panel → Import → \"Add English content\".",
+ "settings": {
+  "site_name_en": "ASEC Engineering Consultants",
+  "hero_button_text_en": "Start your journey to innovation",
+  "services_title_en": "Our Services",
+  "services_intro_en": "Some of the services ASEC Engineering Consultants provides",
+  "features_title_en": "Why Work With Us",
+  "features_intro_en": "A unique set of advantages that set your project up for success.",
+  "projects_title_en": "Our Work",
+  "projects_intro_en": "A selection of projects we have delivered",
+  "partners_title_en": "Our Partners",
+  "partners_intro_en": "Our partners are companies we have worked with on many projects and engineering consultations — strategic partners who help us reach shared goals and deliver successful work.",
+  "blog_title_en": "From the Blog",
+  "blog_intro_en": "Writing matters to us: it is how we share our experience, and reading is one of the best ways to learn.",
+  "testimonials_title_en": "What Our Clients Say",
+  "testimonials_intro_en": "Client feedback is central to how we judge the quality of our services, and we study it closely to understand how satisfied our clients are and whether we meet their expectations.",
+  "ceo_label_en": "Chief Executive Officer",
+  "ceo_name_en": "Ahmed Shuhayb",
+  "ceo_bio_en": "At Ahmed Shuhayb Engineering Consultants, we believe excellence comes only through mastery and precision. Since our founding, we have worked hard to deliver innovative engineering solutions in electromechanical (MEP) systems design, committed to the highest standards of quality and professionalism.\n\nOur motto, ‘Design Precision’, is more than words — it is the core of our work and the vision we pursue on every project. Our goal is to be your first partner in success, delivering integrated engineering designs that keep pace with the industry and meet your needs with the highest efficiency.\n\nWe always look to broaden our horizons and strengthen our position as a leading firm in this field, thanks to our outstanding team and our successful partnerships with our valued clients. Together, we build the future.",
+  "about_title_en": "About Us",
+  "about_subtitle_en": "A short introduction to Ahmed Shuhayb Engineering Consultants",
+  "about_heading_en": "Ahmed Shuhayb Engineering Consultants",
+  "about_text_en": "A firm specialised in design and construction supervision for complete projects such as hospitals, malls, hotels, commercial, administrative and industrial buildings, and residential buildings — apartment blocks or villas.\n\nThe firm has wide design experience in structures, architecture, interior design, and electrical and mechanical works.\n\nAs part of our duty to the community, the firm offers training placements to newly graduated engineers, aiming to raise the skills of engineers across the Arab world.\n\nThe firm was founded in March 2022 in Nasr City – 8th District – Mostafa El-Nahas St. Tax card 006 – 085 – 377.",
+  "team_en": [
+   "Technical Office",
+   "Project Management",
+   "Human Resources",
+   "Contracts & Tenders",
+   "Finance",
+   "Development & Quality"
+  ],
+  "cta_title_en": "Start your journey to innovation",
+  "cta_text_en": "What are you waiting for? Don't hesitate to get in touch with us for a consultation.",
+  "contact_title_en": "Get in touch with ASEC Engineering Consultants",
+  "address_en": "4 Mohamed Mokalled St., Nasr City, Egypt",
+  "requests_text_en": "This page is for submitting requests on our website. There are currently two kinds: an application for a job, and a request for one of the services listed on our website.",
+  "maintenance_text_en": "The site is under maintenance. We will be back soon."
+ },
+ "services": {
+  "integrated-design": {
+   "title_en": "Integrated Design",
+   "tagline_en": "Attention to detail makes a model design",
+   "body_en": "Our team is committed to delivering distinctive, high-quality services that satisfy our clients while meeting every requirement of international and local codes. We always make sure to hand over projects on time and within budget, and we carry out all the engineering and technical studies and consultations for residential, commercial and government projects and hospitals, supervising and checking the choice of the best sources with full professionalism.\n\nThe first step of the design starts with fully understanding the client's requirements and presenting our creative ideas step by step, to live up to our responsibility towards them. Once the client approves the initial proposal, we carry out all the structural, architectural, mechanical and electrical calculations and prepare an initial estimate of the expected project cost, so the model design matches the client's budget. We then produce the final design together with the calculation report, the technical bill of quantities and a list of suppliers for the project. Our aim is always full coordination between all disciplines using Building Information Modelling (BIM).\n\nWork is carried out through COLLABORATE PRO, so everyone on the project can coordinate and follow the design process, and the client can follow the project's progress every day through a personal e-mail account.",
+   "points_en": [
+    "Detail and quality: the team is committed to high-quality services with attention to detail, following international and local standards.",
+    "Deadlines and budget: the team is committed to delivering the project on time and within the agreed budget.",
+    "Experience and services: services across residential, commercial and government projects and hospitals, with the necessary consulting and engineering studies.",
+    "Collaboration and follow-up: COLLABORATE PRO is used to coordinate and follow the design process, and the client can follow the work stages every day.",
+    "Technology: Building Information Modelling (BIM) is used to achieve full coordination between all disciplines."
+   ]
+  },
+  "shop-drawings": {
+   "title_en": "Shop Drawings",
+   "tagline_en": "We solve your problems before construction",
+   "body_en": "Shop drawings are one of the most important stages of a project, and a drawing that can actually be built needs coordination between all disciplines. One of our team's strengths is Building Information Modelling (BIM): all disciplines work on a central file where everyone can see the other disciplines, which makes coordination between them easy.\n\nAfter coordination, the clashes must be studied realistically, taking into account the clearances between disciplines. Clash detection is done in Navisworks, so the client receives a 100% coordinated project. We then issue drawings with every detail needed for construction, and follow the construction stages to reach AS-BUILT drawings at the end of the project.",
+   "points_en": [
+    "Coordination before construction: coordinating all disciplines before producing shop drawings is essential for a buildable, consistent project.",
+    "BIM technology: better coordination between disciplines, since every team can see the central model and collaborate easily.",
+    "Clash detection: a realistic clash study in Navisworks, aiming for a 100% coordinated project.",
+    "Producing shop drawings: drawings with every detail needed for construction, with follow-up on site through to AS-BUILT drawings."
+   ]
+  },
+  "supervision": {
+   "title_en": "Site Supervision",
+   "tagline_en": "An eye on your project",
+   "body_en": "The firm has experience supervising the construction of many projects of all kinds — commercial, residential, industrial and medical. We study technical and financial offers and compare the technical specifications of the materials used with the project's standard specifications. We prepare project schedules and link the project to its payment certificates, and we are fully up to date with the latest systems, helping the team overcome every obstacle in record time with outstanding results. This team has helped us complete many projects.",
+   "points_en": [
+    "Experience across project types: supervision of commercial, residential, industrial and medical projects.",
+    "Study and comparison: studying technical and financial offers and comparing material specifications with the project's standard specifications.",
+    "Planning and cost control: preparing project schedules and linking them to payment certificates.",
+    "Up-to-date knowledge: full command of the latest systems and technologies to overcome challenges quickly and efficiently."
+   ]
+  }
+ },
+ "features": {
+  "f0": {
+   "title_en": "Fast design"
+  },
+  "f1": {
+   "title_en": "Lower cost"
+  },
+  "f2": {
+   "title_en": "Coordinated work"
+  },
+  "f3": {
+   "title_en": "Follow every project stage"
+  }
+ },
+ "partners": {
+  "pt00": {
+   "name_en": "Partner 1"
+  },
+  "pt01": {
+   "name_en": "Partner 2"
+  },
+  "pt02": {
+   "name_en": "Partner 3"
+  },
+  "pt03": {
+   "name_en": "Partner 4"
+  },
+  "pt04": {
+   "name_en": "Partner 5"
+  },
+  "pt05": {
+   "name_en": "Partner 6"
+  },
+  "pt06": {
+   "name_en": "Partner 7"
+  },
+  "pt07": {
+   "name_en": "Partner 8"
+  },
+  "pt08": {
+   "name_en": "Partner 9"
+  },
+  "pt09": {
+   "name_en": "Partner 10"
+  }
+ },
+ "testimonials": {
+  "t0": {
+   "name_en": "Eng. Galal Mokalled",
+   "role_en": "CEO, Converter",
+   "quote_en": "We trust your expertise and your attention to detail, and we have been happy working with you on our company's projects."
+  },
+  "t1": {
+   "name_en": "Eng. Mohamed Hany",
+   "role_en": "CEO, Bani",
+   "quote_en": "We have been happy working with you on design and shop drawings."
+  },
+  "t2": {
+   "name_en": "Eng. Walid Yassin",
+   "role_en": "General Manager, WYA",
+   "quote_en": "Commitment and precision are your motto, and we always trust you to finish the job on time."
+  },
+  "t3": {
+   "name_en": "Eng. Amr Tarek",
+   "role_en": "Technical Office Manager, Capital Contracting",
+   "quote_en": "You remain the best at attention to detail and coordination — I have never seen such precision before."
+  },
+  "t4": {
+   "name_en": "Eng. Mahmoud Abu El-Farag",
+   "role_en": "General Manager, Engineers for Electromechanical Works & Contracting",
+   "quote_en": "We have been happy working with you over the past years and the years to come — you are our technical office on all our projects."
+  }
+ },
+ "projects": {
+  "p01": {
+   "title_en": "Students Specialized Hospital",
+   "client_en": "Mansoura University",
+   "location_en": "Mansoura – Egypt",
+   "area_en": "1,500 m²",
+   "date_en": "February 2022",
+   "team_en": [
+    "Ismail El-Deeb",
+    "Youssef Shaaban"
+   ],
+   "description_en": "The Students Specialized Hospital is an outstanding medical centre serving students and the surrounding community. Its mechanical systems were carefully designed to provide a comfortable, safe medical environment for patients and staff. All design calculations were studied and analysed precisely to comply with international health standards and achieve the best performance, and the construction was supervised with care and precision so that every activity was carried out to a high standard and on schedule.",
+   "role_en": [
+    "Mechanical systems design",
+    "All design calculations",
+    "Construction supervision"
+   ]
+  },
+  "p02": {
+   "title_en": "Mansoura Special Hospital",
+   "client_en": "Mansoura University",
+   "location_en": "Mansoura – Egypt",
+   "area_en": "10,000 m²",
+   "date_en": "June 2022",
+   "team_en": [
+    "Mohamed Seddik",
+    "Hatem Moustafa",
+    "Karim Darwish"
+   ],
+   "description_en": "Mansoura Special Hospital is one of the most advanced medical facilities in the region. Its innovative design aims to provide a safe, comfortable medical environment for patients and staff alike. The mechanical systems were carefully designed to provide the best conditions for medical care, and every design calculation was checked for effective performance and compliance with international health standards. We also supervised the construction closely to ensure every activity was carried out professionally and to a high standard.",
+   "role_en": [
+    "Mechanical systems design",
+    "All design calculations",
+    "Construction supervision"
+   ]
+  },
+  "p03": {
+   "title_en": "Special Villa Design",
+   "client_en": "Eng. Khaled Maqboul",
+   "location_en": "Libya",
+   "area_en": "700 m²",
+   "date_en": "February 2023",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Karim Galal"
+   ],
+   "description_en": "A private villa designed for comfortable, high-quality living. Our role covered the design of the air-conditioning and ventilation systems and of the power and low-current systems, together with all the technical calculations, the quantity take-off and the technical bill of quantities, so the villa could be built accurately to the required specifications.",
+   "role_en": [
+    "Air-conditioning and ventilation design",
+    "Power and low-current systems design",
+    "All technical calculations",
+    "Quantity take-off and technical bill of quantities"
+   ]
+  },
+  "p04": {
+   "title_en": "El-Moktar Tower",
+   "client_en": "Mr. Mohamed El-Moktar",
+   "location_en": "Libya",
+   "area_en": "6,500 m²",
+   "date_en": "February 2022",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Sherif Mohamed",
+    "Mohamed Kheir Mohamed"
+   ],
+   "description_en": "El-Moktar Tower is one of the most prominent landmarks in the area. Its innovative design blends modernity with local tradition, making it an ideal destination for business and living. The mechanical and electrical systems were designed with high precision, with all design calculations and the technical bill of quantities prepared to ensure efficient performance and compliance with the standard specifications.",
+   "role_en": [
+    "Mechanical systems design",
+    "Electrical systems design",
+    "All design calculations",
+    "Technical bill of quantities and standard specifications"
+   ]
+  },
+  "p05": {
+   "title_en": "Special Restaurant Design",
+   "client_en": "Clients from Egypt, Saudi Arabia, the UAE, Kuwait and Libya",
+   "location_en": "Across the Arab world",
+   "area_en": "1,200 – 3,000 m²",
+   "date_en": "April 2021 – present",
+   "team_en": [
+    "Mohamed Kheir Mohamed",
+    "Ismail El-Deeb",
+    "Nada El-Sayed",
+    "Aya Samir"
+   ],
+   "description_en": "We understand how important it is to design restaurants and central kitchens to the highest standards of quality and innovation. Our role includes innovative, distinctive structural and architectural design that gives guests a unique dining experience. We carefully designed the air-conditioning and ventilation systems for a comfortable, healthy environment, and the power and low-current systems for good lighting and the right atmosphere. We also carry out all the technical calculations needed to build the designs efficiently, and prepare the quantity take-off and technical bill of quantities precisely, so each project complies with the required standards and is delivered successfully to specification.",
+   "role_en": [
+    "Structural and architectural design",
+    "Air-conditioning and ventilation design",
+    "Power and low-current systems design",
+    "All technical calculations",
+    "Quantity take-off and technical bill of quantities"
+   ]
+  },
+  "p06": {
+   "title_en": "Penafort Hotel",
+   "client_en": "Eng. Galal Mokalled",
+   "location_en": "Nigeria",
+   "area_en": "12,000 m²",
+   "date_en": "December 2022",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Mohamed Kheir Mohamed",
+    "Ismail El-Deeb",
+    "Nada El-Sayed"
+   ],
+   "description_en": "We designed the Penafort Hotel to the highest levels of quality and luxury. Our role included the careful design of the mechanical and electrical systems, providing a comfortable, safe environment for the hotel's guests, together with all the design calculations needed for integrated, efficient systems. We also prepared the technical bill of quantities and the standard specifications so the project would be built precisely to the required standards. Our mission was a design that combines luxury with high performance, for an unforgettable stay.",
+   "role_en": [
+    "Mechanical systems design",
+    "Electrical systems design",
+    "All design calculations",
+    "Technical bill of quantities and standard specifications"
+   ]
+  },
+  "p07": {
+   "title_en": "Isolation Hospital",
+   "client_en": "Mansoura University",
+   "location_en": "Mansoura – Egypt",
+   "area_en": "3,500 m²",
+   "date_en": "March 2020",
+   "team_en": [
+    "Mohamed Seddik",
+    "Hatem Moustafa"
+   ],
+   "description_en": "We designed the convalescence and isolation hospital to the highest standards of quality and safety. Our role included the meticulous design of the mechanical systems, providing a healthy, comfortable environment for patients and staff, and all the design calculations needed for integrated, efficient operation. We also supervised the construction with precision and craftsmanship, so the designs were built exactly to the required standards.",
+   "role_en": [
+    "Mechanical systems design",
+    "All design calculations",
+    "Construction supervision"
+   ]
+  },
+  "p08": {
+   "title_en": "PCR Laboratory Design",
+   "client_en": "Mansoura University",
+   "location_en": "Mansoura – Dakahlia – Egypt",
+   "area_en": "200 m²",
+   "date_en": "February 2021",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Sherif Mohamed"
+   ],
+   "description_en": "We designed the PCR laboratory with a high level of precision and professionalism. Our role included the central air-conditioning and ventilation systems, providing the right environment for sensitive testing, and the fire-fighting systems for the safety of the lab and its staff. We paid special attention to the plumbing design for cleanliness and quality, carried out all the hydraulic calculations for the right flow and pressure, and closely supervised the construction so the designs were built efficiently and effectively.",
+   "role_en": [
+    "Central air-conditioning design",
+    "Ventilation and pressure balancing design",
+    "All technical calculations",
+    "Construction supervision and handover to the Ministry of Health"
+   ]
+  },
+  "p09": {
+   "title_en": "Pepsi Factory",
+   "client_en": "Pepsi Tanta",
+   "location_en": "Tanta – Gharbia – Egypt",
+   "area_en": "3,000 m²",
+   "date_en": "September 2022",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Mohamed Kheir Mohamed"
+   ],
+   "description_en": "The Pepsi factory design reflects a commitment to quality and efficiency, with attention to every detail of the production process and of safety. Our role included the central air-conditioning and ventilation systems for an ideal working environment, and the fire-fighting systems to protect staff and equipment. We paid special attention to the plumbing design for the highest levels of cleanliness and quality, carried out all the necessary hydraulic calculations and closely supervised the construction — a reliable partner for delivering the project efficiently and professionally.",
+   "role_en": [
+    "Central air-conditioning and ventilation design",
+    "Fire-fighting design",
+    "Plumbing design",
+    "All hydraulic calculations",
+    "Construction supervision"
+   ]
+  },
+  "p10": {
+   "title_en": "Swimming Pool Design",
+   "client_en": "Eng. Mohamed Eissa",
+   "location_en": "Lebanon",
+   "area_en": "1,200 m²",
+   "date_en": "July 2023",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb"
+   ],
+   "description_en": "The swimming pool project aims to create an ideal pool for leisure and relaxation. Our role included the design of the water supply, drainage and filtration network, so water is distributed and filtered effectively, and all the hydraulic calculations needed for smooth flow at the right pressure. We also prepared the quantity take-off and technical bill of quantities so the project would be built precisely to the required specifications and technical standards.",
+   "role_en": [
+    "Supply, drainage and filtration network design",
+    "All hydraulic calculations",
+    "Quantity take-off and technical bill of quantities"
+   ]
+  },
+  "p11": {
+   "title_en": "Residential Villa Design",
+   "client_en": "Clients from Egypt, Saudi Arabia, the UAE, Kuwait and Libya",
+   "location_en": "Across the Arab world",
+   "area_en": "400 – 2,000 m²",
+   "date_en": "September 2019 – present",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Mohamed Kheir Mohamed",
+    "Ismail El-Deeb",
+    "Nada El-Sayed",
+    "Aya Samir"
+   ],
+   "description_en": "The residential villas project creates luxurious, complete homes for comfortable living. Our role covers the structural and architectural design of the villas, the air-conditioning and ventilation systems for a comfortable, healthy indoor environment, and the power and low-current systems for safe, efficient lighting and power. It also includes all the technical calculations needed for high-quality construction, and the quantity take-off and technical bill of quantities so each villa is built to the required specifications and standards.",
+   "role_en": [
+    "Structural and architectural design",
+    "Air-conditioning and ventilation design",
+    "Power and low-current systems design",
+    "All technical calculations",
+    "Quantity take-off and technical bill of quantities"
+   ]
+  },
+  "p12": {
+   "title_en": "Central Chiller Plant",
+   "client_en": "Eng. Ahmed Saeed",
+   "location_en": "Kuwait",
+   "area_en": "2,000 m²",
+   "date_en": "June 2023",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Sherif Mohamed"
+   ],
+   "description_en": "The central chiller plant project provides a central cooling system serving a group of buildings. Our tasks included the design of the chilled-water piping network with its valves and accessories, and a mechanical ventilation system for fresh, healthy air distribution inside the buildings. We carried out the hydraulic calculations for efficient cooling performance, and prepared the quantity take-off and technical bill of quantities so the project would be built precisely to specification.",
+   "role_en": [
+    "Chilled-water piping network design, including valves and accessories",
+    "Mechanical ventilation design",
+    "Hydraulic calculations",
+    "Quantity take-off and technical bill of quantities"
+   ]
+  },
+  "p13": {
+   "title_en": "Fire-Fighting Pump Room Design",
+   "client_en": "Mr. Mohamed Abdel-Maaboud",
+   "location_en": "Riyadh – Saudi Arabia",
+   "area_en": "120 m²",
+   "date_en": "October 2021",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Sherif Mohamed"
+   ],
+   "description_en": "A fire-fighting pump room designed as a complete, reliable part of the building's fire-protection system. Our role included the hydraulic calculations, the design of the pump room with all its valves and accessories, a section drawing showing the flange locations, and a mechanical ventilation system for the room, so the system could be installed and operated efficiently and safely.",
+   "role_en": [
+    "Hydraulic calculations",
+    "Pump room design, including valves and accessories",
+    "Section drawing showing flange locations",
+    "Mechanical ventilation design"
+   ]
+  },
+  "p14": {
+   "title_en": "El-Khaled Tower Complex",
+   "client_en": "Think Lab",
+   "location_en": "Kuwait",
+   "area_en": "8,000 m²",
+   "date_en": "February 2023",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Mohamed Kheir Mohamed",
+    "Ismail El-Deeb",
+    "Nada El-Sayed",
+    "Aya Samir",
+    "Ali Mourad"
+   ],
+   "description_en": "El-Khaled Tower is a modern residential and commercial complex offering a range of services and facilities to residents and visitors. Our responsibility covered the complete design of the mechanical and electrical systems, for a sustainable and effective infrastructure, together with all the design calculations, the technical bill of quantities and the standard specifications for smooth construction to the highest standards of quality and safety.",
+   "role_en": [
+    "Mechanical systems design",
+    "Electrical systems design",
+    "All design calculations",
+    "Technical bill of quantities and standard specifications"
+   ]
+  },
+  "p15": {
+   "title_en": "Data Center Room Fire-Fighting",
+   "client_en": "Mr. Mohamed Samir",
+   "location_en": "Doha – Qatar",
+   "area_en": "300 m²",
+   "date_en": "March 2023",
+   "team_en": [
+    "Ahmed Gamal El-Shafei",
+    "Ismail El-Deeb",
+    "Sherif Mohamed"
+   ],
+   "description_en": "The data-room fire-fighting project provides a complete fire-protection system for a sensitive data environment. Our role included the hydraulic calculations, in coordination with the supplier, to make sure the system is effective and meets the technical standards and requirements. We also designed a complete fire-fighting system with all the necessary valves and accessories, and prepared the technical bill of quantities and standard specifications so the system is installed and operated efficiently and safely.",
+   "role_en": [
+    "Hydraulic calculations in coordination with the supplier",
+    "Fire-fighting design, including valves and accessories",
+    "Technical bill of quantities and standard specifications"
+   ]
+  },
+  "p16": {
+   "title_en": "Bedaya Hospital Design",
+   "client_en": "Eng. Mohamed El-Nawahy",
+   "location_en": "Menoufia – Egypt",
+   "area_en": "7,000 m²",
+   "date_en": "October 2021",
+   "team_en": [
+    "Karim Darwish",
+    "Ahmed Maatouk",
+    "Ahmed El-Saeed"
+   ],
+   "description_en": "Bedaya Integrated Hospital is a complete project to build a hospital offering comprehensive medical services. Our role covered the design and construction of the mechanical and electrical systems, all the design calculations, and the technical bill of quantities and standard specifications. It also included continuous supervision of the construction to achieve the highest levels of quality and reliability.",
+   "role_en": [
+    "Mechanical systems design",
+    "Electrical systems design",
+    "All design calculations",
+    "Technical bill of quantities and standard specifications",
+    "Construction supervision"
+   ]
+  }
+ },
+ "counter_labels_en": {
+  "تجاري": "Commercial",
+  "صناعي": "Industrial",
+  "طبي": "Medical",
+  "سكني": "Residential"
+ }
+}

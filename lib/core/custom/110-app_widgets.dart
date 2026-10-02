@@ -66,11 +66,11 @@ class AppButton extends StatelessWidget {
         foreground = AppColors.text;
         border = BorderSide(color: AppColors.borderGrey);
       case AppButtonKind.danger:
-        background = AppColors.red.withOpacity(0.1);
+        background = AppColors.chip;
         foreground = AppColors.red;
       case AppButtonKind.subtle:
-        background = AppColors.primary.withOpacity(0.1);
-        foreground = AppColors.primary;
+        background = AppColors.chip;
+        foreground = AppColors.onChip;
     }
 
     final double height = dense ? 38.h : 50.h;
@@ -202,7 +202,7 @@ class AppAvatar extends StatelessWidget {
       height: d,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.12),
+        color: AppColors.chip,
         shape: BoxShape.circle,
       ),
       child: isFemale
@@ -363,9 +363,8 @@ class InfoBanner extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: AppPadding.h, vertical: 12.r),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.08),
+        color: AppColors.chip,
         borderRadius: AppRadius.containerR,
-        border: Border.all(color: c.withOpacity(0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +373,7 @@ class InfoBanner extends StatelessWidget {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(message,
-                style: StyleText.fontSize13Weight500.copyWith(color: c)),
+                style: StyleText.fontSize13Weight500.copyWith(color: AppColors.onChip)),
           ),
         ],
       ),
