@@ -4,21 +4,14 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+	<key>com.apple.security.files.downloads.read-write</key>
+	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<key>com.apple.security.files.user-selected.read-only</key>
-	<true/>
-	<!-- REQUIRED for firebase_auth: it keeps the session token in the
-	     Keychain, and a sandboxed macOS app may only touch the Keychain
-	     through an access group. Without this key EVERY sign-in and
-	     registration fails with `[firebase_auth/keychain-error]`, even though
-	     the Firebase call itself succeeded — which is why an account can end
-	     up created while the app still says it failed.
-
-	     $(AppIdentifierPrefix) resolves to the team ID, so the Runner target
-	     needs DEVELOPMENT_TEAM set (see project.pbxproj) and an Apple
-	     Development certificate in the login keychain:
-	       security find-identity -v -p codesigning -->
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)com.asec.app</string>

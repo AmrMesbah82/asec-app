@@ -118,7 +118,7 @@ service cloud.firestore {
         && resource.data.role == 'user'
         && request.resource.data.diff(resource.data)
              .affectedKeys().hasOnly([
-               'active', 'can_create_cv', 'updated_at',
+               'active', 'can_create_cv', 'can_use_calcs', 'updated_at',
                'courses_all', 'courses', 'platforms',
                'access_from', 'access_until', 'paused_at'
              ]);

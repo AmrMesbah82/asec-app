@@ -2549,11 +2549,70 @@ class SEn extends S {
   }
 
   @override
+  String get engineeringCalc => 'Engineering calculators';
+
+  @override
+  String get engineeringCalcShort => 'Calculators';
+
+  @override
+  String get engineeringCalcSub =>
+      'HVAC, fire fighting, plumbing and medical gas — quick design checks.';
+
+  @override
+  String get calcInputs => 'Inputs';
+
+  @override
+  String get calcResults => 'Results';
+
+  @override
+  String get calcFormula => 'Method';
+
+  @override
+  String get calcReset => 'Reset';
+
+  @override
+  String get calcTapHint =>
+      'Tap a result to change its unit · long-press to copy';
+
+  @override
+  String get calcFillAll => 'Fill in every field to see the results.';
+
+  @override
+  String get calcDisclaimer =>
+      'Simplified design estimate. Check it against the governing code and a detailed calculation before issuing drawings.';
+
+  @override
+  String get calcExportPdf => 'Export PDF';
+
+  @override
+  String get calcExportExcel => 'Export Excel';
+
+  @override
+  String get calcItem => 'Item';
+
+  @override
+  String get calcValue => 'Value';
+
+  @override
+  String get calcUnit => 'Unit';
+
+  @override
+  String get calcDate => 'Date';
+
+  @override
+  String get calcFileName => 'File name';
+
+  @override
+  String calcSaved(String name) {
+    return 'Saved: $name';
+  }
+
+  @override
   String get offlineTitle => 'You\'re offline';
 
   @override
   String get offlineBody =>
-      'Only the unit converter works without internet. The app comes back as soon as you\'re online.';
+      'The tools that don\'t need the internet still work here. The rest of the app comes back as soon as you\'re online.';
 
   @override
   String get offlineRetry => 'Retry';
@@ -2754,4 +2813,124 @@ class SEn extends S {
 
   @override
   String get downloadsRemoveAllQuestion => 'Remove all downloads?';
+
+  @override
+  String get updateTitle => 'New version available';
+
+  @override
+  String get updateMessage =>
+      'A new version of ASEC is ready on Google Play with improvements and fixes.';
+
+  @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredMessage =>
+      'This version is no longer supported. Please update from Google Play to keep using ASEC.';
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateWhatsNew => 'What\'s new';
+
+  @override
+  String updateCurrentVersion(String version) {
+    return 'Your version: $version';
+  }
+
+  @override
+  String get patchReadyTitle => 'Update ready';
+
+  @override
+  String get patchReadyMessage =>
+      'Improvements were downloaded in the background. Close and reopen the app to apply them.';
+
+  @override
+  String get patchRestart => 'Close & reopen';
+
+  @override
+  String get calcColumn => 'Eng. calculators';
+
+  @override
+  String get calcAllowed => 'Unlocked';
+
+  @override
+  String get calcNotAllowed => 'Locked';
+
+  @override
+  String get settingsMySpace => 'My space';
+
+  @override
+  String get settingsMySpaceHint =>
+      'Your CV, certificates, saved lessons and tools.';
+
+  @override
+  String homeGreeting(String name) {
+    return 'Welcome back, $name';
+  }
+
+  @override
+  String get homeSub => 'Pick up where you left off.';
+
+  @override
+  String get homeContinue => 'Continue watching';
+
+  @override
+  String get homeStart => 'Start your first lesson';
+
+  @override
+  String get homeStartSub => 'Your courses are ready. Open one to begin.';
+
+  @override
+  String get homeAllDone => 'Every lesson watched — well done!';
+
+  @override
+  String get homeProgress => 'Your progress';
+
+  @override
+  String homeLessonsLeft(int count) {
+    return '$count lessons to go';
+  }
+
+  @override
+  String get homeQuickAccess => 'Quick access';
+
+  @override
+  String get homeCourses => 'Your courses';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeVideosHint => 'Courses & lessons';
+
+  @override
+  String get homeConverterHint => 'Works offline';
+
+  @override
+  String get homeQuizzesHint => 'Test what you learned';
+
+  @override
+  String get homeCvsHint => 'Find engineers';
+
+  @override
+  String get homeCertificateHint => 'Earn your certificate';
+
+  @override
+  String get homeCalcHint => 'HVAC, fire, plumbing';
+
+  @override
+  String get homeResume => 'Resume';
+
+  @override
+  String homeLessonOf(int n, int total) {
+    return 'Lesson $n of $total';
+  }
+
+  @override
+  String get unitConverterShort => 'Converter';
 }

@@ -48,6 +48,7 @@ class SignInScreen extends StatelessWidget {
         },
         child: const AuthLayout(
           illustration: AppAssets.illustrationLogin,
+          fitToScreen: true,
           form: _SignInForm(),
         ),
       ),

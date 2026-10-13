@@ -16,7 +16,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/69-cross_axis_count_helper.dart';
-import 'package:asec/core/custom/8-custom_filter_app.dart';
+import 'package:asec/core/custom/1-custom_dropdown.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
 import 'package:asec/features/cv/c1_cv/data/repository/cv_repository.dart';
@@ -87,8 +87,8 @@ class _CvDirectoryPageState extends State<CvDirectoryPage> {
 
           final List<CvProfile> rows = _visible(all);
 
-          // The chips are built from the CVs that exist, not from the full
-          // role list: a chip that filters to nothing is a dead end.
+          // The roles are taken from the CVs that exist, not from the full
+          // role list: a choice that filters to nothing is a dead end.
           final Map<String, int> roleCounts = <String, int>{};
           for (final CvProfile cv in all) {
             if (cv.role.isEmpty) continue;
@@ -105,6 +105,34 @@ class _CvDirectoryPageState extends State<CvDirectoryPage> {
                   _search.text = value;
                 }),
               ),
+              // A DROPDOWN, not a row of chips: with many roles the chips ran
+              // off the screen on a phone. Each role shows how many CVs it has.
+              SizedBox(
+                width: 240.w,
+                height: kConsoleControlHeight.h,
+                child: CustomDropdown<String>(
+                  value: _roleFilter,
+                  height: kConsoleControlHeight.h,
+                  maxOverlayHeight: 360,
+                  prefixIcon: Icon(
+                    Icons.filter_list_rounded,
+                    size: 18,
+                    color: AppColors.secondaryText,
+                  ),
+                  items: <DropdownItem<String>>[
+                    DropdownItem<String>(
+                      value: _allRoles,
+                      label: '${s.all} (${all.length})',
+                    ),
+                    for (final MapEntry<String, int> e in roleCounts.entries)
+                      DropdownItem<String>(
+                        value: e.key,
+                        label: '${e.key} (${e.value})',
+                      ),
+                  ],
+                  onChanged: (String key) => setState(() => _roleFilter = key),
+                ),
+              ),
             ],
             child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
@@ -116,25 +144,6 @@ class _CvDirectoryPageState extends State<CvDirectoryPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          StatusChipFilter(
-                            selectedKey: _roleFilter,
-                            onSelected: (String key) =>
-                                setState(() => _roleFilter = key),
-                            items: <StatusChipItem>[
-                              StatusChipItem(
-                                key: _allRoles,
-                                label: s.all,
-                                count: all.length,
-                              ),
-                              for (final MapEntry<String, int> e
-                                  in roleCounts.entries)
-                                StatusChipItem(
-                                  key: e.key,
-                                  label: e.key,
-                                  count: e.value,
-                                ),
-                            ],
-                          ),
                           SizedBox(height: 14.h),
                         ],
                       ),

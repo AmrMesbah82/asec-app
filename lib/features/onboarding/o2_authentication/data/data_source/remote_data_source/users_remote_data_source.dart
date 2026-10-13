@@ -158,6 +158,12 @@ class UsersRemoteDataSource {
         FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
       });
 
+  Future<void> setCanUseCalcs(String uid, bool allowed) =>
+      _users.doc(uid).update(<String, dynamic>{
+        FirebaseCollections.canUseCalcsField: allowed,
+        FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
+      });
+
   Future<void> setAccess(String uid, Map<String, dynamic> access) =>
       _users.doc(uid).update(access);
 

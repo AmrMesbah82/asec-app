@@ -34,7 +34,11 @@ class ShellSection {
     required this.label,
     required this.page,
     this.shortLabel,
+    this.id,
   });
+
+  /// A name other pages can jump to with [AppShell.open] ("videos").
+  final String? id;
 
   final IconData icon;
   final String label;
@@ -61,6 +65,15 @@ class AppShell extends StatefulWidget {
 
   /// From here there is a rail at all; below it, a bottom bar.
   static const double railWidth = PlatformHelper.tabletBreakpoint;
+
+  /// Switches the shell to the section whose [ShellSection.id] is [id] —
+  /// how the member's home page jumps to Videos or the converter. False when
+  /// there is no shell above [context] or no such section (it is hidden).
+  static bool open(BuildContext context, String id) {
+    final _ShellScope? scope =
+        context.getInheritedWidgetOfExactType<_ShellScope>();
+    return scope?.open(id) ?? false;
+  }
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -103,6 +116,13 @@ class _AppShellState extends State<AppShell> {
 
   void _select(int index) => setState(() => _index = index);
 
+  bool _openById(String id) {
+    final int i = widget.sections.indexWhere((ShellSection s) => s.id == id);
+    if (i < 0) return false;
+    _select(i);
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
@@ -114,13 +134,16 @@ class _AppShellState extends State<AppShell> {
     // pointing past the end would take an IndexedStack down with it.
     final int index = _index.clamp(0, widget.sections.length - 1);
 
-    final Widget body = ShellSwitch(
-      switchKey: index,
-      child: IndexedStack(
-        index: index,
-        children: <Widget>[
-          for (final ShellSection s in widget.sections) s.page,
-        ],
+    final Widget body = _ShellScope(
+      open: _openById,
+      child: ShellSwitch(
+        switchKey: index,
+        child: IndexedStack(
+          index: index,
+          children: <Widget>[
+            for (final ShellSection s in widget.sections) s.page,
+          ],
+        ),
       ),
     );
 
@@ -261,6 +284,16 @@ class _AppShellState extends State<AppShell> {
     );
     if (picked != null) _select(picked);
   }
+}
+
+/// Lets a page inside the shell switch sections (see [AppShell.open]).
+class _ShellScope extends InheritedWidget {
+  const _ShellScope({required this.open, required super.child});
+
+  final bool Function(String id) open;
+
+  @override
+  bool updateShouldNotify(_ShellScope oldWidget) => false;
 }
 
 /// One phone-bar tab. The selected one sits in a soft pill that wraps the

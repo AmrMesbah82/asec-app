@@ -3,7 +3,9 @@
 ///*************************** FILE INFO ****************************///
 /// File Name: settings_page.dart
 /// Purpose: Declares `SettingsPage` — appearance, language, haptics, the
-///          account, the way out, and deleting the account for good.
+///          account, the member's "My space" (My CV, certificate quiz,
+///          downloads, engineering calculators), the way out, and deleting
+///          the account for good.
 /// Author: ASEC team
 /// Created: 19/9/2026
 
@@ -12,6 +14,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'package:asec/core/constants/app_assets.dart';
+import 'package:asec/core/settings/app_features.dart';
 import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
@@ -30,6 +33,7 @@ import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_fai
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/admins_card.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/control_centre_card.dart';
+import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.user});
@@ -159,6 +163,38 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16.h),
+
+              // ── My space (members): the pages that left the side menu ────
+              if (!user.isAdmin)
+                Obx(() {
+                  AppFeatures.to.values.length; // a switch flipped live
+                  final List<MemberLink> links =
+                      MemberLinks.forUser(context, user);
+                  if (links.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: AppCard(
+                      title: s.settingsMySpace,
+                      caption: s.settingsMySpaceHint,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          for (final MemberLink link in links)
+                            _SettingsTile(
+                              icon: link.icon,
+                              title: link.label,
+                              onTap: () => link.open(context),
+                              trailing: AppIcon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.secondaryText,
+                                size: 20.sp,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
 
               // ── Appearance ───────────────────────────────────────────────
               AppCard(

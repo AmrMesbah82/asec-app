@@ -209,6 +209,10 @@ class UsersRepository implements UsersBaseRepository {
       guardUnit(() => _remote.setCanCreateCv(uid, allowed));
 
   @override
+  Future<Either<AppFailure, Unit>> setCanUseCalcs(String uid, bool allowed) =>
+      guardUnit(() => _remote.setCanUseCalcs(uid, allowed));
+
+  @override
   Future<Either<AppFailure, Unit>> setAccess(String uid, Map<String, dynamic> access) =>
       guardUnit(() => _remote.setAccess(uid, access));
 

@@ -44,6 +44,9 @@ abstract final class FirebaseCollections {
 
   /// On `users/{uid}`: the admin's switch that lets this member write a CV.
   static const String canCreateCvField = 'can_create_cv';
+
+  /// The admin's switch: has this member bought the engineering calculators?
+  static const String canUseCalcsField = 'can_use_calcs';
   static const String quizIdField = 'quiz_id';
   static const String userIdField = 'user_id';
   static const String submittedAtField = 'submitted_at';

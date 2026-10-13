@@ -4622,6 +4622,114 @@ abstract class S {
   /// **'Copied {value}'**
   String copiedValue(String value);
 
+  /// No description provided for @engineeringCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'Engineering calculators'**
+  String get engineeringCalc;
+
+  /// No description provided for @engineeringCalcShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculators'**
+  String get engineeringCalcShort;
+
+  /// No description provided for @engineeringCalcSub.
+  ///
+  /// In en, this message translates to:
+  /// **'HVAC, fire fighting, plumbing and medical gas — quick design checks.'**
+  String get engineeringCalcSub;
+
+  /// No description provided for @calcInputs.
+  ///
+  /// In en, this message translates to:
+  /// **'Inputs'**
+  String get calcInputs;
+
+  /// No description provided for @calcResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get calcResults;
+
+  /// No description provided for @calcFormula.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get calcFormula;
+
+  /// No description provided for @calcReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get calcReset;
+
+  /// No description provided for @calcTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a result to change its unit · long-press to copy'**
+  String get calcTapHint;
+
+  /// No description provided for @calcFillAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in every field to see the results.'**
+  String get calcFillAll;
+
+  /// No description provided for @calcDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplified design estimate. Check it against the governing code and a detailed calculation before issuing drawings.'**
+  String get calcDisclaimer;
+
+  /// No description provided for @calcExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get calcExportPdf;
+
+  /// No description provided for @calcExportExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Excel'**
+  String get calcExportExcel;
+
+  /// No description provided for @calcItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Item'**
+  String get calcItem;
+
+  /// No description provided for @calcValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get calcValue;
+
+  /// No description provided for @calcUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get calcUnit;
+
+  /// No description provided for @calcDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get calcDate;
+
+  /// No description provided for @calcFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get calcFileName;
+
+  /// No description provided for @calcSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved: {name}'**
+  String calcSaved(String name);
+
   /// No description provided for @offlineTitle.
   ///
   /// In en, this message translates to:
@@ -4631,7 +4739,7 @@ abstract class S {
   /// No description provided for @offlineBody.
   ///
   /// In en, this message translates to:
-  /// **'Only the unit converter works without internet. The app comes back as soon as you\'re online.'**
+  /// **'The tools that don\'t need the internet still work here. The rest of the app comes back as soon as you\'re online.'**
   String get offlineBody;
 
   /// No description provided for @offlineRetry.
@@ -4987,6 +5095,222 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Remove all downloads?'**
   String get downloadsRemoveAllQuestion;
+
+  /// No description provided for @updateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available'**
+  String get updateTitle;
+
+  /// No description provided for @updateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of ASEC is ready on Google Play with improvements and fixes.'**
+  String get updateMessage;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This version is no longer supported. Please update from Google Play to keep using ASEC.'**
+  String get updateRequiredMessage;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateWhatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get updateWhatsNew;
+
+  /// No description provided for @updateCurrentVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your version: {version}'**
+  String updateCurrentVersion(String version);
+
+  /// No description provided for @patchReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update ready'**
+  String get patchReadyTitle;
+
+  /// No description provided for @patchReadyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Improvements were downloaded in the background. Close and reopen the app to apply them.'**
+  String get patchReadyMessage;
+
+  /// No description provided for @patchRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Close & reopen'**
+  String get patchRestart;
+
+  /// No description provided for @calcColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Eng. calculators'**
+  String get calcColumn;
+
+  /// No description provided for @calcAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get calcAllowed;
+
+  /// No description provided for @calcNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get calcNotAllowed;
+
+  /// No description provided for @settingsMySpace.
+  ///
+  /// In en, this message translates to:
+  /// **'My space'**
+  String get settingsMySpace;
+
+  /// No description provided for @settingsMySpaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your CV, certificates, saved lessons and tools.'**
+  String get settingsMySpaceHint;
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back, {name}'**
+  String homeGreeting(String name);
+
+  /// No description provided for @homeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up where you left off.'**
+  String get homeSub;
+
+  /// No description provided for @homeContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue watching'**
+  String get homeContinue;
+
+  /// No description provided for @homeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your first lesson'**
+  String get homeStart;
+
+  /// No description provided for @homeStartSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Your courses are ready. Open one to begin.'**
+  String get homeStartSub;
+
+  /// No description provided for @homeAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Every lesson watched — well done!'**
+  String get homeAllDone;
+
+  /// No description provided for @homeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get homeProgress;
+
+  /// No description provided for @homeLessonsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons to go'**
+  String homeLessonsLeft(int count);
+
+  /// No description provided for @homeQuickAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick access'**
+  String get homeQuickAccess;
+
+  /// No description provided for @homeCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Your courses'**
+  String get homeCourses;
+
+  /// No description provided for @homeSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get homeSeeAll;
+
+  /// No description provided for @homeVideosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses & lessons'**
+  String get homeVideosHint;
+
+  /// No description provided for @homeConverterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Works offline'**
+  String get homeConverterHint;
+
+  /// No description provided for @homeQuizzesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Test what you learned'**
+  String get homeQuizzesHint;
+
+  /// No description provided for @homeCvsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find engineers'**
+  String get homeCvsHint;
+
+  /// No description provided for @homeCertificateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn your certificate'**
+  String get homeCertificateHint;
+
+  /// No description provided for @homeCalcHint.
+  ///
+  /// In en, this message translates to:
+  /// **'HVAC, fire, plumbing'**
+  String get homeCalcHint;
+
+  /// No description provided for @homeResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get homeResume;
+
+  /// No description provided for @homeLessonOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {n} of {total}'**
+  String homeLessonOf(int n, int total);
+
+  /// No description provided for @unitConverterShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Converter'**
+  String get unitConverterShort;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

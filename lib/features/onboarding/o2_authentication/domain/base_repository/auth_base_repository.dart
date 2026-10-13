@@ -54,6 +54,9 @@ abstract class UsersBaseRepository {
   /// The admin's CV switch for one member.
   Future<Either<AppFailure, Unit>> setCanCreateCv(String uid, bool allowed);
 
+  /// The admin unlocks (or locks) the engineering calculators for a member.
+  Future<Either<AppFailure, Unit>> setCanUseCalcs(String uid, bool allowed);
+
   /// Courses, devices and access period for one member.
   Future<Either<AppFailure, Unit>> setAccess(String uid, Map<String, dynamic> access);
 

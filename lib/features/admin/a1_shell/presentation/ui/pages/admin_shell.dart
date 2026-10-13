@@ -21,6 +21,8 @@ import 'package:asec/features/settings/se1_settings/presentation/ui/pages/settin
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/admin_videos_page.dart';
 import 'package:asec/features/web/web_control_page.dart';
 import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
+import 'package:asec/features/tools/t2_engineering_calc/data/calc_access.dart';
+import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/engineering_calc_page.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 
@@ -35,6 +37,7 @@ class AdminShell extends StatelessWidget {
     // shell without a sign-out.
     return Obx(() {
       final AppUser admin = SessionController.to.current;
+      CalcAccess.remember(admin); // calculators on the offline screen too
 
       return AppShell(
         user: admin,
@@ -100,6 +103,14 @@ class AdminShell extends StatelessWidget {
             icon: Icons.calculate_rounded,
             label: s.unitConverter,
             page: const UnitConverterPage(),
+          ),
+          // Online only: the offline screen and the sign-in screen keep the
+          // unit converter alone, so this tab goes away with the internet.
+          ShellSection(
+            icon: Icons.engineering_rounded,
+            label: s.engineeringCalc,
+            shortLabel: s.engineeringCalcShort,
+            page: const EngineeringCalcPage(),
           ),
           ShellSection(
             icon: Icons.settings_rounded,

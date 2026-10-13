@@ -4,7 +4,8 @@
 /// File Name: app_connectivity.dart
 /// Purpose: Declares `AppConnectivity` and `OfflineConverterView` — losing
 ///          the internet closes the app and leaves only the "no connection"
-///          animation and the unit converter, for members and admins alike,
+///          animation and the offline tools (downloads, unit converter and —
+///          for whoever has them — the engineering calculators),
 ///          on Android, iOS, macOS and Windows. When the internet comes back,
 ///          the app returns by itself.
 /// Author: ASEC team
@@ -36,6 +37,8 @@ import 'package:asec/core/constants/app_assets.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
+import 'package:asec/features/tools/t2_engineering_calc/data/calc_access.dart';
+import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/engineering_calc_page.dart';
 import 'package:asec/features/video/v1_videos/data/download/video_downloads.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/downloads_page.dart';
 import 'package:asec/generated/l10n.dart';
@@ -127,16 +130,26 @@ class OfflineConverterView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      onGenerateRoute: (RouteSettings settings) => MaterialPageRoute<void>(
-        builder: (BuildContext context) => const _OfflineScreen(),
+    // ITS OWN HERO SCOPE. This view sits in GetMaterialApp's `builder`,
+    // beside the app's Navigator, so without this it picks up the app's
+    // HeroController too. Two Navigators on one HeroController throws, and
+    // once this view goes away the app's Navigator is left with a broken
+    // controller: the next push fails half-way and locks the Navigator
+    // ('!_debugLocked' on every tap after that).
+    return HeroControllerScope.none(
+      child: Navigator(
+        onGenerateRoute: (RouteSettings settings) => MaterialPageRoute<void>(
+          builder: (BuildContext context) => const _OfflineScreen(),
+        ),
       ),
     );
   }
 }
 
-/// Offline, a student with downloaded lessons gets them here (Downloads |
-/// Unit converter); with none, only the converter as before.
+/// Offline, what works without internet: downloaded lessons (if any), the
+/// unit converter, and the engineering calculators for whoever has them
+/// (admins, and members the admin unlocked — CalcAccess). One tool alone is
+/// shown without the switcher.
 class _OfflineScreen extends StatefulWidget {
   const _OfflineScreen();
 
@@ -144,8 +157,10 @@ class _OfflineScreen extends StatefulWidget {
   State<_OfflineScreen> createState() => _OfflineScreenState();
 }
 
+enum _OfflineTool { downloads, converter, calculators }
+
 class _OfflineScreenState extends State<_OfflineScreen> {
-  bool _showDownloads = true;
+  _OfflineTool? _picked;
 
   @override
   void initState() {
@@ -215,8 +230,24 @@ class _OfflineScreenState extends State<_OfflineScreen> {
             ),
             Expanded(
               child: Obx(() {
-                final bool has = VideoDownloads.items.isNotEmpty;
-                if (!has) return const UnitConverterPage();
+                final List<(_OfflineTool, String)> tools = <(_OfflineTool, String)>[
+                  if (VideoDownloads.items.isNotEmpty)
+                    (_OfflineTool.downloads, s.downloads),
+                  (_OfflineTool.converter, s.unitConverter),
+                  if (CalcAccess.allowed)
+                    (_OfflineTool.calculators, s.engineeringCalc),
+                ];
+                final _OfflineTool shown = tools.any(
+                  ((_OfflineTool, String) t) => t.$1 == _picked,
+                )
+                    ? _picked!
+                    : tools.first.$1;
+                final Widget page = switch (shown) {
+                  _OfflineTool.downloads => const DownloadsPage(),
+                  _OfflineTool.converter => const UnitConverterPage(),
+                  _OfflineTool.calculators => const EngineeringCalcPage(),
+                };
+                if (tools.length == 1) return page;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
@@ -226,28 +257,36 @@ class _OfflineScreenState extends State<_OfflineScreen> {
                         spacing: 8.w,
                         runSpacing: 8.h,
                         children: <Widget>[
-                          for (final (bool downloads, String label) in <(bool, String)>[
-                            (true, s.downloads),
-                            (false, s.unitConverter),
-                          ])
+                          for (final (_OfflineTool tool, String label) in tools)
                             customButton(
                               title: label,
-                              function: () => setState(() => _showDownloads = downloads),
+                              function: () => setState(() => _picked = tool),
                               wrapContent: true,
-                              color: _showDownloads == downloads
+                              color: shown == tool
                                   ? AppColors.primary
                                   : AppColors.card,
-                              textColor: _showDownloads == downloads
+                              textColor: shown == tool
                                   ? Colors.white
                                   : AppColors.text,
                             ),
                         ],
                       ),
                     ),
+                    // Each tool keeps what was typed while switching.
                     Expanded(
-                      child: _showDownloads
-                          ? const DownloadsPage()
-                          : const UnitConverterPage(),
+                      child: IndexedStack(
+                        index: tools.indexWhere(
+                          ((_OfflineTool, String) t) => t.$1 == shown,
+                        ),
+                        children: <Widget>[
+                          for (final (_OfflineTool tool, String _) in tools)
+                            switch (tool) {
+                              _OfflineTool.downloads => const DownloadsPage(),
+                              _OfflineTool.converter => const UnitConverterPage(),
+                              _OfflineTool.calculators => const EngineeringCalcPage(),
+                            },
+                        ],
+                      ),
                     ),
                   ],
                 );

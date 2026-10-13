@@ -5,7 +5,7 @@
 /// Purpose: Declares `UnitConverterPage` — a unit converter in the spirit of
 ///          unitconverters.net, limited to the main engineering units
 ///          (length, area, volume, mass, temperature, pressure, flow, speed,
-///          power / cooling load, energy, force, density, time, angle).
+///          cooling load, density, time) — UnitCatalog.converter.
 /// Author: ASEC team
 /// Created: 1/10/2026
 ///
@@ -17,6 +17,8 @@
 /// Built only from the app's own controls: CustomTabs (categories),
 /// CustomTextField (value and result), CustomDropdown (units) and
 /// customButton (swap).
+
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -50,10 +52,10 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
   final TextEditingController _result = TextEditingController();
 
   int _category = 0;
-  late int _from = UnitCatalog.all[0].defaultFrom;
-  late int _to = UnitCatalog.all[0].defaultTo;
+  late int _from = UnitCatalog.converter[0].defaultFrom;
+  late int _to = UnitCatalog.converter[0].defaultTo;
 
-  UnitCategory get _cat => UnitCatalog.all[_category];
+  UnitCategory get _cat => UnitCatalog.converter[_category];
 
   @override
   void initState() {
@@ -112,22 +114,32 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     return double.tryParse(b.toString());
   }
 
-  /// Up to 10 significant digits, no trailing zeros; scientific notation for
-  /// very large or very small numbers.
-  static String format(double v) {
+  /// ROUNDED FOR READING, not for a lab: the answer shows 2 decimals and the
+  /// "all conversions" list 3. A value so small it would round to 0 keeps 3
+  /// significant digits instead (1 W = 0.000284 TR, not 0), and huge ones go
+  /// to scientific notation. Trailing zeros are dropped (2.50 → 2.5).
+  static String format(double v, {int decimals = 2}) {
     if (v.isNaN || v.isInfinite) return '—';
     if (v == 0) return '0';
     final double a = v.abs();
-    if (a >= 1e12 || a < 1e-7) {
-      return v.toStringAsExponential(6).replaceFirst(RegExp(r'\.?0+e'), 'e');
+    if (a >= 1e12) return _trimExp(v.toStringAsExponential(decimals));
+    final double smallest = 0.5 / math.pow(10, decimals);
+    if (a < smallest) {
+      final String p = v.toStringAsPrecision(3);
+      return p.contains('e') ? _trimExp(p) : _trimZeros(p);
     }
-    String s = double.parse(v.toStringAsPrecision(10)).toString();
-    if (s.contains('e')) return s;
-    if (s.contains('.')) {
-      s = s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
-    }
-    return s;
+    return _trimZeros(v.toStringAsFixed(decimals));
   }
+
+  static String _trimZeros(String s) => s.contains('.')
+      ? s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
+      : s;
+
+  static String _trimExp(String s) => s.replaceFirst(RegExp(r'\.?0+e'), 'e');
+
+  /// "≈" when either unit is a rounded convention (electric hp), else "=".
+  static String relation(UnitDef a, UnitDef b) =>
+      a.approx || b.approx ? '≈' : '=';
 
   void _copy(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -176,7 +188,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               CustomTabs(
-                tabs: <String>[for (final UnitCategory cat in UnitCatalog.all) cat.name(ar)],
+                tabs: <String>[for (final UnitCategory cat in UnitCatalog.converter) cat.name(ar)],
                 selectedValue: _category,
                 onChanged: _pickCategory,
                 spacing: 24.sp,
@@ -260,7 +272,8 @@ class _ConverterCard extends StatelessWidget {
     final S s = S.of(context);
     final UnitDef f = category.units[from];
     final UnitDef t = category.units[to];
-    final String oneText = _UnitConverterPageState.format(UnitCategory.convert(1, f, t));
+    final String oneText =
+        _UnitConverterPageState.format(UnitCategory.convert(1, f, t), decimals: 3);
 
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -319,7 +332,7 @@ class _ConverterCard extends StatelessWidget {
           _UnitDropdown(units: category.units, arabic: arabic, value: to, onChanged: onTo),
           SizedBox(height: 14.h),
           Text(
-            '1 ${f.symbol} = $oneText ${t.symbol}',
+            '1 ${f.symbol} ${_UnitConverterPageState.relation(f, t)} $oneText ${t.symbol}',
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
             style: StyleText.fontSize13Weight500.copyWith(color: AppColors.secondaryText),
@@ -399,7 +412,7 @@ class _AllConversions extends StatelessWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(4.w, 4.h, 4.w, 8.h),
             child: Text(
-              '${s.allConversions} · ${v == null ? '—' : _UnitConverterPageState.format(v)} ${f.symbol}',
+              '${s.allConversions} · ${v == null ? '—' : _UnitConverterPageState.format(v, decimals: 3)} ${f.symbol}',
               style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
             ),
           ),
@@ -413,7 +426,10 @@ class _AllConversions extends StatelessWidget {
     final UnitDef u = category.units[i];
     final String text = v == null
         ? '—'
-        : _UnitConverterPageState.format(UnitCategory.convert(v, category.units[from], u));
+        : _UnitConverterPageState.format(
+            UnitCategory.convert(v, category.units[from], u),
+            decimals: 3,
+          );
     final bool isTo = i == to;
     final bool isFrom = i == from;
 
@@ -440,7 +456,7 @@ class _AllConversions extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               Text(
-                '$text ${u.symbol}',
+                '${i != from && (u.approx || category.units[from].approx) ? '≈ ' : ''}$text ${u.symbol}',
                 textDirection: TextDirection.ltr,
                 style: StyleText.fontSize13Weight600.copyWith(
                   color: isTo ? AppColors.primary : AppColors.text,

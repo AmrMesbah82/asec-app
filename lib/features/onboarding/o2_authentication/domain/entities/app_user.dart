@@ -26,6 +26,10 @@ class AppUser {
   /// account sees no CV form until somebody says yes. The admin always may.
   final bool canCreateCv;
 
+  /// The admin's switch: has this member bought the engineering calculators?
+  /// Off by default — the calculators are a paid extra. The admin always may.
+  final bool canUseCalcs;
+
   final DateTime? createdAt;
 
   /// For an admin created by the super admin: what they may manage.
@@ -60,6 +64,7 @@ class AppUser {
     this.phone = '',
     this.active = true,
     this.canCreateCv = false,
+    this.canUseCalcs = false,
     this.createdAt,
     this.permissions = const <AdminPermission>[],
     this.allCourses = true,
@@ -97,6 +102,9 @@ class AppUser {
   /// the switch exists to let members in, not to keep the admin out.
   bool get mayWriteCv => isAdmin || canCreateCv;
 
+  /// Whether the engineering calculators are open to this account.
+  bool get mayUseCalcs => isAdmin || canUseCalcs;
+
   /// What to greet them with.
   String get displayName =>
       fullName.trim().isNotEmpty ? fullName.trim() : email.split('@').first;
@@ -125,6 +133,7 @@ class AppUser {
     UserRole? role,
     bool? active,
     bool? canCreateCv,
+    bool? canUseCalcs,
     List<AdminPermission>? permissions,
   }) {
     return AppUser(
@@ -135,6 +144,7 @@ class AppUser {
       role: role ?? this.role,
       active: active ?? this.active,
       canCreateCv: canCreateCv ?? this.canCreateCv,
+      canUseCalcs: canUseCalcs ?? this.canUseCalcs,
       createdAt: createdAt,
       permissions: permissions ?? this.permissions,
       allCourses: allCourses,

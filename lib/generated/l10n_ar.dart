@@ -2497,11 +2497,70 @@ class SAr extends S {
   }
 
   @override
+  String get engineeringCalc => 'الحاسبات الهندسية';
+
+  @override
+  String get engineeringCalcShort => 'الحاسبات';
+
+  @override
+  String get engineeringCalcSub =>
+      'تكييف، مكافحة حريق، أعمال صحية وغازات طبية — حسابات تصميم سريعة.';
+
+  @override
+  String get calcInputs => 'المدخلات';
+
+  @override
+  String get calcResults => 'النتائج';
+
+  @override
+  String get calcFormula => 'طريقة الحساب';
+
+  @override
+  String get calcReset => 'إعادة الضبط';
+
+  @override
+  String get calcTapHint =>
+      'اضغط على النتيجة لتغيير وحدتها · اضغط مطولًا للنسخ';
+
+  @override
+  String get calcFillAll => 'املأ كل الحقول لعرض النتائج.';
+
+  @override
+  String get calcDisclaimer =>
+      'تقدير تصميمي مبسّط. راجعه مع الكود المعتمد وحساب تفصيلي قبل إصدار المخططات.';
+
+  @override
+  String get calcExportPdf => 'تصدير PDF';
+
+  @override
+  String get calcExportExcel => 'تصدير Excel';
+
+  @override
+  String get calcItem => 'البند';
+
+  @override
+  String get calcValue => 'القيمة';
+
+  @override
+  String get calcUnit => 'الوحدة';
+
+  @override
+  String get calcDate => 'التاريخ';
+
+  @override
+  String get calcFileName => 'اسم الملف';
+
+  @override
+  String calcSaved(String name) {
+    return 'تم الحفظ: $name';
+  }
+
+  @override
   String get offlineTitle => 'أنت غير متصل بالإنترنت';
 
   @override
   String get offlineBody =>
-      'يعمل محوّل الوحدات فقط بدون إنترنت. يعود التطبيق تلقائيًا فور عودة الاتصال.';
+      'الأدوات التي لا تحتاج إلى الإنترنت تعمل هنا. يعود باقي التطبيق تلقائيًا فور عودة الاتصال.';
 
   @override
   String get offlineRetry => 'إعادة المحاولة';
@@ -2703,4 +2762,124 @@ class SAr extends S {
 
   @override
   String get downloadsRemoveAllQuestion => 'حذف كل التنزيلات؟';
+
+  @override
+  String get updateTitle => 'يتوفر إصدار جديد';
+
+  @override
+  String get updateMessage =>
+      'إصدار جديد من ASEC متاح الآن على Google Play مع تحسينات وإصلاحات.';
+
+  @override
+  String get updateRequiredTitle => 'التحديث مطلوب';
+
+  @override
+  String get updateRequiredMessage =>
+      'هذا الإصدار لم يعد مدعومًا. يرجى التحديث من Google Play لمتابعة استخدام ASEC.';
+
+  @override
+  String get updateNow => 'تحديث الآن';
+
+  @override
+  String get updateLater => 'لاحقًا';
+
+  @override
+  String get updateWhatsNew => 'ما الجديد';
+
+  @override
+  String updateCurrentVersion(String version) {
+    return 'إصدارك: $version';
+  }
+
+  @override
+  String get patchReadyTitle => 'التحديث جاهز';
+
+  @override
+  String get patchReadyMessage =>
+      'تم تنزيل التحسينات في الخلفية. أغلق التطبيق وافتحه مرة أخرى لتطبيقها.';
+
+  @override
+  String get patchRestart => 'إغلاق وإعادة الفتح';
+
+  @override
+  String get calcColumn => 'الحاسبات الهندسية';
+
+  @override
+  String get calcAllowed => 'مفعّلة';
+
+  @override
+  String get calcNotAllowed => 'مقفلة';
+
+  @override
+  String get settingsMySpace => 'مساحتي';
+
+  @override
+  String get settingsMySpaceHint =>
+      'سيرتك الذاتية وشهاداتك ودروسك المحفوظة وأدواتك.';
+
+  @override
+  String homeGreeting(String name) {
+    return 'أهلاً بعودتك يا $name';
+  }
+
+  @override
+  String get homeSub => 'أكمل من حيث توقفت.';
+
+  @override
+  String get homeContinue => 'تابع المشاهدة';
+
+  @override
+  String get homeStart => 'ابدأ أول درس';
+
+  @override
+  String get homeStartSub => 'دوراتك جاهزة. افتح واحدة لتبدأ.';
+
+  @override
+  String get homeAllDone => 'شاهدت كل الدروس — أحسنت!';
+
+  @override
+  String get homeProgress => 'تقدّمك';
+
+  @override
+  String homeLessonsLeft(int count) {
+    return 'متبقٍ $count درس';
+  }
+
+  @override
+  String get homeQuickAccess => 'وصول سريع';
+
+  @override
+  String get homeCourses => 'دوراتك';
+
+  @override
+  String get homeSeeAll => 'عرض الكل';
+
+  @override
+  String get homeVideosHint => 'الدورات والدروس';
+
+  @override
+  String get homeConverterHint => 'يعمل بدون إنترنت';
+
+  @override
+  String get homeQuizzesHint => 'اختبر ما تعلمته';
+
+  @override
+  String get homeCvsHint => 'ابحث عن مهندسين';
+
+  @override
+  String get homeCertificateHint => 'احصل على شهادتك';
+
+  @override
+  String get homeCalcHint => 'تكييف، حريق، صحي';
+
+  @override
+  String get homeResume => 'استكمال';
+
+  @override
+  String homeLessonOf(int n, int total) {
+    return 'الدرس $n من $total';
+  }
+
+  @override
+  String get unitConverterShort => 'المحوّل';
 }

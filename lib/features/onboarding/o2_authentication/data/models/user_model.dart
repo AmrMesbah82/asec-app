@@ -44,6 +44,7 @@ abstract final class UserModel {
       role: UserRole.fromKey(data.str(FirebaseCollections.roleField)),
       active: data.boolean(FirebaseCollections.activeField, true),
       canCreateCv: data.boolean(FirebaseCollections.canCreateCvField),
+      canUseCalcs: data.boolean(FirebaseCollections.canUseCalcsField),
       createdAt: data.date(FirebaseCollections.createdAtField),
       allCourses: data.boolean(coursesAll, true),
       courses: data.stringList(courses),

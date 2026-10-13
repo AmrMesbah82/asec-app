@@ -8,9 +8,11 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<key>com.apple.security.files.downloads.read-write</key>
+	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<key>com.apple.security.files.user-selected.read-only</key>
+	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
 	<!-- REQUIRED for firebase_auth: it keeps the session token in the
 	     Keychain, and a sandboxed macOS app may only touch the Keychain

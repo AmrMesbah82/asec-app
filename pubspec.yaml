@@ -2,7 +2,7 @@ name: asec
 description: "ASEC — videos and timed quizzes for members, run by one admin."
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.0.1+6
 
 environment:
   sdk: ^3.12.2
@@ -49,12 +49,19 @@ dependencies:
   url_launcher: ^6.3.1               # "open externally" fallback
   path_provider: ^2.1.4              # the app's private folder for offline lessons
 
+  # ── Updates (lib/core/settings/app_update.dart) ────────────────────────────
+  shorebird_code_push: ^2.0.4        # over-the-air Dart patches (shorebird patch android)
+  in_app_update: ^4.2.3              # Google Play's in-app update screen (Android)
+  package_info_plus: ^9.0.1          # the running build number
+
   # ── Website (lib/features/web — the asecbim site and its control panel) ────
   go_router: ">=14.6.2 <18.0.0"            # the site's real URLs: /projects/p01, /admin/…
   flutter_widget_from_html_core: ^0.15.2   # article bodies are HTML
   http: ^1.2.2                             # WordPress importer
   pdf: ^3.11.3                             # the ASEC certificate as a PDF
   printing: ^5.14.2                        # save / share / print that PDF
+  archive: ^4.3.0                          # engineering calculators: writes the .xlsx (a zip of XML)
+  web: ^1.1.0                              # engineering calculators: browser download of the PDF / Excel
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +95,7 @@ flutter:
     - assets/web/images/
     - assets/web/seed/
     - assets/certificate/
+    - shorebird.yaml
 
   fonts:
     - family: Cairo

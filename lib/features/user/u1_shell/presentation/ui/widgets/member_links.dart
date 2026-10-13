@@ -1,0 +1,117 @@
+/// Module: user / u1_shell
+///
+///*************************** FILE INFO ****************************///
+/// File Name: member_links.dart
+/// Purpose: Declares `MemberLink`, `MemberLinks` and `PushedSectionPage` —
+///          the member pages that live in Settings → "My space" (My CV,
+///          certificate quiz, downloads, engineering calculators) instead of
+///          the side menu, and the frame they open in.
+/// Author: ASEC team
+/// Created: 13/10/2026
+///
+/// WHY NOT IN THE MENU. The member menu is kept to what is used every day —
+/// Home, Videos, the converter, quizzes, CVs. The rest is one tap away in
+/// Settings and on the home page, opened ON TOP of the shell with a back
+/// arrow.
+
+import 'package:flutter/material.dart';
+
+import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/features/cv/c1_cv/presentation/ui/pages/cv_form_page.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_quizzes_page.dart';
+import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/engineering_calc_page.dart';
+import 'package:asec/features/video/v1_videos/data/download/video_downloads.dart';
+import 'package:asec/features/video/v1_videos/presentation/ui/pages/downloads_page.dart';
+import 'package:asec/generated/l10n.dart';
+
+class MemberLink {
+  const MemberLink({
+    required this.id,
+    required this.icon,
+    required this.label,
+    required this.page,
+    this.hint,
+  });
+
+  final String id;
+  final IconData icon;
+  final String label;
+  final String? hint;
+  final Widget Function() page;
+
+  /// Opens the page on top of the shell, with a back arrow.
+  Future<void> open(BuildContext context) => PushedSectionPage.open(context, page());
+}
+
+abstract final class MemberLinks {
+  /// The "My space" pages [user] may open right now, in display order.
+  static List<MemberLink> forUser(BuildContext context, AppUser user) {
+    final S s = S.of(context);
+    final AppFeatures f = AppFeatures.to;
+    final bool videos = f.isOn(AppFeature.sectionVideos);
+    return <MemberLink>[
+      if (user.mayWriteCv && f.isOn(AppFeature.sectionMyCv))
+        MemberLink(
+          id: 'myCv',
+          icon: Icons.person_outline_rounded,
+          label: s.myCv,
+          page: () => CvFormPage(user: user),
+        ),
+      if (videos)
+        MemberLink(
+          id: 'certificate',
+          icon: Icons.workspace_premium_rounded,
+          label: s.certificateQuiz,
+          hint: s.homeCertificateHint,
+          page: () => CertificateQuizzesPage(user: user),
+        ),
+      if (videos && VideoDownloads.supported)
+        MemberLink(
+          id: 'downloads',
+          icon: Icons.download_for_offline_rounded,
+          label: s.downloads,
+          page: () => const DownloadsPage(),
+        ),
+      // A paid extra: only once the admin has unlocked it for this member.
+      if (user.mayUseCalcs)
+        MemberLink(
+          id: 'calc',
+          icon: Icons.engineering_rounded,
+          label: s.engineeringCalc,
+          hint: s.homeCalcHint,
+          page: () => const EngineeringCalcPage(),
+        ),
+    ];
+  }
+}
+
+/// A shell page opened on its own: the shell's bar look, with a back arrow.
+class PushedSectionPage extends StatelessWidget {
+  const PushedSectionPage({super.key, required this.child});
+
+  final Widget child;
+
+  static Future<void> open(BuildContext context, Widget page) =>
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => PushedSectionPage(child: page)),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.card,
+        surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: AppColors.text),
+        // The page draws its own title, as it does inside the shell.
+        title: const SizedBox.shrink(),
+      ),
+      body: child,
+    );
+  }
+}

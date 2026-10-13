@@ -7,6 +7,8 @@
 /// Author: ASEC team
 /// Created: 19/9/2026
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -33,6 +35,7 @@ class AuthLayout extends StatelessWidget {
     super.key,
     required this.form,
     required this.illustration,
+    this.fitToScreen = false,
   });
 
   /// The card of fields — sign-in or register.
@@ -40,6 +43,12 @@ class AuthLayout extends StatelessWidget {
 
   /// The SVG on the brand side (see [AppAssets]).
   final String illustration;
+
+  /// NO SCROLLING. Everything is laid out to fit the visible height: the
+  /// header shrinks (and drops its illustration on short screens or while the
+  /// keyboard is open) and the form scales down if it still doesn't fit.
+  /// Used by sign-in; register is longer and keeps scrolling.
+  final bool fitToScreen;
 
   /// From this width on, the layout splits in two.
   static const double splitWidth = 900;
@@ -51,7 +60,11 @@ class AuthLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: isSplit(context) ? _split(context) : _stacked(context),
+      body: isSplit(context)
+          ? _split(context)
+          : fitToScreen
+              ? _stackedFit(context)
+              : _stacked(context),
     );
   }
 
@@ -79,11 +92,14 @@ class AuthLayout extends StatelessWidget {
               children: <Widget>[
                 const BrandMark(size: 52, onDark: true),
                 const Spacer(),
-                Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(maxWidth: 420.w, maxHeight: 340.h),
-                    child: CustomSvgImage.natural(assetPath: illustration),
+                Flexible(
+                  flex: 3,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(maxWidth: 420.w, maxHeight: 340.h),
+                      child: CustomSvgImage.natural(assetPath: illustration),
+                    ),
                   ),
                 ),
                 SizedBox(height: 32.h),
@@ -107,18 +123,27 @@ class AuthLayout extends StatelessWidget {
           flex: 4,
           child: Stack(
             children: <Widget>[
-              Center(
-                child: SingleChildScrollView(
+              if (fitToScreen)
+                Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: AppPadding.h,
                     vertical: 40.sp,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 420.w),
-                    child: form,
+                  child: _fittedForm(maxWidth: 420.w),
+                )
+              else
+                Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppPadding.h,
+                      vertical: 40.sp,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 420.w),
+                      child: form,
+                    ),
                   ),
                 ),
-              ),
               PositionedDirectional(
                 top: 20.h,
                 end: 20,
@@ -128,6 +153,105 @@ class AuthLayout extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// The form at its natural size, scaled DOWN (never up) when the space is
+  /// shorter than the form. The width is fixed first so the form's
+  /// `CrossAxisAlignment.stretch` has something to stretch to.
+  Widget _fittedForm({required double maxWidth, Alignment align = Alignment.center}) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) {
+        final double width = math.min(maxWidth, c.maxWidth);
+        return Align(
+          alignment: align,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: align,
+            child: SizedBox(width: width, child: form),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Phone / tablet, no scroll: compact header + fitted form ──────────────
+
+  Widget _stackedFit(BuildContext context) {
+    // `padding`, not `viewPadding`: with the keyboard open the inset is
+    // already taken by the keyboard, so it must read zero here.
+    final EdgeInsets safe = MediaQuery.paddingOf(context);
+    final bool keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) {
+        final double height = c.maxHeight;
+        // Short screen or keyboard up → logo beside the name, no artwork.
+        final bool compact = keyboardOpen || height < 680;
+        final double illustrationHeight =
+            compact ? 0 : math.min(120.h, height * 0.14);
+
+        return Column(
+          children: <Widget>[
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(
+                AppPadding.h,
+                safe.top + 8.h,
+                AppPadding.h,
+                compact ? 14.h : 20.h,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    AppColors.primary,
+                    AppColors.secondaryPrimary,
+                  ],
+                ),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(28.r)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: AuthLanguageToggle(onDark: true),
+                  ),
+                  BrandMark(
+                    size: compact ? 44 : 56,
+                    vertical: !compact,
+                    onDark: true,
+                  ),
+                  if (illustrationHeight > 0) ...<Widget>[
+                    SizedBox(height: 12.h),
+                    SizedBox(
+                      height: illustrationHeight,
+                      child: CustomSvgImage.natural(assetPath: illustration),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppPadding.h,
+                  16.h,
+                  AppPadding.h,
+                  safe.bottom + 8.h,
+                ),
+                child: _fittedForm(
+                  maxWidth: 480.w,
+                  align: Alignment.topCenter,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

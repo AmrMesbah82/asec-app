@@ -234,6 +234,20 @@ class _MembersPageState extends State<MembersPage> {
                               _repository.setCanCreateCv(u.uid, value),
                         ),
                       ),
+                      // The engineering calculators are a paid extra: the
+                      // admin unlocks them once the member has bought them.
+                      AppTableColumn<AppUser>(
+                        label: s.calcColumn,
+                        fixedWidth: 170.w,
+                        cell: (BuildContext context, AppUser u) => _ChoiceCell(
+                          value: u.canUseCalcs,
+                          trueLabel: s.calcAllowed,
+                          falseLabel: s.calcNotAllowed,
+                          trueColor: AppColors.primary,
+                          onChanged: (bool value) =>
+                              _repository.setCanUseCalcs(u.uid, value),
+                        ),
+                      ),
                       // What the member may use: courses · devices · period,
                       // or "Paused". Tap to edit.
                       AppTableColumn<AppUser>(

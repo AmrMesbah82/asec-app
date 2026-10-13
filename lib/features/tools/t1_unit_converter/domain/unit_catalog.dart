@@ -21,8 +21,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class UnitDef {
-  const UnitDef(this.symbol, this.nameEn, this.nameAr, this.factor)
-      : _toBase = null,
+  const UnitDef(
+    this.symbol,
+    this.nameEn,
+    this.nameAr,
+    this.factor, {
+    this.approx = false,
+  })  : _toBase = null,
         _fromBase = null;
 
   const UnitDef.affine(
@@ -32,6 +37,7 @@ class UnitDef {
     double Function(double) toBase,
     double Function(double) fromBase,
   )   : factor = 1,
+        approx = false,
         _toBase = toBase,
         _fromBase = fromBase;
 
@@ -41,6 +47,10 @@ class UnitDef {
 
   /// Size of one of this unit in the category's base unit.
   final double factor;
+
+  /// A rounded, conventional value rather than an exact definition (the
+  /// electric horsepower, 746 W). Relations with it are written "≈", not "=".
+  final bool approx;
 
   final double Function(double)? _toBase;
   final double Function(double)? _fromBase;
@@ -93,6 +103,65 @@ double _kToR(double k) => k * 9 / 5;
 
 abstract final class UnitCatalog {
   static const double _pi = math.pi;
+
+  /// WHAT THE CONVERTER SHOWS — the units engineers on site actually use.
+  /// [all] stays complete because the engineering calculators read their
+  /// field units from it (W, PS, mmH₂O…); only the converter tabs are trimmed.
+  ///
+  /// id → (tab name override, kept symbols in order, default from, default to).
+  static const List<(String, String?, String?, List<String>, String, String)> _shown =
+      <(String, String?, String?, List<String>, String, String)>[
+    ('length', null, null, <String>['m', 'cm', 'in', 'ft'], 'm', 'ft'),
+    ('area', null, null, <String>['m²', 'mm²', 'in²', 'ft²'], 'm²', 'ft²'),
+    ('volume', null, null, <String>['m³', 'L', 'ft³', 'gal (US)', 'gal (UK)'], 'm³', 'L'),
+    ('mass', null, null, <String>['kg', 'g', 'lb'], 'kg', 'lb'),
+    ('temperature', null, null, <String>['°C', '°F', 'K'], '°C', '°F'),
+    ('pressure', null, null, <String>['Pa', 'kPa', 'bar', 'psi', 'atm', 'inHg'], 'bar', 'psi'),
+    ('flow', null, null, <String>[], 'L/s', 'CFM'),
+    ('speed', null, null, <String>['m/s', 'ft/s', 'FPM'], 'm/s', 'FPM'),
+    ('power', 'Cooling load', 'حمل التبريد', <String>['kW', 'BTU/h', 'TR', 'hp'], 'TR', 'kW'),
+    ('density', null, null, <String>['kg/m³', 'lb/ft³', 'lb/gal'], 'kg/m³', 'lb/ft³'),
+    ('time', null, null, <String>['s', 'min', 'h', 'd'], 'h', 'min'),
+  ];
+
+  /// The converter's tabs, built once from [all]. An empty symbol list keeps
+  /// every unit of the category.
+  static final List<UnitCategory> converter = <UnitCategory>[
+    for (final (String id, String? en, String? ar, List<String> keep, String from, String to)
+        in _shown)
+      _subset(id, en, ar, keep, from, to),
+  ];
+
+  static UnitCategory _subset(
+    String id,
+    String? nameEn,
+    String? nameAr,
+    List<String> keep,
+    String from,
+    String to,
+  ) {
+    final UnitCategory source = all.firstWhere((UnitCategory c) => c.id == id);
+    final List<UnitDef> units = keep.isEmpty
+        ? source.units
+        : <UnitDef>[
+            for (final String symbol in keep)
+              source.units.firstWhere((UnitDef u) => u.symbol == symbol),
+          ];
+    int indexOf(String symbol) {
+      final int i = units.indexWhere((UnitDef u) => u.symbol == symbol);
+      return i < 0 ? 0 : i;
+    }
+
+    return UnitCategory(
+      id: source.id,
+      nameEn: nameEn ?? source.nameEn,
+      nameAr: nameAr ?? source.nameAr,
+      icon: source.icon,
+      units: units,
+      defaultFrom: indexOf(from),
+      defaultTo: indexOf(to),
+    );
+  }
 
   static const List<UnitCategory> all = <UnitCategory>[
     UnitCategory(
@@ -257,7 +326,7 @@ abstract final class UnitCatalog {
         UnitDef('MW', 'Megawatt', 'ميجاوات', 1e6),
         UnitDef('BTU/h', 'BTU per hour', 'وحدة حرارية/ساعة', 0.29307107017222),
         UnitDef('TR', 'Ton of refrigeration', 'طن تبريد', 3516.8528420667),
-        UnitDef('hp', 'Horsepower (mechanical)', 'حصان ميكانيكي', 745.69987158227),
+        UnitDef('hp', 'Horsepower (electric)', 'حصان كهربائي', 746, approx: true),
         UnitDef('PS', 'Horsepower (metric)', 'حصان متري', 735.49875),
         UnitDef('kcal/h', 'Kilocalorie per hour', 'كيلو سعر/ساعة', 1.163),
       ],
