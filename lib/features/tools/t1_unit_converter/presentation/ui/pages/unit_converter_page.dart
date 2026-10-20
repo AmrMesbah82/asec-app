@@ -33,6 +33,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
 import 'package:asec/features/tools/t1_unit_converter/domain/unit_catalog.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class UnitConverterPage extends StatefulWidget {
   const UnitConverterPage({super.key, this.standalone = false});
@@ -146,7 +147,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(S.of(context).copiedValue(text)),
+        content: Text(FormatHelper.capitalize(S.of(context).copiedValue(text))),
         duration: const Duration(seconds: 2),
       ));
   }
@@ -228,7 +229,7 @@ class _UnitConverterPageState extends State<UnitConverterPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(s.unitConverter, style: StyleText.fontSize18Weight600),
+        title: Text(FormatHelper.capitalize(s.unitConverter), style: StyleText.fontSize18Weight600),
       ),
       body: SafeArea(
         child: Padding(
@@ -288,7 +289,7 @@ class _ConverterCard extends StatelessWidget {
             children: <Widget>[
               Icon(category.icon, color: AppColors.primary, size: 22),
               SizedBox(width: 8.w),
-              Text(category.name(arabic),
+              Text(FormatHelper.capitalize(category.name(arabic)),
                   style: StyleText.fontSize18Weight600.copyWith(color: AppColors.text)),
             ],
           ),
@@ -332,7 +333,7 @@ class _ConverterCard extends StatelessWidget {
           _UnitDropdown(units: category.units, arabic: arabic, value: to, onChanged: onTo),
           SizedBox(height: 14.h),
           Text(
-            '1 ${f.symbol} ${_UnitConverterPageState.relation(f, t)} $oneText ${t.symbol}',
+            FormatHelper.capitalize('1 ${f.symbol} ${_UnitConverterPageState.relation(f, t)} $oneText ${t.symbol}'),
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
             style: StyleText.fontSize13Weight500.copyWith(color: AppColors.secondaryText),
@@ -412,7 +413,7 @@ class _AllConversions extends StatelessWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(4.w, 4.h, 4.w, 8.h),
             child: Text(
-              '${s.allConversions} · ${v == null ? '—' : _UnitConverterPageState.format(v, decimals: 3)} ${f.symbol}',
+              FormatHelper.capitalize('${s.allConversions} · ${v == null ? '—' : _UnitConverterPageState.format(v, decimals: 3)} ${f.symbol}'),
               style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
             ),
           ),
@@ -446,7 +447,7 @@ class _AllConversions extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  u.name(arabic),
+                  FormatHelper.capitalize(u.name(arabic)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize13Weight500.copyWith(
@@ -456,7 +457,7 @@ class _AllConversions extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               Text(
-                '${i != from && (u.approx || category.units[from].approx) ? '≈ ' : ''}$text ${u.symbol}',
+                FormatHelper.capitalize('${i != from && (u.approx || category.units[from].approx) ? '≈ ' : ''}$text ${u.symbol}'),
                 textDirection: TextDirection.ltr,
                 style: StyleText.fontSize13Weight600.copyWith(
                   color: isTo ? AppColors.primary : AppColors.text,

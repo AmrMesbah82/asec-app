@@ -27,7 +27,10 @@ import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/date_time_
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/question_editor_card.dart';
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class QuizEditorPage extends StatelessWidget {
   const QuizEditorPage({
@@ -35,6 +38,8 @@ class QuizEditorPage extends StatelessWidget {
     this.quiz,
     required this.adminUid,
     this.certificate = false,
+    this.course = '',
+    this.section = '',
   });
 
   /// Null = a new quiz.
@@ -44,6 +49,11 @@ class QuizEditorPage extends StatelessWidget {
   /// A NEW quiz starts as a certificate quiz (a course's final exam).
   final bool certificate;
 
+  /// A NEW quiz linked to this course section (opened from the section in
+  /// the Videos page). Empty = a general quiz.
+  final String course;
+  final String section;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<QuizEditorCubit>(
@@ -51,6 +61,8 @@ class QuizEditorPage extends StatelessWidget {
         existing: quiz,
         adminUid: adminUid,
         certificate: certificate,
+        course: course,
+        section: section,
       ),
       child: const _QuizEditorView(),
     );
@@ -91,7 +103,7 @@ class _QuizEditorView extends StatelessWidget {
           final ScaffoldMessengerState messenger =
               ScaffoldMessenger.of(context);
           Navigator.of(context).pop(true);
-          messenger.showSnackBar(SnackBar(content: Text(s.quizSaved)));
+          messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.quizSaved))));
         }
       },
       builder: (BuildContext context, QuizEditorState state) {
@@ -104,7 +116,7 @@ class _QuizEditorView extends StatelessWidget {
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: Text(
-              cubit.isNew ? s.newQuiz : s.editQuiz,
+              FormatHelper.capitalize(cubit.isNew ? s.newQuiz : s.editQuiz),
               style: StyleText.fontSize18Weight600,
             ),
             actions: <Widget>[
@@ -234,6 +246,17 @@ class _SettingsColumnState extends State<_SettingsColumn> {
             ),
           ),
           SizedBox(height: 16.h),
+        ] else ...<Widget>[
+          AppCard(
+            title: s.sectionQuizLabel,
+            caption: s.sectionQuizCaption,
+            child: _SectionPicker(
+              course: quiz.course,
+              section: quiz.section,
+              onChanged: cubit.setSection,
+            ),
+          ),
+          SizedBox(height: 16.h),
         ],
         AppCard(
           title: s.timeLimit,
@@ -252,10 +275,10 @@ class _SettingsColumnState extends State<_SettingsColumn> {
                     cubit.setDuration(int.tryParse(value.trim()) ?? 0),
               ),
               SizedBox(height: 18.h),
-              Text(s.availabilityWindow, style: StyleText.fontSize14Weight600),
+              Text(FormatHelper.capitalize(s.availabilityWindow), style: StyleText.fontSize14Weight600),
               SizedBox(height: 4.h),
               Text(
-                s.availabilityHint,
+                FormatHelper.capitalize(s.availabilityHint),
                 style: StyleText.fontSize12Weight400
                     .copyWith(color: AppColors.secondaryText),
               ),
@@ -279,16 +302,20 @@ class _SettingsColumnState extends State<_SettingsColumn> {
                 color: AppColors.transparent,
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(s.published, style: StyleText.fontSize14Weight600),
+                  title: Text(FormatHelper.capitalize(s.published), style: StyleText.fontSize14Weight600),
                   subtitle: Text(
-                    s.publishedHint,
+                    FormatHelper.capitalize(s.publishedHint),
                     style: StyleText.fontSize12Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),
                   trailing: Switch.adaptive(
                     value: quiz.published,
                     activeTrackColor: AppColors.secondaryPrimary,
-                    onChanged: cubit.setPublished,
+                    // Quizzes → Open / close.
+                    onChanged: SessionController.to.current
+                            .canDo(AdminAction.quizzesOpen)
+                        ? cubit.setPublished
+                        : null,
                   ),
                 ),
               ),
@@ -354,7 +381,7 @@ class _QuestionsColumn extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         Text(
-          '${s.minutes}: ${AppConstants.maxQuizMinutes} max',
+          FormatHelper.capitalize('${s.minutes}: ${AppConstants.maxQuizMinutes} max'),
           textAlign: TextAlign.center,
           style: StyleText.fontSize11Weight400
               .copyWith(color: AppColors.secondaryText),
@@ -413,6 +440,92 @@ class _CoursePickerState extends State<_CoursePicker> {
               DropdownItem<String>(value: c, label: c),
           ],
           onChanged: widget.onChanged,
+        );
+      },
+    );
+  }
+}
+
+/// The section an ordinary quiz closes: "Course › Section" for every video
+/// sub-folder, plus each course itself (its lessons outside sub-folders), or
+/// none for a general quiz. A pair that no longer has videos is still
+/// offered, so an existing quiz never loses its value.
+class _SectionPicker extends StatefulWidget {
+  const _SectionPicker({
+    required this.course,
+    required this.section,
+    required this.onChanged,
+  });
+
+  final String course;
+  final String section;
+  final void Function(String course, String section) onChanged;
+
+  @override
+  State<_SectionPicker> createState() => _SectionPickerState();
+}
+
+class _SectionPickerState extends State<_SectionPicker> {
+  late final Stream<List<VideoItem>> _videos = VideoRepository().watchAll();
+
+  /// Course and section in one dropdown value; '' = no section.
+  static const String _sep = '\u0001';
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return StreamBuilder<List<VideoItem>>(
+      stream: _videos,
+      builder: (BuildContext context, AsyncSnapshot<List<VideoItem>> snap) {
+        // key -> (course order, section order, label)
+        final Map<String, (int, int, String)> found = <String, (int, int, String)>{};
+        for (final VideoItem v in snap.data ?? const <VideoItem>[]) {
+          final String c = v.category.trim();
+          if (c.isEmpty) continue;
+          final String sec = v.subcategory.trim();
+          final String key = '$c$_sep$sec';
+          if (found.containsKey(key)) continue;
+          found[key] = (
+            v.categoryOrder > 0 ? v.categoryOrder : 1 << 20,
+            sec.isEmpty ? 0 : (v.subcategoryOrder > 0 ? v.subcategoryOrder : 1 << 20),
+            sec.isEmpty ? c : '$c › $sec',
+          );
+        }
+        final List<String> keys = found.keys.toList()
+          ..sort((String a, String b) {
+            final (int, int, String) x = found[a]!;
+            final (int, int, String) y = found[b]!;
+            int r = x.$1.compareTo(y.$1);
+            if (r == 0) r = x.$2.compareTo(y.$2);
+            return r != 0 ? r : x.$3.toLowerCase().compareTo(y.$3.toLowerCase());
+          });
+
+        final String course = widget.course.trim();
+        final String section = widget.section.trim();
+        final String current = course.isEmpty ? '' : '$course$_sep$section';
+        if (current.isNotEmpty && !found.containsKey(current)) {
+          keys.insert(0, current);
+          found[current] = (0, 0, section.isEmpty ? course : '$course › $section');
+        }
+
+        return CustomDropdown<String>(
+          value: current,
+          hint: s.sectionNone,
+          prefixIcon: Icon(Icons.playlist_add_check_rounded, color: AppColors.primary, size: 20),
+          items: <DropdownItem<String>>[
+            DropdownItem<String>(value: '', label: s.sectionNone),
+            for (final String k in keys)
+              DropdownItem<String>(value: k, label: found[k]!.$3),
+          ],
+          onChanged: (String? value) {
+            final String v = value ?? '';
+            if (v.isEmpty) {
+              widget.onChanged('', '');
+            } else {
+              final List<String> parts = v.split(_sep);
+              widget.onChanged(parts.first, parts.length > 1 ? parts[1] : '');
+            }
+          },
         );
       },
     );

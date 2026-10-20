@@ -22,6 +22,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// A single colour field that opens the picker dialog on tap.
 ///
@@ -86,7 +87,7 @@ class CustomColorPickerField extends StatelessWidget {
             borderRadius: BorderRadius.circular(kAppRadius.r),
           ),
           title: Text(
-            dialogTitle ?? label,
+            FormatHelper.capitalize(dialogTitle ?? label),
             style:
                 StyleText.fontSize16Weight500.copyWith(color: AppColors.text),
           ),
@@ -205,7 +206,7 @@ class CustomColorPickerField extends StatelessWidget {
                 ],
                 Expanded(
                   child: Text(
-                    value != null ? hexOf(value) : label,
+                    FormatHelper.capitalize(value != null ? hexOf(value) : label),
                     // A hex code is a number: it stays LTR even in Arabic.
                     textDirection: value != null ? TextDirection.ltr : null,
                     maxLines: 1,
@@ -263,7 +264,7 @@ class CustomColorPickerSection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  name,
+                  FormatHelper.capitalize(name),
                   style: StyleText.fontSize12Weight600.copyWith(color: AppColors.text),
                 ),
                 SizedBox(height: 6.h),
@@ -294,7 +295,7 @@ class CustomColorPickerSection extends StatelessWidget {
           children: <Widget>[
             if (showHeading) ...<Widget>[
               Text(
-                S.of(context).colors,
+                FormatHelper.capitalize(S.of(context).colors),
                 style: StyleText.fontSize16Weight500
                     .copyWith(color: AppColors.text),
               ),

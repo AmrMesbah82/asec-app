@@ -12,6 +12,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
 import 'package:asec/generated/l10n.dart';
 
 abstract final class VideoWatchStore {
@@ -69,6 +70,8 @@ abstract final class VideoWatchStore {
     } else {
       _box.write(_posKey(id), position.inSeconds);
     }
+    // Stars: every 20% watched is a point the admin can see.
+    WatchSync.report(id, progress(id));
   }
 
   /// SEQUENTIAL UNLOCK. In a course ordered first-to-last, lesson N opens

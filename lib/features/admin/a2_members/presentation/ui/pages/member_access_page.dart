@@ -24,6 +24,7 @@ import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/23-custom_check_box.dart';
 import 'package:asec/core/custom/5-custom_button.dart';
+import 'package:asec/core/custom/57-custom_dialog_manager.dart';
 import 'package:asec/core/custom/58-default_switch_button.dart';
 import 'package:asec/core/network/app_failure.dart';
 import 'package:asec/core/theme/app_colors.dart';
@@ -37,7 +38,10 @@ import 'package:asec/features/onboarding/o2_authentication/domain/entities/membe
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/date_time_field.dart';
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class MemberAccessPage extends StatefulWidget {
   const MemberAccessPage({super.key, required this.member});
@@ -64,6 +68,31 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
 
   bool _saving = false;
   bool _pausing = false;
+  bool _removingDevice = false;
+
+  /// ONE DEVICE PER MEMBER. Frees the account's device right away (not on
+  /// Save): the old device is shut out at once, and the next device the
+  /// member signs in on becomes theirs.
+  Future<void> _removeDevice(AppUser live) async {
+    final S s = S.of(context);
+    await CustomDialogManager.showConfirm(
+      context: context,
+      title: s.accessDeviceRemoveQuestion,
+      subtitle: s.accessDeviceRemoveBody(live.deviceName.isEmpty ? '—' : live.deviceName),
+      confirmLabel: s.accessDeviceRemove,
+      cancelLabel: s.cancel,
+      onConfirm: () async {
+        setState(() => _removingDevice = true);
+        final result = await _users.clearDevice(live.uid);
+        if (!mounted) return;
+        setState(() => _removingDevice = false);
+        result.fold(
+          (AppFailure f) => _toast(f.message(context)),
+          (_) => _toast(s.accessDeviceRemoved),
+        );
+      },
+    );
+  }
 
   String? _validate(S s) {
     if (!_allCourses && _courses.isEmpty) return s.accessPickCourse;
@@ -76,10 +105,14 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
 
   void _toast(String text) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text)));
+    ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(text))));
+
+  bool get _canAccess =>
+      SessionController.to.current.canDo(AdminAction.membersAccess);
 
   Future<void> _save() async {
     final S s = S.of(context);
+    if (!_canAccess) return;
     final String? problem = _validate(s);
     if (problem != null) {
       _toast(problem);
@@ -130,7 +163,7 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          '${s.editAccess} · ${widget.member.displayName}',
+          FormatHelper.capitalize('${s.editAccess} · ${widget.member.displayName}'),
           style: StyleText.fontSize18Weight600,
           overflow: TextOverflow.ellipsis,
         ),
@@ -250,14 +283,16 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                         SizedBox(width: 10.w),
                         Expanded(
                           child: Text(
-                            live.isPaused
+                            FormatHelper.capitalize(live.isPaused
                                 ? s.accessPausedSince(AppDates.day(context, live.pausedAt))
                                 : (live.accessUntil == null
                                     ? s.accessPermanent
-                                    : s.accessUntilShort(AppDates.day(context, live.accessUntil))),
+                                    : s.accessUntilShort(AppDates.day(context, live.accessUntil)))),
                             style: StyleText.fontSize13Weight500.copyWith(color: AppColors.text),
                           ),
                         ),
+                        // Members → Edit access.
+                        if (_canAccess)
                         _pausing
                             ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4))
                             : customButton(
@@ -271,7 +306,61 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                   );
                 },
               );
-          final Widget saveCard = Center(
+          final Widget deviceCard = StreamBuilder<AppUser?>(
+                stream: _live,
+                builder: (BuildContext context, AsyncSnapshot<AppUser?> snap) {
+                  final AppUser live = snap.data ?? widget.member;
+                  return AppCard(
+                    title: s.accessDevice,
+                    caption: s.accessDeviceCaption,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          live.hasDevice ? Icons.phonelink_lock_rounded : Icons.devices_other_rounded,
+                          color: live.hasDevice ? AppColors.primary : AppColors.secondaryText,
+                          size: 26,
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                FormatHelper.capitalize(live.hasDevice
+                                    ? (live.deviceName.isEmpty ? s.accessDeviceUnknown : live.deviceName)
+                                    : s.accessDeviceNone),
+                                style: StyleText.fontSize13Weight500.copyWith(color: AppColors.text),
+                              ),
+                              if (live.hasDevice && live.deviceBoundAt != null) ...<Widget>[
+                                SizedBox(height: 2.h),
+                                Text(
+                                  FormatHelper.capitalize(s.accessDeviceSince(AppDates.day(context, live.deviceBoundAt))),
+                                  style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        // Members → Reset device.
+                        if (live.hasDevice &&
+                            SessionController.to.current.canDo(AdminAction.membersDevice))
+                          _removingDevice
+                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4))
+                              : customButton(
+                                  title: s.accessDeviceRemove,
+                                  function: () => _removeDevice(live),
+                                  wrapContent: true,
+                                  color: AppColors.red,
+                                ),
+                      ],
+                    ),
+                  );
+                },
+              );
+          final Widget saveCard = !_canAccess
+              ? const SizedBox.shrink()
+              : Center(
                 child: _saving
                     ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5))
                     : customButton(title: s.save, function: _save, fullWidth: true),
@@ -293,13 +382,13 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[devicesCard, gap, periodCard, gap, pauseCard],
+                            children: <Widget>[deviceCard, gap, devicesCard, gap, periodCard, gap, pauseCard],
                           ),
                         ),
                       ],
                     )
                   else ...<Widget>[
-                    coursesCard, gap, devicesCard, gap, periodCard, gap, pauseCard,
+                    deviceCard, gap, coursesCard, gap, devicesCard, gap, periodCard, gap, pauseCard,
                   ],
                   SizedBox(height: 24.h),
                   Center(
@@ -369,7 +458,7 @@ class _SwitchRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(
-            child: Text(label, style: StyleText.fontSize14Weight600.copyWith(color: AppColors.text)),
+            child: Text(FormatHelper.capitalize(label), style: StyleText.fontSize14Weight600.copyWith(color: AppColors.text)),
           ),
           DefaultSwitchButton(value: value, onChanged: onChanged),
         ],
@@ -402,7 +491,7 @@ class _CheckRow extends StatelessWidget {
               SizedBox(width: 8.w),
             ],
             Expanded(
-              child: Text(label, style: StyleText.fontSize14Weight500.copyWith(color: AppColors.text)),
+              child: Text(FormatHelper.capitalize(label), style: StyleText.fontSize14Weight500.copyWith(color: AppColors.text)),
             ),
           ],
         ),

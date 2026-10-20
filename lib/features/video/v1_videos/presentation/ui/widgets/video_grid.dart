@@ -25,7 +25,16 @@ class VideoGrid extends StatelessWidget {
     this.header,
     this.lockedIds = const <String>{},
     this.lessonNumbers,
+    this.badgeBuilder,
+    this.pinned,
   });
+
+  /// Stays above the grid while it scrolls — the back button, so going
+  /// back never needs a scroll to the top first.
+  final Widget? pinned;
+
+  /// A label on each thumbnail (admin: Default / Custom).
+  final Widget? Function(VideoItem video)? badgeBuilder;
 
   /// Lessons behind a padlock (sequential course).
   final Set<String> lockedIds;
@@ -56,7 +65,7 @@ class VideoGrid extends StatelessWidget {
         final double tileHeight =
             tileWidth * 9 / 16 + 10.h + kVideoCardTextHeight.h + 12;
 
-        return CustomScrollView(
+        final Widget scroll = CustomScrollView(
           slivers: <Widget>[
             if (header != null) SliverToBoxAdapter(child: header),
             SliverPadding(
@@ -79,6 +88,7 @@ class VideoGrid extends StatelessWidget {
                         trailing: trailingBuilder?.call(video),
                         locked: lockedIds.contains(video.id),
                         lessonNumber: lessonNumbers?[video.id],
+                        badge: badgeBuilder?.call(video),
                       ),
                     );
                   },
@@ -87,6 +97,11 @@ class VideoGrid extends StatelessWidget {
               ),
             ),
           ],
+        );
+        if (pinned == null) return scroll;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[pinned!, Expanded(child: scroll)],
         );
       },
     );

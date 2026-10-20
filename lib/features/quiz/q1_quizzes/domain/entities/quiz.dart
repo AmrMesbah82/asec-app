@@ -32,9 +32,24 @@ class Quiz {
   /// ASEC certificate.
   final bool certificate;
 
-  /// The video category (Drive folder) this exam closes. Certificate quizzes
-  /// only.
+  /// The video category (Drive folder) this exam closes. For a certificate
+  /// quiz it is required; for an ordinary quiz it is optional and, with
+  /// [section], makes it a SECTION QUIZ.
   final String course;
+
+  /// The section (sub-folder of [course], e.g. "Draw and Modify-02") this
+  /// quiz closes. A SECTION QUIZ = not a certificate and [course] set: it is
+  /// shown at the end of that section's lessons and opens once they are all
+  /// watched. Empty = the course's lessons outside any sub-folder.
+  final String section;
+
+  bool get isSectionQuiz => !certificate && course.trim().isNotEmpty;
+
+  /// Whether this is the quiz of [courseName] › [sectionName].
+  bool closesSection(String courseName, String sectionName) =>
+      isSectionQuiz &&
+      course.trim().toLowerCase() == courseName.trim().toLowerCase() &&
+      section.trim().toLowerCase() == sectionName.trim().toLowerCase();
 
   static const int passPercent = 70;
 
@@ -53,6 +68,7 @@ class Quiz {
     this.published = false,
     this.certificate = false,
     this.course = '',
+    this.section = '',
     this.questions = const <QuizQuestion>[],
     this.createdBy = '',
     this.createdAt,
@@ -124,6 +140,7 @@ class Quiz {
     bool? published,
     bool? certificate,
     String? course,
+    String? section,
     List<QuizQuestion>? questions,
     String? createdBy,
   }) {
@@ -139,6 +156,7 @@ class Quiz {
       published: published ?? this.published,
       certificate: certificate ?? this.certificate,
       course: course ?? this.course,
+      section: section ?? this.section,
       questions: questions ?? this.questions,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt,

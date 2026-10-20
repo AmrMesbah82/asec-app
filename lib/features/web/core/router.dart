@@ -94,6 +94,9 @@ final GoRouter appRouter = GoRouter(
     if (!s.isStaff) return atLogin ? null : '/admin/login';
     if (atLogin) return '/admin';
     if (_superOnly.contains(path) && !s.isSuper) return '/admin';
+    // Website → Content / Inbox / Settings.
+    final AdminNav? nav = AdminNav.of(path);
+    if (nav != null && !nav.allowedFor(s)) return '/admin';
     return null;
   },
   errorBuilder: (BuildContext c, GoRouterState s) => SiteShell(location: s.uri.path, child: const NotFoundPage()),

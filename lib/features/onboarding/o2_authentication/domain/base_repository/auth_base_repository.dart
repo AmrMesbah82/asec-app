@@ -64,4 +64,7 @@ abstract class UsersBaseRepository {
 
   /// Resumes and adds the paused time to the end date.
   Future<Either<AppFailure, Unit>> resumeAccess(AppUser member);
+
+  /// Frees the member's one device, so they can sign in on a new one.
+  Future<Either<AppFailure, Unit>> clearDevice(String uid);
 }

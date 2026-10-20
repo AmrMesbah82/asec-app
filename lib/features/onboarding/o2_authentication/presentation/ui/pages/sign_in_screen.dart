@@ -26,6 +26,7 @@ import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widge
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/settings/app_features.dart';
 import 'package:get/get.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});
@@ -42,7 +43,7 @@ class SignInScreen extends StatelessWidget {
           }
           if (state.status == LoginStatus.resetSent) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(S.of(context).resetEmailSent)),
+              SnackBar(content: Text(FormatHelper.capitalize(S.of(context).resetEmailSent))),
             );
           }
         },
@@ -77,10 +78,10 @@ class _SignInForm extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(s.welcomeBack, style: StyleText.fontSize25Weight600),
+            Text(FormatHelper.capitalize(s.welcomeBack), style: StyleText.fontSize25Weight600),
             SizedBox(height: 6.h),
             Text(
-              s.signInSubtitle,
+              FormatHelper.capitalize(s.signInSubtitle),
               style: StyleText.fontSize14Weight400
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -132,7 +133,7 @@ class _SignInForm extends StatelessWidget {
               child: TextButton(
                 onPressed: state.isSubmitting ? null : cubit.sendReset,
                 child: Text(
-                  s.forgotPassword,
+                  FormatHelper.capitalize(s.forgotPassword),
                   style: StyleText.fontSize13Weight600
                       .copyWith(color: AppColors.primary),
                 ),
@@ -154,7 +155,7 @@ class _SignInForm extends StatelessWidget {
               children: <Widget>[
                 Flexible(
                   child: Text(
-                    s.noAccount,
+                    FormatHelper.capitalize(s.noAccount),
                     style: StyleText.fontSize13Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -168,7 +169,7 @@ class _SignInForm extends StatelessWidget {
                             ),
                           ),
                   child: Text(
-                    s.register,
+                    FormatHelper.capitalize(s.register),
                     style: StyleText.fontSize13Weight600
                         .copyWith(color: AppColors.primary),
                   ),
@@ -185,13 +186,13 @@ class _SignInForm extends StatelessWidget {
                 ),
                 icon: Icon(Icons.calculate_rounded, color: AppColors.primary, size: 20),
                 label: Text(
-                  s.openUnitConverter,
+                  FormatHelper.capitalize(s.openUnitConverter),
                   style: StyleText.fontSize13Weight600.copyWith(color: AppColors.primary),
                 ),
               ),
             ),
             Text(
-              s.signInAsAdminHint,
+              FormatHelper.capitalize(s.signInAsAdminHint),
               textAlign: TextAlign.center,
               style: StyleText.fontSize12Weight400
                   .copyWith(color: AppColors.secondaryText),

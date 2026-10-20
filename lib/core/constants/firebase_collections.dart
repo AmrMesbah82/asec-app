@@ -17,6 +17,12 @@
 ///   videos/{id}                 a lesson video in Cloud Storage
 ///   quizzes/{id}                title, timer, window and the questions
 ///   attempts/{quizId}_{uid}     one member's answers and score for one quiz
+///   notifications/{id}          texts the admin sends (the bell)
+///   tips/{id}                   tips & tricks (home-page pop-up, saved_by[])
+///   library/{id}                files in the member Library
+///   course_files/{id}           folders + files inside a course
+///   course_settings/{id}        per-course switches (watch in order)
+///   progress/{uid}              a member's watch progress → stars
 
 abstract final class FirebaseCollections {
   const FirebaseCollections._();
@@ -34,6 +40,31 @@ abstract final class FirebaseCollections {
   /// ever hold one attempt per quiz and the rules can check ownership from
   /// the path alone.
   static String attemptId(String quizId, String uid) => '${quizId}_$uid';
+
+  // ── Engagement (lib/features/engagement) ─────────────────────────────────
+  /// `notifications/{id}` — texts the admin sends to every member (the bell).
+  static const String notifications = 'notifications';
+
+  /// `tips/{id}` — tips & tricks, popped up on the home page; `saved_by`
+  /// holds the uids of the members who saved one.
+  static const String tips = 'tips';
+
+  /// `library/{id}` — files in the member library (home → Library).
+  static const String library = 'library';
+
+  /// `course_files/{id}` — folders and files inside a course ("Files" chip).
+  static const String courseFiles = 'course_files';
+
+  /// `course_settings/{id}` — per-course switches (watch in order or not).
+  static const String courseSettings = 'course_settings';
+
+  /// `progress/{uid}` — each member's watch progress per video (0..1),
+  /// the source of the stars the admin and the leaderboard show.
+  static const String progress = 'progress';
+
+  /// On `videos/{id}`: true = a "default" video every member sees, whatever
+  /// courses the admin opened for them. False / missing = "custom".
+  static const String freeField = 'free';
 
   // ── Shared field names (only fields that are queried / ordered by) ───────
   static const String createdAtField = 'created_at';
@@ -70,4 +101,7 @@ abstract final class FirebaseCollections {
   /// A segment of its own because the Storage rules accept only `image/*`
   /// directly under `cvs/{uid}/`.
   static const String storageCvDocs = 'doc';
+
+  /// `files/{library|course}/{timestamp}_{fileName}` — library and course files.
+  static const String storageFiles = 'files';
 }

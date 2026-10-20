@@ -48,9 +48,53 @@ service cloud.firestore {
             && me().active == true);
     }
 
+    // ── PERMISSIONS ─────────────────────────────────────────────────────────
+    //
+    // `permissions` holds tabs ('videos'), actions inside them
+    // ('videos.delete') and the marker 'v2'. Same logic as AdminPerms in
+    // lib/features/onboarding/o2_authentication/domain/enums/admin_permission.dart.
+    //
+    // LEGACY admins (no 'v2' — saved before sub-permissions) keep every
+    // action of their tabs, and Engagement follows their Videos permission
+    // (its Partners follow Website), exactly as before.
+    function perms() {
+      return me().get('permissions', []);
+    }
+
+    function hasPerm(k) {
+      return perms().hasAny([k]);
+    }
+
+    function legacy() {
+      return !hasPerm('v2');
+    }
+
+    // May open tab [p].
     function can(p) {
       return isSuper()
-        || (isStaff() && me().get('permissions', []).hasAny([p]));
+        || (isStaff()
+            && (hasPerm(p)
+                || (p == 'engagement' && legacy()
+                    && (hasPerm('videos') || hasPerm('website')))));
+    }
+
+    // May do action [a] inside tab [p].
+    function canDo(p, a) {
+      return isSuper()
+        || (isStaff()
+            && (legacy()
+                ? (p == 'engagement'
+                    ? hasPerm(a == 'partners' ? 'website' : 'videos')
+                    : hasPerm(p))
+                : (hasPerm(p) && hasPerm(p + '.' + a))));
+    }
+
+    function changed(k) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([k]);
+    }
+
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
     }
 
     // Kept for readability below: "any admin at all".
@@ -60,6 +104,33 @@ service cloud.firestore {
 
     function isSelf(uid) {
       return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── A MEMBER IN GOOD STANDING ───────────────────────────────────────────
+    //
+    // Signed in is not enough: the member's own profile must exist, be
+    // switched on, not paused, and inside the access period the admin set.
+    // A paused, expired or switched-off account reads NOTHING — even with a
+    // valid sign-in token and a hand-written request outside the app.
+    // Admins always pass.
+    function memberOk() {
+      return isStaff()
+        || (signedIn()
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && me().get('active', true) == true
+            && me().get('paused_at', null) == null
+            && (me().get('access_from', null) == null
+                || me().access_from <= request.time)
+            && (me().get('access_until', null) == null
+                || me().access_until > request.time));
+    }
+
+    // May this member open [course]? "Every course" (the default), or the
+    // course is in the list the admin ticked on the Members page.
+    function hasCourse(course) {
+      return isStaff()
+        || me().get('courses_all', true) == true
+        || course in me().get('courses', []);
     }
 
     // ── The demo-data button ────────────────────────────────────────────────
@@ -109,19 +180,40 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data)
              .affectedKeys().hasOnly(['full_name', 'phone', 'updated_at']);
 
-      // An admin with the 'members' permission may switch a MEMBER on or
-      // off and open the CV form for them. Nothing else — not the role, not
-      // the email, and never another admin.
-      // ...and set what the member may use: which courses, which devices,
-      // the access period, and the pause.
-      allow update: if can('members')
-        && resource.data.role == 'user'
+      // ONE DEVICE PER MEMBER: the app locks the account to the device it
+      // is first used on — only while no device is set. Moving to a new
+      // device needs the admin to clear it (rule below).
+      allow update: if isSelf(uid)
+        && resource.data.get('device_id', '') == ''
+        && request.resource.data.device_id is string
+        && request.resource.data.device_id.size() >= 16
         && request.resource.data.diff(resource.data)
-             .affectedKeys().hasOnly([
+             .affectedKeys().hasOnly(['device_id', 'device_name', 'device_bound_at']);
+
+      // An admin may change these fields of a MEMBER — each group needs its
+      // own action. Nothing else: not the role, not the email, and never
+      // another admin.
+      //   active                         Members → Activate / block
+      //   can_create_cv                  CVs → Give CV rights
+      //   courses, period, pause, calcs  Members → Edit access
+      //   device_*                       Members → Reset device
+      allow update: if (can('members') || can('cvs'))
+        && resource.data.role == 'user'
+        && onlyChanged([
                'active', 'can_create_cv', 'can_use_calcs', 'updated_at',
                'courses_all', 'courses', 'platforms',
-               'access_from', 'access_until', 'paused_at'
-             ]);
+               'access_from', 'access_until', 'paused_at',
+               'device_id', 'device_name', 'device_bound_at'
+             ])
+        && (!changed('active') || canDo('members', 'block'))
+        && (!changed('can_create_cv') || canDo('cvs', 'grant'))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+               'can_use_calcs', 'courses_all', 'courses', 'platforms',
+               'access_from', 'access_until', 'paused_at'])
+            || canDo('members', 'access'))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+               'device_id', 'device_name', 'device_bound_at'])
+            || canDo('members', 'device'));
 
       // The super admin creates admins and manages them: role 'admin',
       // a permissions list, switched on or off.
@@ -148,6 +240,15 @@ service cloud.firestore {
         || (can('members') && resource.data.role == 'user');
     }
 
+    // ── admin_config (admins only) ──────────────────────────────────────────
+    //
+    // Things members must never see, e.g. `drive` → `folder_id`: the Google
+    // Drive folder the lessons come from. Kept here, not in the app, so it
+    // cannot be pulled out of the app file.
+    match /admin_config/{doc} {
+      allow read, write: if can('videos');
+    }
+
     // ── settings (control centre) ───────────────────────────────────────────
     //
     // Readable by everybody — the sign-in screen needs the registration
@@ -161,9 +262,24 @@ service cloud.firestore {
     //
     // Members see published lessons only. The client's query filters on
     // `published == true`, which is what makes the list legal here.
+    // A member reads a published video only of a course the admin opened
+    // for them — or a "default" (free) video, which everybody sees. The app
+    // asks with matching queries (MemberVideos), so nothing else can be read
+    // even by hand: the video links of other courses stay hidden.
     match /videos/{videoId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
-      allow create, update, delete: if can('videos');
+      allow read: if isAdmin()
+        || (memberOk()
+            && resource.data.published == true
+            && (resource.data.get('free', false) == true
+                || hasCourse(resource.data.get('category', ''))));
+      allow create: if canDo('videos', 'add');
+      allow delete: if canDo('videos', 'delete');
+      // Edit changes the details; publishing and default / custom each
+      // need their own action, and can be done without Edit.
+      allow update: if can('videos')
+        && (canDo('videos', 'edit') || onlyChanged(['published', 'free', 'updated_at']))
+        && (!changed('published') || canDo('videos', 'publish'))
+        && (!changed('free') || canDo('videos', 'access'));
     }
 
     // ── quizzes ─────────────────────────────────────────────────────────────
@@ -173,8 +289,15 @@ service cloud.firestore {
     // a quiz outside its window is still readable (the app, not the rules,
     // decides what "open" means for the UI).
     match /quizzes/{quizId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.published == true);
-      allow create, update, delete: if can('quizzes');
+      allow read: if isAdmin() || (memberOk() && resource.data.published == true);
+      allow create: if canDo('quizzes', 'create')
+        && (request.resource.data.get('certificate', false) != true
+            || canDo('quizzes', 'certificates'));
+      allow delete: if canDo('quizzes', 'delete');
+      // Open / close = the `published` switch, possible without Edit.
+      allow update: if can('quizzes')
+        && (canDo('quizzes', 'edit') || onlyChanged(['published', 'updated_at']))
+        && (!changed('published') || canDo('quizzes', 'open'));
     }
 
     // ── cvs ─────────────────────────────────────────────────────────────────
@@ -183,9 +306,9 @@ service cloud.firestore {
     // path — no lookup, one CV per account, and no way to write somebody
     // else's.
     match /cvs/{uid} {
-      // A DIRECTORY: every signed-in account reads every CV. That is the
-      // feature, not an oversight.
-      allow read: if signedIn();
+      // A DIRECTORY: every member in good standing reads every CV. That is
+      // the feature, not an oversight.
+      allow read: if memberOk();
 
       // Writing one needs the admin's switch on your OWN user document, which
       // is the only place this rule set spends a read.
@@ -203,14 +326,14 @@ service cloud.firestore {
            );
 
       // Only the admin marks a CV reviewed / shortlisted / rejected.
-      allow update: if can('cvs')
+      allow update: if canDo('cvs', 'review')
         && request.resource.data.diff(resource.data)
              .affectedKeys().hasOnly(['status', 'updated_at']);
 
       // The demo button writes CVs for the demo members. Flagged only.
       allow create, update: if isDemoWrite();
 
-      allow delete: if isSelf(uid) || can('cvs');
+      allow delete: if isSelf(uid) || canDo('cvs', 'delete');
     }
 
     // ── attempts ────────────────────────────────────────────────────────────
@@ -253,6 +376,88 @@ service cloud.firestore {
              + request.resource.data.user_id;
 
       allow update, delete: if can('results');
+      // Deleting a quiz deletes its attempts with it.
+      allow delete: if canDo('quizzes', 'delete');
+    }
+
+    // ── Engagement (lib/features/engagement) ────────────────────────────────
+    //
+    // Written by admins with the 'videos' permission; read by every
+    // signed-in account.
+
+    // The bell: texts the admin sends to every member.
+    match /notifications/{id} {
+      allow read: if memberOk();
+      allow create, update, delete: if canDo('engagement', 'notifications');
+    }
+
+    // Tips & tricks. A member may only add or remove THEIR OWN uid in
+    // `saved_by` (the "Save" button) — nothing else on the tip.
+    function onlyOwnSave() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['saved_by'])
+        && request.resource.data.saved_by is list
+        && request.resource.data.saved_by.toSet()
+             .difference(resource.data.get('saved_by', []).toSet())
+             .hasOnly([request.auth.uid])
+        && resource.data.get('saved_by', []).toSet()
+             .difference(request.resource.data.saved_by.toSet())
+             .hasOnly([request.auth.uid]);
+    }
+
+    // A member marks a tip as already shown to them: only adds their own uid
+    // to `seen_by`, nothing else.
+    function onlyOwnSeen() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen_by'])
+        && request.resource.data.seen_by is list
+        && request.resource.data.seen_by.toSet()
+             .difference(resource.data.get('seen_by', []).toSet())
+             .hasOnly([request.auth.uid])
+        && resource.data.get('seen_by', []).toSet()
+             .difference(request.resource.data.seen_by.toSet())
+             .size() == 0;
+    }
+
+    match /tips/{id} {
+      allow read: if memberOk();
+      allow create, update, delete: if canDo('engagement', 'tips');
+      allow update: if signedIn() && (onlyOwnSave() || onlyOwnSeen());
+    }
+
+    // The member Library and each course's folders / files.
+    match /library/{id} {
+      allow read: if memberOk();
+      allow create, update, delete: if canDo('engagement', 'library');
+    }
+    // A course's files: only for members who have that course. The Library
+    // ('__library__') is for every member.
+    match /course_files/{id} {
+      allow read: if memberOk()
+        && (resource.data.course == '__library__'
+            || hasCourse(resource.data.course));
+      // The Library ('__library__') follows Engagement → Library; a
+      // course's files follow Videos → Add / Edit / Delete.
+      allow create: if request.resource.data.course == '__library__'
+        ? canDo('engagement', 'library') : canDo('videos', 'add');
+      allow update: if resource.data.course == '__library__'
+        ? canDo('engagement', 'library') : canDo('videos', 'edit');
+      allow delete: if resource.data.course == '__library__'
+        ? canDo('engagement', 'library') : canDo('videos', 'delete');
+    }
+
+    // Per-course switches (watch in order). Nothing secret in them.
+    match /course_settings/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if canDo('videos', 'access');
+    }
+
+    // Each member's watch progress — the stars. Only its owner writes it;
+    // every signed-in account reads it (the leaderboard, the admin).
+    match /progress/{uid} {
+      allow read: if isSelf(uid) || memberOk();
+      allow create, update: if isSelf(uid)
+        && request.resource.data.keys().hasOnly(['name', 'videos', 'updated_at'])
+        && request.resource.data.videos is map;
+      allow delete: if isSelf(uid) || can('members');
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -268,36 +473,46 @@ service cloud.firestore {
       return can('website');
     }
 
+    // Website → Content / Inbox / Settings.
+    function webContent() {
+      return canDo('website', 'content');
+    }
+
+    function webInbox() {
+      return canDo('website', 'inbox');
+    }
+
     match /site_settings/{doc} {
       allow read: if true;
-      allow write: if canWeb();
+      allow write: if canDo('website', 'settings');
     }
 
     // Published content. The site's queries filter `published == true`,
     // which is what makes a public list legal here.
     match /site_services/{id} {
       allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow write: if webContent();
     }
     match /site_features/{id} {
       allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow write: if webContent();
     }
     match /site_projects/{id} {
       allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow write: if webContent();
     }
     match /site_articles/{id} {
       allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow write: if webContent();
     }
+    // Also edited from the app's Engagement → Partners tab.
     match /site_partners/{id} {
-      allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow read: if canWeb() || can('engagement') || resource.data.published == true;
+      allow write: if webContent() || canDo('engagement', 'partners');
     }
     match /site_testimonials/{id} {
       allow read: if canWeb() || resource.data.published == true;
-      allow write: if canWeb();
+      allow write: if webContent();
     }
 
     // ── The three public forms ──────────────────────────────────────────────
@@ -322,7 +537,7 @@ service cloud.firestore {
       allow create: if inboxCreate(['name', 'phone', 'email', 'subject', 'message', 'status', 'created_at'])
         && maxLen('name', 200) && maxLen('phone', 40) && maxLen('email', 200)
         && maxLen('subject', 300) && maxLen('message', 5000);
-      allow read, update, delete: if canWeb();
+      allow read, update, delete: if webInbox();
     }
 
     match /site_service_requests/{id} {
@@ -337,7 +552,7 @@ service cloud.firestore {
         && maxLen('project_type', 50)
         && (!('services' in request.resource.data)
             || (request.resource.data.services is list && request.resource.data.services.size() <= 5));
-      allow read, update, delete: if canWeb();
+      allow read, update, delete: if webInbox();
     }
 
     match /site_job_applications/{id} {
@@ -350,7 +565,7 @@ service cloud.firestore {
         && maxLen('name', 200) && maxLen('university', 200) && maxLen('faculty', 200)
         && maxLen('residence', 200) && maxLen('email', 200) && maxLen('phone', 40)
         && maxLen('skills', 1000) && maxLen('company', 200) && maxLen('projects_link', 1000);
-      allow read, update, delete: if canWeb();
+      allow read, update, delete: if webInbox();
     }
 
   }

@@ -62,11 +62,16 @@ class SceneDelegate: FlutterSceneDelegate {
     // the switch's real state is applied right after.
     field.isSecureTextEntry = true
     field.isUserInteractionEnabled = false
-    field.translatesAutoresizingMaskIntoConstraints = false
+    // The field must cover the WHOLE window at (0, 0): the window's layer is
+    // drawn inside the field's secure container, so the container's origin is
+    // where the app starts. A centred, zero-size field put that origin in the
+    // middle of the screen and pushed the app down and to the right.
+    field.translatesAutoresizingMaskIntoConstraints = true
+    field.frame = window.bounds
+    field.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     window.addSubview(field)
-    field.centerXAnchor.constraint(equalTo: window.centerXAnchor).isActive = true
-    field.centerYAnchor.constraint(equalTo: window.centerYAnchor).isActive = true
     parent.addSublayer(field.layer)
+    field.layoutIfNeeded()
     // The secure container is the last sublayer on iOS 17+, the first before.
     let container: CALayer?
     if #available(iOS 17.0, *) {
@@ -75,7 +80,9 @@ class SceneDelegate: FlutterSceneDelegate {
       container = field.layer.sublayers?.first
     }
     guard let secureLayer = container else { return false }
+    secureLayer.frame = field.bounds
     secureLayer.addSublayer(window.layer)
+    window.layer.position = CGPoint(x: window.bounds.midX, y: window.bounds.midY)
     secureField = field
     field.isSecureTextEntry = AsecScreenProtection.enabled
     return true

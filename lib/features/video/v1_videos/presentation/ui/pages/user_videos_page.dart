@@ -11,6 +11,9 @@
 /// Updated: 1/10/2026 - Categories first (one per Drive sub-folder), then
 ///          the videos of the category opened. Lesson numbers, locks and
 ///          progress count within the category.
+/// Updated: 15/10/2026 - Chips: Files (the course's folders) / All /
+///          Continue watching; the back button stays pinned; per-course
+///          "watch in order"; stars; "default" videos for everybody.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,8 +24,6 @@ import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
-import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
-import 'package:asec/features/video/v1_videos/domain/base_repository/video_base_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/video_player_page.dart';
 import 'package:asec/features/video/v1_videos/data/download/video_downloads.dart';
@@ -32,10 +33,20 @@ import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_grid
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/section_quizzes.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/course_settings.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/course_files_view.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/stars_row.dart';
+import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
+import 'package:asec/features/video/v1_videos/presentation/controller/member_videos.dart';
 
-enum _VideoFilter { all, recent, continueWatching, watched }
+/// The chips above a course's lessons. FILES comes first: the folders and
+/// files the admin put in this course.
+enum _VideoFilter { files, all, continueWatching }
 
 class UserVideosPage extends StatefulWidget {
   const UserVideosPage({super.key});
@@ -45,8 +56,8 @@ class UserVideosPage extends StatefulWidget {
 }
 
 class _UserVideosPageState extends State<UserVideosPage> {
-  final VideoBaseRepository _repository = VideoRepository();
-  late final Stream<List<VideoItem>> _videos = _repository.watchPublished();
+  // Only what this member may read (firestore.rules checks it too).
+  late final Stream<List<VideoItem>> _videos = MemberVideos.watch();
   final TextEditingController _search = TextEditingController();
 
   _VideoFilter _filter = _VideoFilter.all;
@@ -75,6 +86,18 @@ class _UserVideosPageState extends State<UserVideosPage> {
     _search.clear();
   }
 
+  /// The section(s) whose quizzes belong under the lessons on screen: the
+  /// open sub-folder, or — when the course shows no sub-folder screen —
+  /// every section it has plus its loose lessons ('').
+  static List<String> _sectionsShown(VideoCategory? sub, List<VideoCategory> subs) =>
+      sub != null
+          ? <String>[sub.name]
+          : <String>[
+              '',
+              for (final VideoCategory c in subs)
+                if (c.name.isNotEmpty) c.name,
+            ];
+
   @override
   void dispose() {
     _search.dispose();
@@ -82,31 +105,25 @@ class _UserVideosPageState extends State<UserVideosPage> {
   }
 
   List<VideoItem> _apply(List<VideoItem> all) {
-    if (!AppFeatures.to.isOn(AppFeature.videoSearch)) return all;
-    final String q = _query.trim().toLowerCase();
+    if (_filter == _VideoFilter.files) return const <VideoItem>[];
+    final String q = AppFeatures.to.isOn(AppFeature.videoSearch)
+        ? _query.trim().toLowerCase()
+        : '';
     return all.where((VideoItem v) {
       if (q.isNotEmpty &&
           !v.title.toLowerCase().contains(q) &&
           !v.description.toLowerCase().contains(q)) {
         return false;
       }
-      final double p = VideoWatchStore.progress(v.id);
-      switch (_filter) {
-        case _VideoFilter.all:
-          return true;
-        case _VideoFilter.recent:
-          return v.createdAt != null &&
-              DateTime.now().difference(v.createdAt!).inDays < 14;
-        case _VideoFilter.continueWatching:
-          return p > 0 && p < 1;
-        case _VideoFilter.watched:
-          return p >= 1;
+      if (_filter == _VideoFilter.continueWatching) {
+        final double p = VideoWatchStore.progress(v.id);
+        return p > 0 && p < 1;
       }
+      return true;
     }).toList();
   }
 
-  Future<void> _open(VideoItem video, List<VideoItem> playlist) async {
-    final bool sequential = AppFeatures.to.isOn(AppFeature.videoSequential);
+  Future<void> _open(VideoItem video, List<VideoItem> playlist, bool sequential) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => VideoPlayerPage(
@@ -116,7 +133,8 @@ class _UserVideosPageState extends State<UserVideosPage> {
         ),
       ),
     );
-    // Progress bars and "watched" ticks changed while the player was open.
+    // Progress bars, stars and "watched" ticks changed while the player
+    // was open.
     if (mounted) setState(() {});
   }
 
@@ -126,6 +144,7 @@ class _UserVideosPageState extends State<UserVideosPage> {
 
     return Obx(() {
     AppFeatures.to.values.length; // rebuild when a switch flips
+    CourseSettings.to.sequential.length; // and when a course's order switch flips
     SessionController.to.user.value; // and when the admin changes my courses
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -138,14 +157,17 @@ class _UserVideosPageState extends State<UserVideosPage> {
           if (snapshot.hasError) return AppErrorView(message: s.errUnknown);
           if (!snapshot.hasData) return const AppLoading();
 
-          // Only the courses the admin opened for this member.
+          // The courses the admin opened for this member, plus every
+          // "default" video, which everybody sees.
           final AppUser me = SessionController.to.current;
           final List<VideoItem> all = snapshot.data!
-              .where((VideoItem v) => v.hasFile && me.canSeeCourse(v.category))
+              .where((VideoItem v) =>
+                  v.hasFile && (v.free || me.canSeeCourse(v.category)))
               .toList()
-            // COURSE ORDER: the first lesson added is lesson 1.
-            ..sort((VideoItem a, VideoItem b) => (a.createdAt ?? DateTime(0))
-                .compareTo(b.createdAt ?? DateTime(0)));
+            // COURSE ORDER (reversed): the latest upload is lesson 1, since the
+            // lessons were uploaded from last to first.
+            ..sort((VideoItem a, VideoItem b) => (b.createdAt ?? DateTime(0))
+                .compareTo(a.createdAt ?? DateTime(0)));
 
           if (all.isEmpty) {
             return ConsolePage(
@@ -177,17 +199,27 @@ class _UserVideosPageState extends State<UserVideosPage> {
             final int watchedAll = all
                 .where((VideoItem v) => VideoWatchStore.isWatched(v.id))
                 .length;
+            // Every course's stars added up.
+            final int starsAll = categories.fold<int>(
+              0,
+              (int sum, VideoCategory c) => sum + CourseStars.local(c.videos),
+            );
             return ConsolePage(
               title: s.typeVideos,
               subtitle: s.videosUserSub,
               child: VideoCategoryGrid(
                 categories: categories,
+                showStars: true,
                 onOpen: (VideoCategory c) => _openCategory(c.name),
                 header: features.isOn(AppFeature.videoCourseProgress)
                     ? Padding(
                         padding: EdgeInsets.only(bottom: 18.h),
                         child: _CourseProgress(
-                            watched: watchedAll, total: all.length),
+                          watched: watchedAll,
+                          total: all.length,
+                          ratio: CourseStars.localRatio(all),
+                          starsTotal: starsAll,
+                        ),
                       )
                     : null,
               ),
@@ -212,12 +244,22 @@ class _UserVideosPageState extends State<UserVideosPage> {
                 child: VideoCategoryGrid(
                   categories: subs,
                   onOpen: (VideoCategory c) => _openSubcategory(c.name),
-                  header: grouped
+                  // PINNED: the back button never scrolls away.
+                  pinned: grouped
                       ? VideoCategoryHeader(
                           category: category,
                           onBack: () => _openCategory(null),
                         )
                       : null,
+                  header: Padding(
+                    padding: EdgeInsets.only(bottom: 18.h),
+                    child: _CourseFilesEntry(
+                      onTap: () => PushedSectionPage.open(
+                        context,
+                        _CourseFilesPage(course: category),
+                      ),
+                    ),
+                  ),
                 ),
               );
             }
@@ -227,13 +269,15 @@ class _UserVideosPageState extends State<UserVideosPage> {
           // From here on "the course" is the folder that is open.
           final List<VideoItem> course = current.videos;
           final List<VideoItem> shown = _apply(course);
+          final bool filesMode = _filter == _VideoFilter.files;
 
           // Locks and numbers come from the WHOLE category, never the
           // filtered view — searching must not unlock anything.
           final Map<String, int> numbers = <String, int>{
             for (int i = 0; i < course.length; i++) course[i].id: i + 1,
           };
-          final bool sequential = features.isOn(AppFeature.videoSequential);
+          // THE ADMIN DECIDES PER COURSE whether lessons open in order.
+          final bool sequential = CourseSettings.to.isSequential(category.name);
           final Set<String> locked = sequential
               ? VideoWatchStore.lockedIds(
                   <String>[for (final VideoItem v in course) v.id],
@@ -243,49 +287,66 @@ class _UserVideosPageState extends State<UserVideosPage> {
               .where((VideoItem v) => VideoWatchStore.isWatched(v.id))
               .length;
 
+          // PINNED: always on screen, however far the lessons scroll.
+          final Widget? back = sub != null
+              ? VideoCategoryHeader(
+                  category: sub,
+                  backLabel: category.label(s),
+                  onBack: () => _openSubcategory(null),
+                )
+              : grouped
+                  ? VideoCategoryHeader(
+                      category: current,
+                      onBack: () => _openCategory(null),
+                    )
+                  : null;
+
           final Widget header = Padding(
             padding: EdgeInsets.only(bottom: 18.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                if (sub != null)
-                  VideoCategoryHeader(
-                    category: sub,
-                    backLabel: category.label(s),
-                    onBack: () => _openSubcategory(null),
-                  )
-                else if (grouped)
-                  VideoCategoryHeader(
-                    category: current,
-                    onBack: () => _openCategory(null),
-                  ),
                 if (features.isOn(AppFeature.videoCourseProgress)) ...<Widget>[
-                  _CourseProgress(watched: watched, total: course.length),
+                  _CourseProgress(
+                    watched: watched,
+                    total: course.length,
+                    ratio: CourseStars.localRatio(course),
+                  ),
                   SizedBox(height: 16.h),
                 ],
-                if (features.isOn(AppFeature.videoSearch)) ...<Widget>[
-                _SearchBox(
-                  controller: _search,
-                  hint: s.searchVideos,
-                  onChanged: (String v) => setState(() => _query = v),
-                  onClear: () {
-                    _search.clear();
-                    setState(() => _query = '');
-                  },
+                // The quiz at the end of this section — opens once every
+                // lesson of it is watched.
+                SectionQuizzes.member(
+                  course: category.name,
+                  sections: _sectionsShown(sub, subs),
+                  user: me,
+                  unlocked: course.isNotEmpty && watched >= course.length,
                 ),
-                SizedBox(height: 14.h),
+                if (features.isOn(AppFeature.videoSearch) && !filesMode) ...<Widget>[
+                  _SearchBox(
+                    controller: _search,
+                    hint: s.searchVideos,
+                    onChanged: (String v) => setState(() => _query = v),
+                    onClear: () {
+                      _search.clear();
+                      setState(() => _query = '');
+                    },
+                  ),
+                  SizedBox(height: 14.h),
+                ],
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: <Widget>[
-                      for (final (_VideoFilter f, String label) in <(_VideoFilter, String)>[
-                        (_VideoFilter.all, s.filterAll),
-                        (_VideoFilter.recent, s.filterRecent),
-                        (_VideoFilter.continueWatching, s.filterContinue),
-                        (_VideoFilter.watched, s.filterWatched),
+                      for (final (_VideoFilter f, String label, IconData? icon)
+                          in <(_VideoFilter, String, IconData?)>[
+                        (_VideoFilter.files, s.engFilesTab, Icons.folder_rounded),
+                        (_VideoFilter.all, s.filterAll, null),
+                        (_VideoFilter.continueWatching, s.filterContinue, null),
                       ]) ...<Widget>[
                         _FilterChip(
                           label: label,
+                          icon: icon,
                           selected: _filter == f,
                           onTap: () => setState(() => _filter = f),
                         ),
@@ -294,8 +355,10 @@ class _UserVideosPageState extends State<UserVideosPage> {
                     ],
                   ),
                 ),
-                ],
-                if (shown.isEmpty) ...<Widget>[
+                if (filesMode) ...<Widget>[
+                  SizedBox(height: 16.h),
+                  CourseFilesView(course: category.name),
+                ] else if (shown.isEmpty) ...<Widget>[
                   SizedBox(height: 40.h),
                   AppEmptyView(
                     title: s.noLessonsMatch,
@@ -311,6 +374,7 @@ class _UserVideosPageState extends State<UserVideosPage> {
             subtitle: s.videosUserSub,
             child: VideoGrid(
               videos: shown,
+              pinned: back,
               header: header,
               lockedIds: locked,
               lessonNumbers: numbers,
@@ -331,13 +395,13 @@ class _UserVideosPageState extends State<UserVideosPage> {
                         children: <Widget>[
                           const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(s.finishLessonFirst(n - 1))),
+                          Expanded(child: Text(FormatHelper.capitalize(s.finishLessonFirst(n - 1)))),
                         ],
                       ),
                     ));
                   return;
                 }
-                _open(v, course);
+                _open(v, course, sequential);
               },
             ),
           );
@@ -345,6 +409,44 @@ class _UserVideosPageState extends State<UserVideosPage> {
       ),
     );
     });
+  }
+}
+
+/// On a course's section list: the way in to the course's "Files".
+class _CourseFilesEntry extends StatelessWidget {
+  const _CourseFilesEntry({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: _FilterChip(
+        label: s.engFilesTab,
+        icon: Icons.folder_rounded,
+        selected: false,
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+/// A course's files on a page of their own (from the section list).
+class _CourseFilesPage extends StatelessWidget {
+  const _CourseFilesPage({required this.course});
+
+  final VideoCategory course;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return ConsolePage(
+      title: '${s.engFilesTab} · ${course.label(s)}',
+      scrollable: true,
+      child: CourseFilesView(course: course.name),
+    );
   }
 }
 
@@ -419,11 +521,13 @@ class _FilterChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.icon,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -435,11 +539,24 @@ class _FilterChip extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-          child: Text(
-            label,
-            style: StyleText.fontSize13Weight600.copyWith(
-              color: selected ? AppColors.background : AppColors.text,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (icon != null) ...<Widget>[
+                AppIcon(
+                  icon,
+                  size: 16.sp,
+                  color: selected ? AppColors.background : AppColors.primary,
+                ),
+                SizedBox(width: 6.w),
+              ],
+              Text(
+                FormatHelper.capitalize(label),
+                style: StyleText.fontSize13Weight600.copyWith(
+                  color: selected ? AppColors.background : AppColors.text,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -447,17 +564,30 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-/// "3 of 10 lessons watched" with a bar — the course at a glance.
+/// "3 of 10 lessons watched" with a bar, the percentage and the stars it
+/// earned — 1 star for every 20% watched, 5 at most.
 class _CourseProgress extends StatelessWidget {
-  const _CourseProgress({required this.watched, required this.total});
+  const _CourseProgress({
+    required this.watched,
+    required this.total,
+    required this.ratio,
+    this.starsTotal,
+  });
 
   final int watched;
   final int total;
 
+  /// 0..1 — how much of the lessons was watched, partly watched ones too.
+  final double ratio;
+
+  /// On the course list: every course's stars added up, instead of the
+  /// five stars of one course.
+  final int? starsTotal;
+
   @override
   Widget build(BuildContext context) {
     final S s = S.of(context);
-    final double p = total == 0 ? 0 : watched / total;
+    final double p = ratio.clamp(0.0, 1.0);
     final bool done = total > 0 && watched >= total;
 
     return Container(
@@ -493,13 +623,13 @@ class _CourseProgress extends StatelessWidget {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        done ? s.courseComplete : s.courseProgress(watched, total),
+                        FormatHelper.capitalize(done ? s.courseComplete : s.courseProgress(watched, total)),
                         style: StyleText.fontSize14Weight600
                             .copyWith(color: AppColors.text),
                       ),
                     ),
                     Text(
-                      '${(p * 100).round()}%',
+                      FormatHelper.capitalize('${(p * 100).round()}%'),
                       style: StyleText.fontSize13Weight600.copyWith(
                         color: AppColors.primary,
                       ),
@@ -524,6 +654,25 @@ class _CourseProgress extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+                SizedBox(height: 10.h),
+                Row(
+                  children: <Widget>[
+                    if (starsTotal != null)
+                      StarsChip(label: s.engStarsCount(starsTotal!))
+                    else
+                      StarsRow(stars: CourseStars.fromRatio(p), size: 20),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        FormatHelper.capitalize(s.engStarsHint),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: StyleText.fontSize11Weight500
+                            .copyWith(color: AppColors.secondaryText),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

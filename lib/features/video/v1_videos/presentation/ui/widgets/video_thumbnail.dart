@@ -26,6 +26,7 @@ import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_link.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class VideoThumbnail extends StatelessWidget {
   const VideoThumbnail({
@@ -123,7 +124,7 @@ class VideoThumbnail extends StatelessWidget {
                                 color: Colors.white, size: 20),
                             const SizedBox(width: 4),
                             Text(
-                              s.nowPlaying,
+                              FormatHelper.capitalize(s.nowPlaying),
                               style: StyleText.fontSize11Weight700
                                   .copyWith(color: Colors.white),
                             ),
@@ -192,7 +193,7 @@ class VideoThumbnail extends StatelessWidget {
                                 size: 16, color: Colors.white),
                             const SizedBox(width: 4),
                             Text(
-                              s.watchedBadge,
+                              FormatHelper.capitalize(s.watchedBadge),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -235,7 +236,7 @@ class VideoThumbnail extends StatelessWidget {
                       if (!compact && lockedBehind != null) ...<Widget>[
                         const SizedBox(height: 8),
                         Text(
-                          s.finishLessonFirst(lockedBehind!),
+                          FormatHelper.capitalize(s.finishLessonFirst(lockedBehind!)),
                           textAlign: TextAlign.center,
                           style: StyleText.fontSize12Weight600
                               .copyWith(color: Colors.white),
@@ -304,7 +305,7 @@ class VideoThumbnail extends StatelessWidget {
               child: Align(
                 alignment: AlignmentDirectional.bottomStart,
                 child: Text(
-                  video.title.toUpperCase(),
+                  FormatHelper.capitalize(video.title.toUpperCase()),
                   maxLines: compact ? 2 : 3,
                   overflow: TextOverflow.ellipsis,
                   style: (compact
@@ -344,7 +345,7 @@ class _Tag extends StatelessWidget {
       child: icon != null
           ? Icon(icon, size: 13, color: Colors.white)
           : Text(
-              text!,
+              FormatHelper.capitalize(text!),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 11,

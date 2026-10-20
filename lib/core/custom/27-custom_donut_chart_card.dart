@@ -25,6 +25,7 @@ import 'package:asec/core/custom/24-custom_chart_card.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Rewrite the ASCII digits in [value] as Arabic-Indic numerals (٠١٢…) when
 /// [arabic] is true, so the ring percentages and legend amounts read in Arabic
@@ -157,7 +158,7 @@ class DonutChartCard extends StatelessWidget {
           height: expandChild ? null : 160.h,
           child: Center(
             child: Text(
-              emptyMessage!,
+              FormatHelper.capitalize(emptyMessage!),
               style: CardStyles.label(13),
               textAlign: TextAlign.center,
             ),
@@ -216,14 +217,14 @@ class DonutChartCard extends StatelessWidget {
             children: <Widget>[
               if (centerValue != null)
                 Text(
-                  _localizeDigits(centerValue!, isRtl),
+                  FormatHelper.capitalize(_localizeDigits(centerValue!, isRtl)),
                   style: CardStyles.title(18),
                 ),
               if (centerLabel != null)
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppPadding.h),
                   child: Text(
-                    centerLabel!,
+                    FormatHelper.capitalize(centerLabel!),
                     style: CardStyles.label(10),
                     textAlign: TextAlign.center,
                   ),

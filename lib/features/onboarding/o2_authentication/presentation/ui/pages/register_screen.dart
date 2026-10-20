@@ -21,6 +21,7 @@ import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/register_cubit.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/auth_layout.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -76,7 +77,7 @@ class _RegisterForm extends StatelessWidget {
                   ),
                 Expanded(
                   child: Text(
-                    s.createYourAccount,
+                    FormatHelper.capitalize(s.createYourAccount),
                     style: StyleText.fontSize25Weight600,
                   ),
                 ),
@@ -84,7 +85,7 @@ class _RegisterForm extends StatelessWidget {
             ),
             SizedBox(height: 6.h),
             Text(
-              s.registerSubtitle,
+              FormatHelper.capitalize(s.registerSubtitle),
               style: StyleText.fontSize14Weight400
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -176,7 +177,7 @@ class _RegisterForm extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              s.registerHint,
+              FormatHelper.capitalize(s.registerHint),
               textAlign: TextAlign.center,
               style: StyleText.fontSize12Weight400
                   .copyWith(color: AppColors.secondaryText),
@@ -187,7 +188,7 @@ class _RegisterForm extends StatelessWidget {
               children: <Widget>[
                 Flexible(
                   child: Text(
-                    s.haveAccount,
+                    FormatHelper.capitalize(s.haveAccount),
                     style: StyleText.fontSize13Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -197,7 +198,7 @@ class _RegisterForm extends StatelessWidget {
                       ? null
                       : () => Navigator.of(context).maybePop(),
                   child: Text(
-                    s.signIn,
+                    FormatHelper.capitalize(s.signIn),
                     style: StyleText.fontSize13Weight600
                         .copyWith(color: AppColors.primary),
                   ),

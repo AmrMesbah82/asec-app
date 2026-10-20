@@ -25,6 +25,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/attempt_detail_page.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class DashboardTable extends StatelessWidget {
   const DashboardTable({super.key, required this.data});
@@ -115,7 +116,7 @@ class _PercentChip extends StatelessWidget {
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(
-        '${percent.round()}%',
+        FormatHelper.capitalize('${percent.round()}%'),
         textAlign: TextAlign.center,
         style: StyleText.fontSize12Weight700.copyWith(color: color),
       ),

@@ -8,14 +8,24 @@
 /// Created: 19/9/2026
 /// Updated: 1/10/2026 - Categories first (one per Drive sub-folder), then
 ///          the videos of the category opened.
+/// Updated: 15/10/2026 - Per course: Videos / Files (folders + files) and
+///          the "watch in order" switch; Default / Custom videos; the back
+///          button stays pinned.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/custom/57-custom_dialog_manager.dart';
+import 'package:asec/core/custom/58-default_switch_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/features/engagement/e1_engagement/data/repository/engagement_repository.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/course_settings.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/course_files_view.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
@@ -27,7 +37,11 @@ import 'package:asec/features/video/v1_videos/presentation/ui/pages/video_player
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_categories.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_grid.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/section_quizzes.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AdminVideosPage extends StatefulWidget {
   const AdminVideosPage({super.key, required this.adminUid});
@@ -48,6 +62,28 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
   /// The sub-folder opened inside [_category]; null = its sub-folder list.
   String? _subcategory;
 
+  /// The course's "Files" instead of its videos.
+  bool _showFiles = false;
+
+  final EngagementRepository _engagement = EngagementRepository();
+
+  bool get _canEdit => SessionController.to.current.canDo(AdminAction.videosEdit);
+  bool get _canAccess => SessionController.to.current.canDo(AdminAction.videosAccess);
+  bool get _canDelete => SessionController.to.current.canDo(AdminAction.videosDelete);
+
+  Future<void> _setFree(VideoItem video, bool free) async {
+    final S s = S.of(context);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    try {
+      await _engagement.setVideoFree(video.id, free);
+      messenger.showSnackBar(SnackBar(
+        content: Text(FormatHelper.capitalize(free ? s.engVideoDefault : s.engVideoCustom)),
+      ));
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.errUnknown))));
+    }
+  }
+
   Future<void> _openForm([VideoItem? video]) => Navigator.of(context).push(
         MaterialPageRoute<bool>(
           builder: (_) => VideoFormPage(
@@ -65,15 +101,46 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
   /// line with the folder — new files added, removed ones dropped, the old
   /// sample videos cleared. See DriveVideoSync. The list below is a live
   /// Firestore stream, so it updates the moment the sync writes.
+  ///
+  /// It also runs again when the app comes back to the foreground and every
+  /// few minutes while it stays open, so a folder added in Drive shows up
+  /// without restarting the app. The sync only writes what changed.
+  Timer? _resync;
+  AppLifecycleListener? _lifecycle;
+  String? _lastShown;
+
   @override
   void initState() {
     super.initState();
+    _sync();
+    _resync = Timer.periodic(const Duration(minutes: 3), (_) => _sync());
+    _lifecycle = AppLifecycleListener(onResume: _sync);
+  }
+
+  @override
+  void dispose() {
+    _resync?.cancel();
+    _lifecycle?.dispose();
+    super.dispose();
+  }
+
+  /// Shows why folders are missing — once per distinct message, so the
+  /// periodic sync does not repeat the same snackbar.
+  void _sync() {
+    // The sync adds, edits and deletes videos, so only an admin who may do
+    // all three runs it (the rules would refuse the rest anyway).
+    final AppUser me = SessionController.to.current;
+    if (!me.canDo(AdminAction.videosAdd) ||
+        !me.canDo(AdminAction.videosEdit) ||
+        !me.canDo(AdminAction.videosDelete)) {
+      return;
+    }
+    // No snackbar: a sync problem is only logged (debug console), so the
+    // admin's screens stay clean.
     DriveVideoSync.run(adminUid: widget.adminUid).then((String? problem) {
-      if (problem == null || !mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        duration: const Duration(seconds: 12),
-        content: Text(problem, maxLines: 6, overflow: TextOverflow.ellipsis),
-      ));
+      if (problem == null || problem == _lastShown) return;
+      _lastShown = problem;
+      debugPrint('DRIVE SYNC: $problem');
     });
   }
 
@@ -89,7 +156,7 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
         final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
         final String deleted = s.deleted;
         await _repository.delete(video);
-        messenger.showSnackBar(SnackBar(content: Text(deleted)));
+        messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(deleted))));
       },
     );
   }
@@ -100,8 +167,8 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // Adding videos is for amrmesbah33@gmail.com only.
-      floatingActionButton: !SessionController.to.current.isSuperAdmin
+      // Videos → Add / upload.
+      floatingActionButton: !SessionController.to.current.canDo(AdminAction.videosAdd)
           ? null
           : FloatingActionButton.extended(
         // THE SHELL KEEPS EVERY SECTION ALIVE (IndexedStack), so this FAB and
@@ -113,7 +180,7 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
         backgroundColor: AppColors.primary,
         icon: const AppIcon(Icons.cloud_upload_outlined, color: Colors.white),
         label: Text(
-          s.addVideo,
+          FormatHelper.capitalize(s.addVideo),
           style: StyleText.fontSize14Weight600.copyWith(color: Colors.white),
         ),
       ),
@@ -127,9 +194,9 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
           if (!snapshot.hasData) return const AppLoading();
 
           final List<VideoItem> all = snapshot.data!.toList()
-            // Lesson order, the same as members see.
-            ..sort((VideoItem a, VideoItem b) => (a.createdAt ?? DateTime(0))
-                .compareTo(b.createdAt ?? DateTime(0)));
+            // Lesson order (reversed: latest upload first), the same as members see.
+            ..sort((VideoItem a, VideoItem b) => (b.createdAt ?? DateTime(0))
+                .compareTo(a.createdAt ?? DateTime(0)));
           if (all.isEmpty) {
             return ConsolePage(
               title: s.typeVideos,
@@ -163,6 +230,7 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
                 onOpen: (VideoCategory c) => setState(() {
                   _category = c.name;
                   _subcategory = null;
+                  _showFiles = false;
                 }),
               ),
             );
@@ -172,32 +240,83 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
           final VideoCategory category = current;
           final List<VideoCategory> subs =
               VideoCategory.group(category.videos, bySubcategory: true);
+
+          // THE COURSE BAR: Videos / Files, and the course's own "watch in
+          // order" switch. Pinned with the back button.
+          final Widget courseBar = _CourseBar(
+            course: category.name,
+            showFiles: _showFiles,
+            onShowFiles: (bool v) => setState(() => _showFiles = v),
+          );
+
           VideoCategory? sub;
           if (subs.length > 1) {
             for (final VideoCategory c in subs) {
               if (c.name == _subcategory) sub = c;
             }
-            if (sub == null) {
-              return ConsolePage(
-                title: s.typeVideos,
-                subtitle: s.videosAdminSub,
-                child: VideoCategoryGrid(
-                  categories: subs,
-                  showProgress: false,
-                  bottomPadding: 96,
-                  onOpen: (VideoCategory c) =>
-                      setState(() => _subcategory = c.name),
-                  header: grouped
-                      ? VideoCategoryHeader(
-                          category: category,
-                          onBack: () => setState(() => _category = null),
-                        )
-                      : null,
-                ),
-              );
-            }
-            current = sub;
           }
+
+          final Widget? back = sub != null
+              ? VideoCategoryHeader(
+                  category: sub,
+                  backLabel: category.label(s),
+                  onBack: () => setState(() => _subcategory = null),
+                )
+              : grouped
+                  ? VideoCategoryHeader(
+                      category: category,
+                      onBack: () => setState(() {
+                        _category = null;
+                        _showFiles = false;
+                      }),
+                    )
+                  : null;
+
+          final Widget pinned = Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (back != null) back,
+              courseBar,
+              SizedBox(height: 14.h),
+            ],
+          );
+
+          // FILES: the course's folders and the files in them.
+          if (_showFiles) {
+            return ConsolePage(
+              title: s.typeVideos,
+              subtitle: s.videosAdminSub,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  pinned,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.only(bottom: 96.h),
+                      child: CourseFilesView(course: category.name, admin: true),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (subs.length > 1 && sub == null) {
+            return ConsolePage(
+              title: s.typeVideos,
+              subtitle: s.videosAdminSub,
+              child: VideoCategoryGrid(
+                categories: subs,
+                showProgress: false,
+                bottomPadding: 96,
+                onOpen: (VideoCategory c) =>
+                    setState(() => _subcategory = c.name),
+                pinned: pinned,
+              ),
+            );
+          }
+          if (sub != null) current = sub;
 
           final List<VideoItem> videos = current.videos;
           return ConsolePage(
@@ -205,46 +324,72 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
             subtitle: s.videosAdminSub,
             child: VideoGrid(
               videos: videos,
-              header: sub != null
-                  ? VideoCategoryHeader(
-                      category: sub,
-                      backLabel: category.label(s),
-                      onBack: () => setState(() => _subcategory = null),
-                    )
-                  : grouped
-                      ? VideoCategoryHeader(
-                          category: current,
-                          onBack: () => setState(() => _category = null),
-                        )
-                      : null,
+              pinned: pinned,
+              // Quizzes of this section: add one, edit the ones there.
+              header: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  // Only admins who may manage quizzes (the rules check
+                  // the same 'quizzes' permission when saving).
+                  if (SessionController.to.current.can(AdminPermission.quizzes)) ...<Widget>[
+                  SectionQuizzes.admin(
+                    course: category.name,
+                    sections: sub != null
+                        ? <String>[sub.name]
+                        : <String>[
+                            '',
+                            for (final VideoCategory c in subs)
+                              if (c.name.isNotEmpty) c.name,
+                          ],
+                    adminUid: widget.adminUid,
+                  ),
+                  SizedBox(height: 12.h),
+                  ],
+                ],
+              ),
               bottomPadding: 96,
+              // DEFAULT = every member sees it; CUSTOM = only members with
+              // the course. Never "free" / "paid" — not even for the admin.
+              badgeBuilder: (VideoItem video) => _AccessBadge(free: video.free),
               onOpen: (VideoItem video) => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) =>
                       VideoPlayerPage(video: video, playlist: videos),
                 ),
               ),
-              trailingBuilder: (VideoItem video) => PopupMenuButton<_VideoAction>(
+              trailingBuilder: !(_canEdit || _canAccess || _canDelete)
+                  ? null
+                  : (VideoItem video) => PopupMenuButton<_VideoAction>(
                 padding: EdgeInsets.zero,
                 icon: AppIcon(Icons.more_vert_rounded, size: 20.sp),
                 onSelected: (_VideoAction action) {
                   switch (action) {
                     case _VideoAction.edit:
                       _openForm(video);
+                    case _VideoAction.toggleFree:
+                      _setFree(video, !video.free);
                     case _VideoAction.delete:
                       _confirmDelete(video);
                   }
                 },
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<_VideoAction>>[
+                  if (_canEdit)
                   PopupMenuItem<_VideoAction>(
                     value: _VideoAction.edit,
-                    child: Text(s.edit),
+                    child: Text(FormatHelper.capitalize(s.edit)),
                   ),
+                  if (_canAccess)
+                  PopupMenuItem<_VideoAction>(
+                    value: _VideoAction.toggleFree,
+                    child: Text(FormatHelper.capitalize(video.free ? s.engMakeCustom : s.engMakeDefault)),
+                  ),
+                  if (_canDelete)
                   PopupMenuItem<_VideoAction>(
                     value: _VideoAction.delete,
                     child: Text(
-                      s.delete,
+                      FormatHelper.capitalize(s.delete),
                       style: StyleText.fontSize14Weight500
                           .copyWith(color: AppColors.red),
                     ),
@@ -259,4 +404,175 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
   }
 }
 
-enum _VideoAction { edit, delete }
+enum _VideoAction { edit, toggleFree, delete }
+
+/// "Default" (every member) or "Custom" (members with the course).
+class _AccessBadge extends StatelessWidget {
+  const _AccessBadge({required this.free});
+
+  final bool free;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    final Color color = free ? const Color(0xFF16A34A) : const Color(0xFF6366F1);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            free ? Icons.public_rounded : Icons.tune_rounded,
+            size: 12,
+            color: Colors.white,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            FormatHelper.capitalize(free ? s.engVideoDefault : s.engVideoCustom),
+            style: StyleText.fontSize11Weight600.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Videos / Files for the course opened, and its "watch in order" switch.
+class _CourseBar extends StatelessWidget {
+  const _CourseBar({
+    required this.course,
+    required this.showFiles,
+    required this.onShowFiles,
+  });
+
+  final String course;
+  final bool showFiles;
+  final ValueChanged<bool> onShowFiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return Wrap(
+      spacing: 12.w,
+      runSpacing: 10.h,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.spaceBetween,
+      children: <Widget>[
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _BarChip(
+              label: s.typeVideos,
+              icon: Icons.video_library_rounded,
+              selected: !showFiles,
+              onTap: () => onShowFiles(false),
+            ),
+            SizedBox(width: 8.w),
+            _BarChip(
+              label: s.engFilesTab,
+              icon: Icons.folder_rounded,
+              selected: showFiles,
+              onTap: () => onShowFiles(true),
+            ),
+          ],
+        ),
+        Obx(() {
+          final bool on = CourseSettings.to.isSequential(course);
+          return Container(
+            padding: EdgeInsetsDirectional.fromSTEB(12.w, 6.h, 8.w, 6.h),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                AppIcon(Icons.lock_clock_rounded,
+                    size: 18.sp, color: AppColors.primary),
+                SizedBox(width: 8.w),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        FormatHelper.capitalize(s.engCourseSequential),
+                        style: StyleText.fontSize13Weight600
+                            .copyWith(color: AppColors.text),
+                      ),
+                      Text(
+                        FormatHelper.capitalize(s.engCourseSequentialHint),
+                        style: StyleText.fontSize11Weight400
+                            .copyWith(color: AppColors.secondaryText),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                // Videos → Course access.
+                IgnorePointer(
+                  ignoring: !SessionController.to.current
+                      .canDo(AdminAction.videosAccess),
+                  child: DefaultSwitchButton(
+                    value: on,
+                    onChanged: (bool v) =>
+                        CourseSettings.to.setSequential(course, v),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class _BarChip extends StatelessWidget {
+  const _BarChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.text : AppColors.chip,
+      borderRadius: BorderRadius.circular(8.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AppIcon(icon,
+                  size: 16.sp,
+                  color: selected ? AppColors.background : AppColors.primary),
+              SizedBox(width: 6.w),
+              Text(
+                FormatHelper.capitalize(label),
+                style: StyleText.fontSize13Weight600.copyWith(
+                  color: selected ? AppColors.background : AppColors.text,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

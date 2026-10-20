@@ -11,6 +11,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class InboxKind {
   const InboxKind(this.coll, this.label, this.icon, this.titleKey, this.fields);
@@ -141,13 +142,13 @@ class _InboxListState extends State<_InboxList> {
               spacing: 8,
               children: <Widget>[
                 ChoiceChip(
-                  label: Text('${const L('الكل', 'All').t} (${snap.data!.length})'),
+                  label: Text(FormatHelper.capitalize('${const L('الكل', 'All').t} (${snap.data!.length})')),
                   selected: _filter.isEmpty,
                   onSelected: (_) => setState(() => _filter = ''),
                 ),
                 for (final MapEntry<String, L> e in kStatuses.entries)
                   ChoiceChip(
-                    label: Text('${e.value.t} (${snap.data!.where((Doc d) => d.s('status', 'new') == e.key).length})'),
+                    label: Text(FormatHelper.capitalize('${e.value.t} (${snap.data!.where((Doc d) => d.s('status', 'new') == e.key).length})')),
                     selected: _filter == e.key,
                     onSelected: (_) => setState(() => _filter = e.key),
                   ),
@@ -192,9 +193,9 @@ class InboxTile extends StatelessWidget {
         backgroundColor: statusColor(status).withValues(alpha: 0.12),
         child: AppIcon(kind.icon, color: statusColor(status)),
       ),
-      title: Text(doc.s(kind.titleKey, '—'),
+      title: Text(FormatHelper.capitalize(doc.s(kind.titleKey, '—')),
           style: TextStyle(fontWeight: status == 'new' ? FontWeight.w800 : FontWeight.w500)),
-      subtitle: Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(FormatHelper.capitalize(sub), maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -202,10 +203,10 @@ class InboxTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: statusColor(status).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-            child: Text(kStatuses[status]?.t ?? status, style: TextStyle(color: statusColor(status), fontSize: 12, fontWeight: FontWeight.w700)),
+            child: Text(FormatHelper.capitalize(kStatuses[status]?.t ?? status), style: TextStyle(color: statusColor(status), fontSize: 12, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 4),
-          Text(at == null ? '' : '${panelDate(at)} ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}',
+          Text(FormatHelper.capitalize(at == null ? '' : '${panelDate(at)} ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}'),
               style: TextStyle(fontSize: 11, color: WebColors.muted)),
         ],
       ),
@@ -224,7 +225,7 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
     builder: (BuildContext c) => Directionality(
       textDirection: AppLang.direction,
       child: AlertDialog(
-        title: Text(doc.s(kind.titleKey, kind.label.t)),
+        title: Text(FormatHelper.capitalize(doc.s(kind.titleKey, kind.label.t))),
         content: SizedBox(
           width: 560,
           child: SingleChildScrollView(
@@ -233,7 +234,7 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(panelDate(doc.t('created_at')), style: TextStyle(color: WebColors.muted)),
+                  Text(FormatHelper.capitalize(panelDate(doc.t('created_at'))), style: TextStyle(color: WebColors.muted)),
                   const SizedBox(height: 10),
                   for (final MapEntry<String, L> f in kind.fields.entries)
                     if (doc.data[f.key] != null && '${doc.data[f.key]}'.isNotEmpty && '${doc.data[f.key]}' != '[]')
@@ -242,11 +243,11 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(f.value.t, style: TextStyle(color: WebColors.muted, fontSize: 12)),
+                            Text(FormatHelper.capitalize(f.value.t), style: TextStyle(color: WebColors.muted, fontSize: 12)),
                             Directionality(
                               textDirection: TextDirection.rtl,
                               child: Text(
-                                doc.data[f.key] is List ? doc.l(f.key).join(AppLang.isAr ? '، ' : ', ') : doc.s(f.key),
+                                FormatHelper.capitalize(doc.data[f.key] is List ? doc.l(f.key).join(AppLang.isAr ? '، ' : ', ') : doc.s(f.key)),
                                 style: const TextStyle(fontWeight: FontWeight.w600, height: 1.7),
                               ),
                             ),
@@ -263,13 +264,13 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
             TextButton.icon(
               onPressed: () => openLink('mailto:$email'),
               icon: const AppIcon(Icons.reply_rounded),
-              label: Text(const L('رد بالبريد', 'Reply by e-mail').t),
+              label: Text(FormatHelper.capitalize(const L('رد بالبريد', 'Reply by e-mail').t)),
             ),
           if (phone.isNotEmpty)
             TextButton.icon(
               onPressed: () => openLink(whatsappLink(phone)),
               icon: const AppIcon(Icons.chat_rounded),
-              label: const Text('WhatsApp'),
+              label: Text(FormatHelper.capitalize('WhatsApp')),
             ),
           PopupMenuButton<String>(
             tooltip: const L('الحالة', 'Status').t,
@@ -278,11 +279,11 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
               if (c.mounted) Navigator.of(c).pop();
             },
             itemBuilder: (_) => <PopupMenuEntry<String>>[
-              for (final MapEntry<String, L> e in kStatuses.entries) PopupMenuItem<String>(value: e.key, child: Text(e.value.t)),
+              for (final MapEntry<String, L> e in kStatuses.entries) PopupMenuItem<String>(value: e.key, child: Text(FormatHelper.capitalize(e.value.t))),
             ],
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Text(const L('تغيير الحالة', 'Set status').t, style: TextStyle(color: WebColors.navy, fontWeight: FontWeight.w700)),
+              child: Text(FormatHelper.capitalize(const L('تغيير الحالة', 'Set status').t), style: TextStyle(color: WebColors.navy, fontWeight: FontWeight.w700)),
             ),
           ),
           IconButton(
@@ -295,7 +296,7 @@ Future<void> showInboxItem(BuildContext context, InboxKind kind, Doc doc) async 
             },
             icon: const AppIcon(Icons.delete_outline_rounded, color: WebColors.red),
           ),
-          TextButton(onPressed: () => Navigator.of(c).pop(), child: Text(const L('إغلاق', 'Close').t)),
+          TextButton(onPressed: () => Navigator.of(c).pop(), child: Text(FormatHelper.capitalize(const L('إغلاق', 'Close').t))),
         ],
       ),
     ),

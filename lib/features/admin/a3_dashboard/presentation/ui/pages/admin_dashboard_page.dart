@@ -45,9 +45,11 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart'
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/base_repository/video_base_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/animation/app_animations.dart';
 import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key, required this.admin});
@@ -207,7 +209,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   ),
                   SizedBox(height: 20.h),
 
-                  if (AppFeatures.to.isOn(AppFeature.dashboardCharts)) ...<Widget>[
+                  if (AppFeatures.to.isOn(AppFeature.dashboardCharts) &&
+                      widget.admin.canDo(AdminAction.dashboardCharts)) ...<Widget>[
                   // ── The charts ───────────────────────────────────────────
                   AppSectionHeader(
                     title: s.charts,
@@ -221,7 +224,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   SizedBox(height: 20.h),
 
                   ],
-                  if (AppFeatures.to.isOn(AppFeature.dashboardTable)) ...<Widget>[
+                  if (AppFeatures.to.isOn(AppFeature.dashboardTable) &&
+                      widget.admin.canDo(AdminAction.dashboardTable)) ...<Widget>[
                   // ── The records ──────────────────────────────────────────
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 520),
@@ -280,9 +284,9 @@ class StatTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(value, style: StyleText.fontSize22Weight700),
+                Text(FormatHelper.capitalize(value), style: StyleText.fontSize22Weight700),
                 Text(
-                  label,
+                  FormatHelper.capitalize(label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize12Weight400
@@ -290,7 +294,7 @@ class StatTile extends StatelessWidget {
                 ),
                 if (caption != null)
                   Text(
-                    caption!,
+                    FormatHelper.capitalize(caption!),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: StyleText.fontSize11Weight600

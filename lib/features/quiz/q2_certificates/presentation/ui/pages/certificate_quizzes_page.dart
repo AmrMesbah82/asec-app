@@ -32,10 +32,11 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempt_page.dart';
 import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
-import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_categories.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
+import 'package:asec/features/video/v1_videos/presentation/controller/member_videos.dart';
 
 enum _ExamStatus { noExam, locked, ready, failed, passed }
 
@@ -61,7 +62,7 @@ class _CertificateQuizzesPageState extends State<CertificateQuizzesPage> {
 
   late final Stream<_Feed> _feed = combineLatest<Object, _Feed>(
     <Stream<Object>>[
-      VideoRepository().watchPublished(),
+      MemberVideos.watch(),
       _quizzes.watchPublished(),
       _quizzes.watchMyAttempts(widget.user.uid),
     ],
@@ -101,7 +102,7 @@ class _CertificateQuizzesPageState extends State<CertificateQuizzesPage> {
       case _ExamStatus.locked:
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(s.certLockedSnack)));
+          ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.certLockedSnack))));
         return;
       case _ExamStatus.ready:
       case _ExamStatus.failed:
@@ -298,13 +299,13 @@ class _ExamCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          exam.category.name,
+                          FormatHelper.capitalize(exam.category.name),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
                         ),
                         Text(
-                          exam.quiz?.title ?? s.videoCount(exam.total),
+                          FormatHelper.capitalize(exam.quiz?.title ?? s.videoCount(exam.total)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
@@ -320,7 +321,7 @@ class _ExamCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
-                        s.certificateBadge,
+                        FormatHelper.capitalize(s.certificateBadge),
                         style: StyleText.fontSize11Weight700.copyWith(color: AppColors.green),
                       ),
                     ),
@@ -344,7 +345,7 @@ class _ExamCard extends StatelessWidget {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '${exam.watched}/${exam.total}',
+                    FormatHelper.capitalize('${exam.watched}/${exam.total}'),
                     style: StyleText.fontSize12Weight600.copyWith(color: AppColors.secondaryText),
                   ),
                 ],
@@ -356,7 +357,7 @@ class _ExamCard extends StatelessWidget {
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      label,
+                      FormatHelper.capitalize(label),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: StyleText.fontSize13Weight600.copyWith(color: color),

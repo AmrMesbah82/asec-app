@@ -21,6 +21,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 enum FieldType {
   /// A heading that groups the fields after it. No value.
@@ -205,7 +206,7 @@ class _DocFormState extends State<DocForm> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(f.label.t, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: WebColors.navy)),
+            Text(FormatHelper.capitalize(f.label.t), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: WebColors.navy)),
             const SizedBox(height: 6),
             const Divider(),
           ],
@@ -230,8 +231,8 @@ class _DocFormState extends State<DocForm> {
       case FieldType.boolean:
         return SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(f.label.t, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: f.hint == null ? null : Text(f.hint!.t),
+          title: Text(FormatHelper.capitalize(f.label.t), style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: f.hint == null ? null : Text(FormatHelper.capitalize(f.hint!.t)),
           value: v is bool ? v : true,
           onChanged: (bool b) => _set(f.key, b),
         );
@@ -243,7 +244,7 @@ class _DocFormState extends State<DocForm> {
           decoration: InputDecoration(labelText: f.label.t),
           items: <DropdownMenuItem<String>>[
             for (final MapEntry<String, L> e in f.options.entries)
-              DropdownMenuItem<String>(value: e.key, child: Text(e.value.t)),
+              DropdownMenuItem<String>(value: e.key, child: Text(FormatHelper.capitalize(e.value.t))),
           ],
           onChanged: (String? s) => _set(f.key, s ?? ''),
         );
@@ -253,7 +254,7 @@ class _DocFormState extends State<DocForm> {
           decoration: InputDecoration(labelText: f.label.t),
           child: Row(
             children: <Widget>[
-              Expanded(child: Text(d == null ? '—' : '${d.year}/${d.month}/${d.day}')),
+              Expanded(child: Text(FormatHelper.capitalize(d == null ? '—' : '${d.year}/${d.month}/${d.day}'))),
               TextButton(
                 onPressed: () async {
                   final DateTime? p = await showDatePicker(
@@ -264,7 +265,7 @@ class _DocFormState extends State<DocForm> {
                   );
                   if (p != null) _set(f.key, Timestamp.fromDate(p));
                 },
-                child: Text(const L('اختيار', 'Pick').t),
+                child: Text(FormatHelper.capitalize(const L('اختيار', 'Pick').t)),
               ),
             ],
           ),
@@ -356,14 +357,14 @@ class _TextSpecFieldState extends State<_TextSpecField> {
         Row(
           children: <Widget>[
             Expanded(
-              child: Text('${f.label.t} — HTML',
+              child: Text(FormatHelper.capitalize('${f.label.t} — HTML'),
                   maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
             ),
             const SizedBox(width: 8),
             SegmentedButton<bool>(
               segments: <ButtonSegment<bool>>[
-                ButtonSegment<bool>(value: false, label: Text(const L('تحرير', 'Edit').t), icon: const AppIcon(Icons.code)),
-                ButtonSegment<bool>(value: true, label: Text(const L('معاينة', 'Preview').t), icon: const AppIcon(Icons.visibility)),
+                ButtonSegment<bool>(value: false, label: Text(FormatHelper.capitalize(const L('تحرير', 'Edit').t)), icon: const AppIcon(Icons.code)),
+                ButtonSegment<bool>(value: true, label: Text(FormatHelper.capitalize(const L('معاينة', 'Preview').t)), icon: const AppIcon(Icons.visibility)),
               ],
               selected: <bool>{_preview},
               onSelectionChanged: (Set<bool> s) => setState(() => _preview = s.first),
@@ -384,9 +385,9 @@ class _TextSpecFieldState extends State<_TextSpecField> {
           field,
         const SizedBox(height: 4),
         Text(
-          const L('تقبل وسوم HTML مثل <h2> و<p> و<ul><li> و<img src="…">. يمكن كتابة نص عادي أيضًا.',
+          FormatHelper.capitalize(const L('تقبل وسوم HTML مثل <h2> و<p> و<ul><li> و<img src="…">. يمكن كتابة نص عادي أيضًا.',
                   'HTML tags such as <h2>, <p>, <ul><li>, <img src="…"> are allowed. Plain text works too.')
-              .t,
+              .t),
           style: TextStyle(fontSize: 12, color: WebColors.muted),
         ),
       ],
@@ -453,7 +454,7 @@ class _ImageFieldState extends State<ImageField> {
 
   void _toast(String m) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(m))));
   }
 
   @override
@@ -490,7 +491,7 @@ class _ImageFieldState extends State<ImageField> {
                     icon: _busy
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                         : const AppIcon(Icons.upload_rounded, size: 18),
-                    label: Text(const L('رفع صورة', 'Upload').t),
+                    label: Text(FormatHelper.capitalize(const L('رفع صورة', 'Upload').t)),
                   ),
                   if (widget.onRemove != null) ...<Widget>[
                     const SizedBox(width: 8),
@@ -523,7 +524,7 @@ class _ImageListField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(FormatHelper.capitalize(label), style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         for (int i = 0; i < urls.length; i++)
           Padding(
@@ -549,7 +550,7 @@ class _ImageListField extends StatelessWidget {
           child: TextButton.icon(
             onPressed: () => onChanged(<String>[...urls, '']),
             icon: const AppIcon(Icons.add_photo_alternate_outlined),
-            label: Text(const L('إضافة صورة', 'Add image').t),
+            label: Text(FormatHelper.capitalize(const L('إضافة صورة', 'Add image').t)),
           ),
         ),
       ],
@@ -588,7 +589,7 @@ class _StringListFieldState extends State<_StringListField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(FormatHelper.capitalize(widget.label), style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         for (int i = 0; i < _cs.length; i++)
           Padding(
@@ -618,7 +619,7 @@ class _StringListFieldState extends State<_StringListField> {
           child: TextButton.icon(
             onPressed: () => setState(() => _cs.add(TextEditingController())),
             icon: const AppIcon(Icons.add),
-            label: Text(const L('إضافة سطر', 'Add line').t),
+            label: Text(FormatHelper.capitalize(const L('إضافة سطر', 'Add line').t)),
           ),
         ),
       ],
@@ -670,7 +671,7 @@ class _PairsFieldState extends State<_PairsField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(FormatHelper.capitalize(widget.label), style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         for (int i = 0; i < _rows.length; i++)
           Padding(
@@ -726,7 +727,7 @@ class _PairsFieldState extends State<_PairsField> {
             onPressed: () => setState(
                 () => _rows.add((TextEditingController(), TextEditingController(), TextEditingController()))),
             icon: const AppIcon(Icons.add),
-            label: Text(const L('إضافة', 'Add').t),
+            label: Text(FormatHelper.capitalize(const L('إضافة', 'Add').t)),
           ),
         ),
       ],

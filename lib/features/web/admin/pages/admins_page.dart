@@ -20,6 +20,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AdminsPage extends StatelessWidget {
   const AdminsPage({super.key});
@@ -38,13 +39,13 @@ class AdminsPage extends StatelessWidget {
             final bool? ok = await showDialog<bool>(context: context, builder: (_) => const _NewAdminDialog());
             if (ok == true && context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(const L('تم إنشاء المشرف', 'Admin created').t),
+                content: Text(FormatHelper.capitalize(const L('تم إنشاء المشرف', 'Admin created').t)),
                 backgroundColor: WebColors.success,
               ));
             }
           },
           icon: const AppIcon(Icons.person_add_alt_1_rounded, color: WebColors.white, size: 20),
-          label: Text(const L('إضافة مشرف', 'Add admin').t),
+          label: Text(FormatHelper.capitalize(const L('إضافة مشرف', 'Add admin').t)),
         ),
       ],
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -61,8 +62,8 @@ class AdminsPage extends StatelessWidget {
               children: <Widget>[
                 ListTile(
                   leading: const CircleAvatar(backgroundColor: WebColors.red, child: AppIcon(Icons.shield_rounded, color: Colors.white)),
-                  title: const Text(kSuperAdminEmail, style: TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(const L('المشرف الرئيسي — كل الصلاحيات', 'Super admin — everything').t),
+                  title: Text(FormatHelper.capitalize(kSuperAdminEmail), style: TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(FormatHelper.capitalize(const L('المشرف الرئيسي — كل الصلاحيات', 'Super admin — everything').t)),
                 ),
                 if (docs.isEmpty)
                   EmptyNote(const L('لا يوجد مشرفون آخرون بعد', 'No other admins yet').t)
@@ -98,19 +99,21 @@ class _AdminRow extends StatelessWidget {
         backgroundColor: WebColors.navy.withValues(alpha: 0.1),
         child: AppIcon(Icons.person_outline_rounded, color: WebColors.navy),
       ),
-      title: Text('${data['full_name'] ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w700)),
-      subtitle: Text('${data['email'] ?? ''}  ·  ${perms.join(', ')}${active ? '' : '  ·  ${const L('موقوف', 'switched off').t}'}'),
+      title: Text(FormatHelper.capitalize('${data['full_name'] ?? '—'}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+      subtitle: Text(FormatHelper.capitalize('${data['email'] ?? ''}  ·  ${perms.join(', ')}${active ? '' : '  ·  ${const L('موقوف', 'switched off').t}'}')),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(const L('الموقع', 'Website').t, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(FormatHelper.capitalize(const L('الموقع', 'Website').t), style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(width: 6),
           Switch(
             value: web,
             onChanged: (bool v) {
+              // The tab and all its actions ('website.content', …).
               final List<String> next = <String>[
-                ...perms.where((String p) => p != kWebsitePermission),
-                if (v) kWebsitePermission,
+                ...perms.where((String p) =>
+                    p != kWebsitePermission && !p.startsWith('$kWebsitePermission.')),
+                if (v) ...AdminPerms.fullTab(AdminPermission.website),
               ];
               guarded(
                 context,
@@ -136,6 +139,7 @@ const Map<AdminPermission, L> _permLabels = <AdminPermission, L>{
   AdminPermission.results: L('النتائج', 'Results'),
   AdminPermission.members: L('الأعضاء', 'Members'),
   AdminPermission.cvs: L('السير الذاتية', 'CVs'),
+  AdminPermission.engagement: L('التفاعل', 'Engagement'),
   AdminPermission.website: L('الموقع الإلكتروني', 'Website'),
 };
 
@@ -186,10 +190,12 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
         fullName: _name.text,
         email: email,
         password: _password.text,
-        permissions: <AdminPermission>[
-          for (final AdminPermission p in AdminPermission.values)
-            if (_perms.contains(p)) p,
-        ],
+        // Every action of each ticked tab; fine-tune them in the app
+        // (Settings → Admins → Edit permissions).
+        permissionKeys: <String>{
+          AdminPerms.v2Marker,
+          for (final AdminPermission p in _perms) ...AdminPerms.fullTab(p),
+        },
       );
       if (mounted) Navigator.of(context).pop(true);
     } on FirebaseAuthException catch (e) {
@@ -216,7 +222,7 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
           children: <Widget>[
             const AppIcon(Icons.person_add_alt_1_rounded, color: WebColors.red),
             const SizedBox(width: 10),
-            Text(const L('إضافة مشرف', 'Add admin').t),
+            Text(FormatHelper.capitalize(const L('إضافة مشرف', 'Add admin').t)),
           ],
         ),
         content: SizedBox(
@@ -255,7 +261,7 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(const L('يستطيع إدارة', 'May manage').t,
+                Text(FormatHelper.capitalize(const L('يستطيع إدارة', 'May manage').t),
                     style: TextStyle(fontWeight: FontWeight.w800, color: WebColors.navy)),
                 const SizedBox(height: 6),
                 Wrap(
@@ -268,7 +274,7 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
                         showCheckmark: false,
                         avatar: AppIcon(p.icon, size: 18,
                             color: _perms.contains(p) ? WebColors.white : WebColors.ink),
-                        label: Text(_permLabels[p]?.t ?? p.key),
+                        label: Text(FormatHelper.capitalize(_permLabels[p]?.t ?? p.key)),
                         labelStyle: TextStyle(
                           color: _perms.contains(p) ? WebColors.white : WebColors.ink,
                           fontWeight: FontWeight.w600,
@@ -282,7 +288,7 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
                 ),
                 if (_error != null) ...<Widget>[
                   const SizedBox(height: 14),
-                  Text(_error!, style: const TextStyle(color: WebColors.red, fontWeight: FontWeight.w600)),
+                  Text(FormatHelper.capitalize(_error!), style: const TextStyle(color: WebColors.red, fontWeight: FontWeight.w600)),
                 ],
               ],
             ),
@@ -291,14 +297,14 @@ class _NewAdminDialogState extends State<_NewAdminDialog> {
         actions: <Widget>[
           TextButton(
             onPressed: _busy ? null : () => Navigator.of(context).pop(false),
-            child: Text(const L('إلغاء', 'Cancel').t),
+            child: Text(FormatHelper.capitalize(const L('إلغاء', 'Cancel').t)),
           ),
           FilledButton(
             onPressed: _busy ? null : _submit,
             child: _busy
                 ? const SizedBox(
                     width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: WebColors.white))
-                : Text(const L('إنشاء المشرف', 'Create admin').t),
+                : Text(FormatHelper.capitalize(const L('إنشاء المشرف', 'Create admin').t)),
           ),
         ],
       ),

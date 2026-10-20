@@ -119,7 +119,7 @@ abstract final class UnitCatalog {
     ('pressure', null, null, <String>['Pa', 'kPa', 'bar', 'psi', 'atm', 'inHg'], 'bar', 'psi'),
     ('flow', null, null, <String>[], 'L/s', 'CFM'),
     ('speed', null, null, <String>['m/s', 'ft/s', 'FPM'], 'm/s', 'FPM'),
-    ('power', 'Cooling load', 'حمل التبريد', <String>['kW', 'BTU/h', 'TR', 'hp'], 'TR', 'kW'),
+    ('power', 'Cooling load', 'حمل التبريد', <String>['kW', 'BTU/h', 'TR', 'HP'], 'TR', 'kW'),
     ('density', null, null, <String>['kg/m³', 'lb/ft³', 'lb/gal'], 'kg/m³', 'lb/ft³'),
     ('time', null, null, <String>['s', 'min', 'h', 'd'], 'h', 'min'),
   ];
@@ -326,7 +326,7 @@ abstract final class UnitCatalog {
         UnitDef('MW', 'Megawatt', 'ميجاوات', 1e6),
         UnitDef('BTU/h', 'BTU per hour', 'وحدة حرارية/ساعة', 0.29307107017222),
         UnitDef('TR', 'Ton of refrigeration', 'طن تبريد', 3516.8528420667),
-        UnitDef('hp', 'Horsepower (electric)', 'حصان كهربائي', 746, approx: true),
+        UnitDef('HP', 'Horsepower (electric)', 'حصان كهربائي', 746, approx: true),
         UnitDef('PS', 'Horsepower (metric)', 'حصان متري', 735.49875),
         UnitDef('kcal/h', 'Kilocalorie per hour', 'كيلو سعر/ساعة', 1.163),
       ],

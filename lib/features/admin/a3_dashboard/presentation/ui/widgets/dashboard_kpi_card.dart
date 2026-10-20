@@ -34,6 +34,7 @@ import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// One number in the footer. [color] also paints its bar segment.
 class KpiFact {
@@ -162,7 +163,7 @@ class _KpiCardState extends State<KpiCard> {
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
-                widget.label,
+                FormatHelper.capitalize(widget.label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: StyleText.fontSize13Weight600
@@ -188,7 +189,7 @@ class _KpiCardState extends State<KpiCard> {
                   ),
                 )
               : Text(
-                  widget.value,
+                  FormatHelper.capitalize(widget.value),
                   style: StyleText.fontSize22Weight700.copyWith(
                     fontSize: 30.sp,
                     height: 1.1,
@@ -276,7 +277,7 @@ extension on _KpiCardState {
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
-                widget.label,
+                FormatHelper.capitalize(widget.label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: StyleText.fontSize12Weight600.copyWith(color: AppColors.secondaryText),
@@ -299,7 +300,7 @@ extension on _KpiCardState {
                             .copyWith(height: 1.05, color: AppColors.text),
                       )
                     : Text(
-                        widget.value,
+                        FormatHelper.capitalize(widget.value),
                         style: StyleText.fontSize22Weight700
                             .copyWith(height: 1.05, color: AppColors.text),
                       ),
@@ -323,7 +324,7 @@ extension on _KpiCardState {
               SizedBox(width: 3.w),
               Flexible(
                 child: Text(
-                  widget.badge!,
+                  FormatHelper.capitalize(widget.badge!),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize10Weight600.copyWith(color: AppColors.green),
@@ -337,7 +338,7 @@ extension on _KpiCardState {
           Container(height: 1, color: AppColors.secondaryText.withOpacity(0.12)),
           SizedBox(height: 6.h),
           Text(
-            facts.map((KpiFact f) => '${f.value} ${f.label}').join('  ·  '),
+            FormatHelper.capitalize(facts.map((KpiFact f) => '${f.value} ${f.label}').join('  ·  ')),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: StyleText.fontSize10Weight500.copyWith(color: AppColors.secondaryText),
@@ -369,7 +370,7 @@ class _Badge extends StatelessWidget {
           AppIcon(icon, size: 12.sp, color: color),
           SizedBox(width: 4.w),
           Text(
-            text,
+            FormatHelper.capitalize(text),
             style: StyleText.fontSize11Weight600.copyWith(color: color),
           ),
         ],
@@ -390,7 +391,7 @@ class _Fact extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          fact.value,
+          FormatHelper.capitalize(fact.value),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: StyleText.fontSize14Weight700.copyWith(color: AppColors.text),
@@ -411,7 +412,7 @@ class _Fact extends StatelessWidget {
             ],
             Flexible(
               child: Text(
-                fact.label,
+                FormatHelper.capitalize(fact.label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: StyleText.fontSize11Weight400

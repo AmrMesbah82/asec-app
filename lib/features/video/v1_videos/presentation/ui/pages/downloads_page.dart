@@ -26,6 +26,7 @@ import 'package:asec/features/video/v1_videos/presentation/ui/pages/video_player
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_download_button.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_grid.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class DownloadsPage extends StatefulWidget {
   const DownloadsPage({super.key});
@@ -83,7 +84,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       // either. (Offline with no profile loaded yet, nothing is filtered.)
       final AppUser me = SessionController.to.current;
       final List<VideoItem> all = VideoDownloads.items
-          .where((VideoItem v) => me.isEmpty || me.canSeeCourse(v.category))
+          .where((VideoItem v) => me.isEmpty || v.free || me.canSeeCourse(v.category))
           .toList();
       VideoDownloads.active.length; // tracked
       final List<VideoItem> pending = VideoDownloads.pending;
@@ -111,7 +112,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
-                    s.downloadsStorage(_mb(VideoDownloads.totalBytes)),
+                    FormatHelper.capitalize(s.downloadsStorage(_mb(VideoDownloads.totalBytes))),
                     style: StyleText.fontSize13Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -172,7 +173,7 @@ class _PendingRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    video.title,
+                    FormatHelper.capitalize(video.title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: StyleText.fontSize13Weight600
@@ -193,7 +194,7 @@ class _PendingRow extends StatelessWidget {
             ),
             SizedBox(width: 10.w),
             Text(
-              '${(p * 100).round()}%',
+              FormatHelper.capitalize('${(p * 100).round()}%'),
               style: StyleText.fontSize12Weight600
                   .copyWith(color: AppColors.secondaryText),
             ),

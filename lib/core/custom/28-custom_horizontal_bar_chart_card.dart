@@ -26,6 +26,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:asec/core/custom/16-custom_card_styles.dart';
 import 'package:asec/core/custom/24-custom_chart_card.dart';
 import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Horizontal bar chart card.
 ///
@@ -188,7 +189,7 @@ class HorizontalBarChartCard extends StatelessWidget {
           height: 160.h,
           child: Center(
             child: Text(
-              emptyMessage!,
+              FormatHelper.capitalize(emptyMessage!),
               style: CardStyles.label(13),
               textAlign: TextAlign.center,
             ),
@@ -231,7 +232,7 @@ class HorizontalBarChartCard extends StatelessWidget {
                         children: <Widget>[
                           Expanded(
                             child: Text(
-                              b.label,
+                              FormatHelper.capitalize(b.label),
                               style: CardStyles.value(labelFontSize),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -240,7 +241,7 @@ class HorizontalBarChartCard extends StatelessWidget {
                           if (showValues) ...<Widget>[
                             SizedBox(width: 8.w),
                             Text(
-                              _format(b.value),
+                              FormatHelper.capitalize(_format(b.value)),
                               style: CardStyles.value(labelFontSize),
                             ),
                           ],
@@ -296,7 +297,7 @@ class HorizontalBarChartCard extends StatelessWidget {
                               0,
                             ),
                             child: Text(
-                              _group(ticks[i]),
+                              FormatHelper.capitalize(_group(ticks[i])),
                               style: CardStyles.label(10),
                             ),
                           ),

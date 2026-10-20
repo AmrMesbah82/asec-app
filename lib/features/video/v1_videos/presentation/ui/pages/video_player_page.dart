@@ -45,6 +45,7 @@ import 'package:asec/core/animation/app_animations.dart';
 import 'package:asec/core/settings/app_connectivity.dart';
 import 'package:asec/core/settings/app_features.dart';
 import 'package:asec/core/settings/app_integrity.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   const VideoPlayerPage({
@@ -68,7 +69,8 @@ class VideoPlayerPage extends StatefulWidget {
   State<VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
-class _VideoPlayerPageState extends State<VideoPlayerPage> {
+class _VideoPlayerPageState extends State<VideoPlayerPage>
+    with WidgetsBindingObserver {
   static const List<double> _speeds = <double>[0.5, 0.75, 1, 1.25, 1.5, 2];
 
   VideoPlayerController? _video;
@@ -108,6 +110,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // The app is only HIDDEN when it goes offline or the device fails the
     // security check — stop the lesson so it does not play on behind it.
     _guard = everAll(
@@ -260,7 +263,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _lastSkipWarning = now;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(S.of(context).noSkipAhead)));
+      ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(S.of(context).noSkipAhead))));
   }
 
   Set<String> get _lockedIds => widget.sequential
@@ -273,7 +276,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-            SnackBar(content: Text(S.of(context).finishThisLessonFirst)));
+            SnackBar(content: Text(FormatHelper.capitalize(S.of(context).finishThisLessonFirst))));
       return;
     }
     _savePosition();
@@ -352,8 +355,22 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  /// The app went to the background, was minimised/hidden, or is closing —
+  /// stop the lesson so it never plays on with no screen.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      _savePosition();
+      _video?.pause();
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _video?.pause();
     _savePosition();
     _video?.removeListener(_onTick);
     _saveTimer?.cancel();
@@ -389,8 +406,13 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         child: Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
+            // Default leading is 56 wide + 16 title spacing, which leaves a
+            // big gap after the back arrow. 44 wide centres the 24px icon,
+            // leaving exactly 10px before the title.
+            leadingWidth: 44,
+            titleSpacing: 0,
             title: Text(
-              widget.video.title,
+              FormatHelper.capitalize(widget.video.title),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: StyleText.fontSize16Weight600,
@@ -406,12 +428,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     _player(context, s),
-                    if (_chewie != null && _on(AppFeature.videoOptionsBar)) ...<Widget>[
+                    if (!_failed && _on(AppFeature.videoOptionsBar)) ...<Widget>[
                       SizedBox(height: 14.h),
                       FadeSlideIn(
                         delay: const Duration(milliseconds: 120),
                         child: _OptionsBar(
-                        video: _video!,
+                        // Null while loading: the bar shows disabled so the
+                        // layout doesn't jump when the video is ready.
+                        video: _chewie == null ? null : _video,
                         speeds: _on(AppFeature.videoSpeed) ? _speeds : const <double>[],
                         looping: _looping,
                         onSeekBy: _seekBy,
@@ -430,6 +454,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       child: _Details(
                         video: widget.video,
                         duration: _video?.value.duration,
+                        loading: _chewie == null && !_failed,
                       ),
                     ),
                     if (_chewie != null &&
@@ -444,7 +469,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                           SizedBox(width: 6.w),
                           Expanded(
                             child: Text(
-                              s.playerShortcuts,
+                              FormatHelper.capitalize(s.playerShortcuts),
                               style: StyleText.fontSize11Weight400
                                   .copyWith(color: AppColors.secondaryText),
                             ),
@@ -601,7 +626,7 @@ class _OptionsBar extends StatelessWidget {
     required this.onFullScreen,
   });
 
-  final VideoPlayerController video;
+  final VideoPlayerController? video;
   final List<double> speeds;
   final bool looping;
   final void Function(int seconds) onSeekBy;
@@ -618,9 +643,24 @@ class _OptionsBar extends StatelessWidget {
 
     // Rebuilt from the controller, so the glyphs and times follow the video
     // even when Chewie's own controls change it.
+    final VideoPlayerController? controller = video;
+    if (controller == null) {
+      // Loading: same layout, greyed out and not tappable.
+      return IgnorePointer(
+        child: Opacity(
+          opacity: 0.5,
+          child: _bar(context, s, VideoPlayerValue(duration: Duration.zero)),
+        ),
+      );
+    }
     return ValueListenableBuilder<VideoPlayerValue>(
-      valueListenable: video,
-      builder: (BuildContext context, VideoPlayerValue value, Widget? _) {
+      valueListenable: controller,
+      builder: (BuildContext context, VideoPlayerValue value, Widget? _) =>
+          _bar(context, s, value),
+    );
+  }
+
+  Widget _bar(BuildContext context, S s, VideoPlayerValue value) {
         final bool muted = value.volume == 0;
         final Duration total = value.duration;
         final Duration pos = value.position;
@@ -674,13 +714,13 @@ class _OptionsBar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        '${_clock(pos)} / ${_clock(total)}',
+                        FormatHelper.capitalize('${_clock(pos)} / ${_clock(total)}'),
                         style: StyleText.fontSize13Weight600
                             .copyWith(color: AppColors.text),
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        '-${_clock(left.isNegative ? Duration.zero : left)}',
+                        FormatHelper.capitalize('-${_clock(left.isNegative ? Duration.zero : left)}'),
                         style: StyleText.fontSize12Weight400
                             .copyWith(color: AppColors.secondaryText),
                       ),
@@ -745,7 +785,7 @@ class _OptionsBar extends StatelessWidget {
                           size: 18.sp, color: AppColors.secondaryText),
                       SizedBox(width: 6.w),
                       Text(
-                        s.playerSpeed,
+                        FormatHelper.capitalize(s.playerSpeed),
                         style: StyleText.fontSize12Weight600
                             .copyWith(color: AppColors.secondaryText),
                       ),
@@ -787,14 +827,14 @@ class _OptionsBar extends StatelessWidget {
                             ),
                             child: Slider(
                               value: value.volume.clamp(0.0, 1.0),
-                              onChanged: video.setVolume,
+                              onChanged: (double v) => video?.setVolume(v),
                             ),
                           ),
                         ),
                         SizedBox(
                           width: 34.w,
                           child: Text(
-                            '${(value.volume * 100).round()}%',
+                            FormatHelper.capitalize('${(value.volume * 100).round()}%'),
                             textAlign: TextAlign.end,
                             style: StyleText.fontSize11Weight600
                                 .copyWith(color: AppColors.secondaryText),
@@ -808,8 +848,6 @@ class _OptionsBar extends StatelessWidget {
             ],
           ),
         );
-      },
-    );
   }
 }
 
@@ -914,7 +952,7 @@ class _SpeedChip extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
           child: Text(
-            label,
+            FormatHelper.capitalize(label),
             style: StyleText.fontSize12Weight600.copyWith(
               color: selected ? Colors.white : AppColors.text,
             ),
@@ -952,13 +990,13 @@ class _ResumeChip extends StatelessWidget {
           AppIcon(Icons.history_rounded, size: 16.sp, color: Colors.white),
           SizedBox(width: 6.w),
           Text(
-            text,
+            FormatHelper.capitalize(text),
             style: StyleText.fontSize12Weight500.copyWith(color: Colors.white),
           ),
           TextButton(
             onPressed: onAction,
             child: Text(
-              action,
+              FormatHelper.capitalize(action),
               style: StyleText.fontSize12Weight600
                   .copyWith(color: AppColors.primary),
             ),
@@ -977,78 +1015,71 @@ class _ResumeChip extends StatelessWidget {
 // ── Details ─────────────────────────────────────────────────────────────────
 
 class _Details extends StatelessWidget {
-  const _Details({required this.video, required this.duration});
+  const _Details({
+    required this.video,
+    required this.duration,
+    this.loading = false,
+  });
 
   final VideoItem video;
+  // Kept so the call site doesn't change; duration/size are no longer shown.
   final Duration? duration;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
     final S s = S.of(context);
     final bool done = VideoWatchStore.isWatched(video.id);
-    final List<Widget> pills = <Widget>[
-      if (done)
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF16A34A),
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(Icons.check_circle_rounded, size: 15, color: Colors.white),
-              SizedBox(width: 5.w),
-              Text(
-                s.lessonCompleted,
-                style: StyleText.fontSize12Weight600.copyWith(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      if (duration != null && duration! > Duration.zero)
-        _pill(Icons.schedule_rounded, '${s.playerDuration} ${_clock(duration!)}'),
-      if (video.sizeBytes > 0) _pill(Icons.sd_storage_rounded, '${video.sizeMb} MB'),
-    ];
+    final bool hasDescription = video.description.trim().isNotEmpty;
 
+    // Title only — the card hugs the name. The "Completed" chip and the
+    // description appear only when they exist.
     return AppCard(
-      title: video.title,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          if (pills.isNotEmpty) ...<Widget>[
-            Wrap(spacing: 8.w, runSpacing: 8.h, children: pills),
-            SizedBox(height: 12.h),
+          Text(
+            FormatHelper.capitalize(video.title),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
+          ),
+          if (done) ...<Widget>[
+            SizedBox(height: 10.h),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(Icons.check_circle_rounded,
+                        size: 15, color: Colors.white),
+                    SizedBox(width: 5.w),
+                    Text(
+                      FormatHelper.capitalize(s.lessonCompleted),
+                      style: StyleText.fontSize12Weight600
+                          .copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
-          if (video.description.trim().isNotEmpty)
+          if (hasDescription) ...<Widget>[
+            SizedBox(height: 10.h),
             Text(
-              video.description,
+              FormatHelper.capitalize(video.description),
               style: StyleText.fontSize14Weight400
                   .copyWith(color: AppColors.secondaryText, height: 1.5),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pill(IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-      decoration: BoxDecoration(
-        color: AppColors.chip,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          AppIcon(icon, size: 14.sp, color: AppColors.onChip),
-          SizedBox(width: 5.w),
-          Text(
-            text,
-            style: StyleText.fontSize12Weight600
-                .copyWith(color: AppColors.onChip),
-          ),
+          ],
         ],
       ),
     );
@@ -1088,14 +1119,14 @@ class _UpNext extends StatelessWidget {
           children: <Widget>[
             Expanded(
               child: Text(
-                s.upNext,
+                FormatHelper.capitalize(s.upNext),
                 style: StyleText.fontSize16Weight700
                     .copyWith(color: AppColors.text),
               ),
             ),
             if (showAutoplay) ...<Widget>[
               Text(
-                s.autoplay,
+                FormatHelper.capitalize(s.autoplay),
                 style: StyleText.fontSize12Weight600
                     .copyWith(color: AppColors.secondaryText),
               ),

@@ -3215,7 +3215,7 @@ abstract class S {
   /// No description provided for @cvs.
   ///
   /// In en, this message translates to:
-  /// **'CVs'**
+  /// **'The Best'**
   String get cvs;
 
   /// No description provided for @myCv.
@@ -4613,7 +4613,7 @@ abstract class S {
   /// No description provided for @openUnitConverter.
   ///
   /// In en, this message translates to:
-  /// **'Unit converter (works offline)'**
+  /// **'Unit converter'**
   String get openUnitConverter;
 
   /// No description provided for @copiedValue.
@@ -5311,6 +5311,894 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Converter'**
   String get unitConverterShort;
+
+  /// No description provided for @sectionQuizLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get sectionQuizLabel;
+
+  /// No description provided for @sectionQuizCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Link this quiz to a course section: members find it at the end of that section and can start it after watching all its lessons.'**
+  String get sectionQuizCaption;
+
+  /// No description provided for @sectionNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None — a general quiz'**
+  String get sectionNone;
+
+  /// No description provided for @sectionQuizzesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Section quiz'**
+  String get sectionQuizzesTitle;
+
+  /// No description provided for @addSectionQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Add quiz'**
+  String get addSectionQuiz;
+
+  /// No description provided for @sectionQuizLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch every lesson of this section to unlock its quiz.'**
+  String get sectionQuizLocked;
+
+  /// No description provided for @accessDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Login device'**
+  String get accessDevice;
+
+  /// No description provided for @accessDeviceCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Each member can use the app on one device only. To move them to a new device, remove this one — the next device they sign in on takes its place.'**
+  String get accessDeviceCaption;
+
+  /// No description provided for @accessDeviceNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Not used on any device yet — the first device they sign in on will be locked to the account.'**
+  String get accessDeviceNone;
+
+  /// No description provided for @accessDeviceUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'A device'**
+  String get accessDeviceUnknown;
+
+  /// No description provided for @accessDeviceSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String accessDeviceSince(String date);
+
+  /// No description provided for @accessDeviceRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove device'**
+  String get accessDeviceRemove;
+
+  /// No description provided for @accessDeviceRemoveQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this device?'**
+  String get accessDeviceRemoveQuestion;
+
+  /// No description provided for @accessDeviceRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The member is shut out of {device} now. The next device they sign in on becomes their device.'**
+  String accessDeviceRemoveBody(String device);
+
+  /// No description provided for @accessDeviceRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Device removed. The member can sign in on the new device now.'**
+  String get accessDeviceRemoved;
+
+  /// No description provided for @blockedTitleOtherDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is used on another device'**
+  String get blockedTitleOtherDevice;
+
+  /// No description provided for @blockedBodyOtherDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account works on one device only. To use this device instead, ask the admin to remove the old one, then sign out and sign in again here.'**
+  String get blockedBodyOtherDevice;
+
+  /// No description provided for @blockedTitleDeviceRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'This device was removed'**
+  String get blockedTitleDeviceRemoved;
+
+  /// No description provided for @blockedBodyDeviceRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'The admin removed this device from your account. To use it again, sign out and sign in.'**
+  String get blockedBodyDeviceRemoved;
+
+  /// No description provided for @tbAccountDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Account device'**
+  String get tbAccountDevice;
+
+  /// No description provided for @engEngagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Engagement'**
+  String get engEngagement;
+
+  /// No description provided for @engEngagementSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications, tips & tricks, the members\' Library and their stars.'**
+  String get engEngagementSub;
+
+  /// No description provided for @engNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get engNotifications;
+
+  /// No description provided for @engNotificationsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages from the ASEC team.'**
+  String get engNotificationsSub;
+
+  /// No description provided for @engNotificationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get engNotificationsEmpty;
+
+  /// No description provided for @engNotificationsEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'New messages from the admin appear here.'**
+  String get engNotificationsEmptySub;
+
+  /// No description provided for @engSendNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Send notification'**
+  String get engSendNotification;
+
+  /// No description provided for @engSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get engSend;
+
+  /// No description provided for @engNotifSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification sent'**
+  String get engNotifSent;
+
+  /// No description provided for @engNotifTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification title'**
+  String get engNotifTitleHint;
+
+  /// No description provided for @engNotifBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the message members will read'**
+  String get engNotifBodyHint;
+
+  /// No description provided for @engNotifAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to every member — it appears under the bell in their app bar, with the number not read yet.'**
+  String get engNotifAdminSub;
+
+  /// No description provided for @engTipsTricks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips & tricks'**
+  String get engTipsTricks;
+
+  /// No description provided for @engTipsAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips pop up over the members\' home page when they open the app. A member can save a tip; the number shows how many saved it.'**
+  String get engTipsAdminSub;
+
+  /// No description provided for @engAddTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tip'**
+  String get engAddTip;
+
+  /// No description provided for @engTipAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip added'**
+  String get engTipAdded;
+
+  /// No description provided for @engTipTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip title'**
+  String get engTipTitleHint;
+
+  /// No description provided for @engTipBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the tip'**
+  String get engTipBodyHint;
+
+  /// No description provided for @engTipSavedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved — find it under the bookmark icon at the top'**
+  String get engTipSavedToast;
+
+  /// No description provided for @engTipTapToClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap anywhere to close'**
+  String get engTipTapToClose;
+
+  /// No description provided for @engTipSavedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved by {count}'**
+  String engTipSavedCount(int count);
+
+  /// No description provided for @engTipActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown to members'**
+  String get engTipActive;
+
+  /// No description provided for @engTipsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tips yet'**
+  String get engTipsEmpty;
+
+  /// No description provided for @engSavedTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved tips'**
+  String get engSavedTips;
+
+  /// No description provided for @engSavedTipsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'The tips you saved.'**
+  String get engSavedTipsSub;
+
+  /// No description provided for @engSavedTipsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet'**
+  String get engSavedTipsEmpty;
+
+  /// No description provided for @engTipUnsave.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get engTipUnsave;
+
+  /// No description provided for @engLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get engLibrary;
+
+  /// No description provided for @engLibraryFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get engLibraryFiles;
+
+  /// No description provided for @engLibraryFilesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents from ASEC'**
+  String get engLibraryFilesHint;
+
+  /// No description provided for @engLibraryBest.
+  ///
+  /// In en, this message translates to:
+  /// **'The best'**
+  String get engLibraryBest;
+
+  /// No description provided for @engLibraryBestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Top members by stars'**
+  String get engLibraryBestHint;
+
+  /// No description provided for @engLibraryCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get engLibraryCertificate;
+
+  /// No description provided for @engLibrarySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Files the ASEC team shares with you.'**
+  String get engLibrarySub;
+
+  /// No description provided for @engLibraryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No files yet'**
+  String get engLibraryEmpty;
+
+  /// No description provided for @engLibraryEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Files added by the admin appear here.'**
+  String get engLibraryEmptySub;
+
+  /// No description provided for @engLibraryAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Files in the members\' Library (home page → Library → Files).'**
+  String get engLibraryAdminSub;
+
+  /// No description provided for @engLeaderboardSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Members ranked by the stars they earned watching courses.'**
+  String get engLeaderboardSub;
+
+  /// No description provided for @engLeaderboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No stars yet'**
+  String get engLeaderboardEmpty;
+
+  /// No description provided for @engYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get engYou;
+
+  /// No description provided for @engMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get engMember;
+
+  /// No description provided for @engStarsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get engStarsTab;
+
+  /// No description provided for @engStarsAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Each member\'s stars per course — 1 star for every 20% watched, 5 at most per course. Tap a member to see their courses.'**
+  String get engStarsAdminSub;
+
+  /// No description provided for @engStarsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1 star for every 20% you watch — 5 stars per course'**
+  String get engStarsHint;
+
+  /// No description provided for @engStarsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} stars'**
+  String engStarsCount(int count);
+
+  /// No description provided for @engFilesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get engFilesTab;
+
+  /// No description provided for @engNewFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get engNewFolder;
+
+  /// No description provided for @engFolderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get engFolderName;
+
+  /// No description provided for @engFolderCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder created'**
+  String get engFolderCreated;
+
+  /// No description provided for @engRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get engRename;
+
+  /// No description provided for @engCourseFilesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No files in this course yet'**
+  String get engCourseFilesEmpty;
+
+  /// No description provided for @engCourseFilesEmptyAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a folder, then upload files into it.'**
+  String get engCourseFilesEmptyAdmin;
+
+  /// No description provided for @engFolderEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty'**
+  String get engFolderEmpty;
+
+  /// No description provided for @engAllFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'All folders'**
+  String get engAllFolders;
+
+  /// No description provided for @engFileCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} files'**
+  String engFileCount(int count);
+
+  /// No description provided for @engDeleteFolderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The folder and every file in it will be deleted.'**
+  String get engDeleteFolderBody;
+
+  /// No description provided for @engDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get engDeleteBody;
+
+  /// No description provided for @engFileUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'File uploaded'**
+  String get engFileUploaded;
+
+  /// No description provided for @engFileOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file'**
+  String get engFileOpenFailed;
+
+  /// No description provided for @engFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get engFieldRequired;
+
+  /// No description provided for @engCourseSequential.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch in order'**
+  String get engCourseSequential;
+
+  /// No description provided for @engCourseSequentialHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A video opens only after the one before it is watched'**
+  String get engCourseSequentialHint;
+
+  /// No description provided for @engVideoDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get engVideoDefault;
+
+  /// No description provided for @engVideoCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get engVideoCustom;
+
+  /// No description provided for @engMakeDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Make default (every member)'**
+  String get engMakeDefault;
+
+  /// No description provided for @engMakeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Make custom'**
+  String get engMakeCustom;
+
+  /// No description provided for @engRulesMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed by Firebase. Deploy the new rules: firebase deploy --only firestore:rules,storage'**
+  String get engRulesMissing;
+
+  /// No description provided for @engChooseFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload into which folder?'**
+  String get engChooseFolder;
+
+  /// No description provided for @engChooseFolderSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a folder, or create a new one — then choose the file.'**
+  String get engChooseFolderSub;
+
+  /// No description provided for @engNoFoldersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders yet — create the first one:'**
+  String get engNoFoldersYet;
+
+  /// No description provided for @engOtherFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Other files'**
+  String get engOtherFiles;
+
+  /// No description provided for @engPartners.
+  ///
+  /// In en, this message translates to:
+  /// **'Our partners'**
+  String get engPartners;
+
+  /// No description provided for @engPartnersSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Companies that work with ASEC'**
+  String get engPartnersSub;
+
+  /// No description provided for @engPartnersAdminSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner logos — they turn in a 3D ring around the ASEC logo on the members\' home page (and show on the website). Only published ones appear.'**
+  String get engPartnersAdminSub;
+
+  /// No description provided for @engPartnerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add partner'**
+  String get engPartnerAdd;
+
+  /// No description provided for @engPartnerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Company name'**
+  String get engPartnerName;
+
+  /// No description provided for @engPartnerAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner added'**
+  String get engPartnerAdded;
+
+  /// No description provided for @engPartnersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No partners yet — add the first logo'**
+  String get engPartnersEmpty;
+
+  /// No description provided for @updCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App update'**
+  String get updCardTitle;
+
+  /// No description provided for @updCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Android users to update the app. Use the build number — the part after + in pubspec (1.0.1+9 → 9).'**
+  String get updCardHint;
+
+  /// No description provided for @updLatestBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest build — optional update'**
+  String get updLatestBuild;
+
+  /// No description provided for @updLatestBuildHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Builds below this see a \"New version\" message they can close.'**
+  String get updLatestBuildHint;
+
+  /// No description provided for @updMinBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum build — forced update'**
+  String get updMinBuild;
+
+  /// No description provided for @updMinBuildHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Builds below this must update. The message can\'t be closed.'**
+  String get updMinBuildHint;
+
+  /// No description provided for @updNotesEn.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new (English)'**
+  String get updNotesEn;
+
+  /// No description provided for @updNotesAr.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new (Arabic)'**
+  String get updNotesAr;
+
+  /// No description provided for @updWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise these numbers only after the new version is live on Google Play — otherwise users will be asked to update to a version they can\'t download yet.'**
+  String get updWarning;
+
+  /// No description provided for @updStatusForced.
+  ///
+  /// In en, this message translates to:
+  /// **'Forced update is on: builds below {build} must update'**
+  String updStatusForced(String build);
+
+  /// No description provided for @updStatusOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No forced update'**
+  String get updStatusOff;
+
+  /// No description provided for @updThisApp.
+  ///
+  /// In en, this message translates to:
+  /// **'This app: {version}'**
+  String updThisApp(String version);
+
+  /// No description provided for @updStopForcing.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop forcing'**
+  String get updStopForcing;
+
+  /// No description provided for @updSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Update settings saved'**
+  String get updSaved;
+
+  /// No description provided for @updUseThisVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this version'**
+  String get updUseThisVersion;
+
+  /// No description provided for @updBuildToUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Build number to update to'**
+  String get updBuildToUse;
+
+  /// No description provided for @updBuildToUseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled from this app. Change it if your new Android build has a different number.'**
+  String get updBuildToUseHint;
+
+  /// No description provided for @updForceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Should users be forced to update?'**
+  String get updForceQuestion;
+
+  /// No description provided for @updOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get updOptional;
+
+  /// No description provided for @updForced.
+  ///
+  /// In en, this message translates to:
+  /// **'Forced'**
+  String get updForced;
+
+  /// No description provided for @updOptionalSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional update set: builds below {build} will be asked to update'**
+  String updOptionalSet(String build);
+
+  /// No description provided for @updEnterBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the build number'**
+  String get updEnterBuild;
+
+  /// No description provided for @permEngagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Engagement'**
+  String get permEngagement;
+
+  /// No description provided for @permViewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'View only'**
+  String get permViewOnly;
+
+  /// No description provided for @permDashboardCharts.
+  ///
+  /// In en, this message translates to:
+  /// **'Charts'**
+  String get permDashboardCharts;
+
+  /// No description provided for @permDashboardTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest attempts table'**
+  String get permDashboardTable;
+
+  /// No description provided for @permVideosAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add / upload videos and course files'**
+  String get permVideosAdd;
+
+  /// No description provided for @permVideosEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit videos and course files'**
+  String get permVideosEdit;
+
+  /// No description provided for @permVideosDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete videos and course files'**
+  String get permVideosDelete;
+
+  /// No description provided for @permVideosPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish / hide videos'**
+  String get permVideosPublish;
+
+  /// No description provided for @permVideosAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Course access (default / custom, watch in order)'**
+  String get permVideosAccess;
+
+  /// No description provided for @permQuizzesCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create quizzes'**
+  String get permQuizzesCreate;
+
+  /// No description provided for @permQuizzesEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit quizzes'**
+  String get permQuizzesEdit;
+
+  /// No description provided for @permQuizzesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete quizzes'**
+  String get permQuizzesDelete;
+
+  /// No description provided for @permQuizzesOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open / close quizzes'**
+  String get permQuizzesOpen;
+
+  /// No description provided for @permQuizzesCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate quizzes'**
+  String get permQuizzesCertificates;
+
+  /// No description provided for @permMembersBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate / block members'**
+  String get permMembersBlock;
+
+  /// No description provided for @permMembersAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit access (courses, period, pause, calculators)'**
+  String get permMembersAccess;
+
+  /// No description provided for @permMembersDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset device'**
+  String get permMembersDevice;
+
+  /// No description provided for @permCvsReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review CVs (status)'**
+  String get permCvsReview;
+
+  /// No description provided for @permCvsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete CVs'**
+  String get permCvsDelete;
+
+  /// No description provided for @permCvsGrant.
+  ///
+  /// In en, this message translates to:
+  /// **'Give CV rights'**
+  String get permCvsGrant;
+
+  /// No description provided for @permEngNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get permEngNotifications;
+
+  /// No description provided for @permEngTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips & tricks'**
+  String get permEngTips;
+
+  /// No description provided for @permEngLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get permEngLibrary;
+
+  /// No description provided for @permEngStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get permEngStars;
+
+  /// No description provided for @permEngPartners.
+  ///
+  /// In en, this message translates to:
+  /// **'Partners'**
+  String get permEngPartners;
+
+  /// No description provided for @permWebContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages, articles and content'**
+  String get permWebContent;
+
+  /// No description provided for @permWebInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get permWebInbox;
+
+  /// No description provided for @permWebSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Site settings and control centre'**
+  String get permWebSettings;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

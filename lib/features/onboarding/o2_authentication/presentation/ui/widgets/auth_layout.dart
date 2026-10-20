@@ -23,6 +23,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/theme_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/brand_mark.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// One frame, two shapes.
 ///
@@ -50,6 +51,16 @@ class AuthLayout extends StatelessWidget {
   /// Used by sign-in; register is longer and keeps scrolling.
   final bool fitToScreen;
 
+  /// The brand side: one flat colour from the theme — white in light mode,
+  /// the card colour in dark mode — with the theme's text colours on it.
+  static Color get _brandBackground => AppColors.card;
+  static Color get _brandText => AppColors.text;
+  static Color get _brandSubtext => AppColors.secondaryText;
+
+  /// The logo alone — no tile, no name.
+  static Widget _logo(double size) =>
+      BrandMark(size: size, showName: false);
+
   /// From this width on, the layout splits in two.
   static const double splitWidth = 900;
 
@@ -76,13 +87,7 @@ class AuthLayout extends StatelessWidget {
         Expanded(
           flex: 5,
           child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[AppColors.primary, AppColors.secondaryPrimary],
-              ),
-            ),
+            decoration: BoxDecoration(color: _brandBackground),
             padding: EdgeInsets.symmetric(
               horizontal: AppPadding.h,
               vertical: 48.sp,
@@ -90,7 +95,7 @@ class AuthLayout extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const BrandMark(size: 52, onDark: true),
+                _logo(110),
                 const Spacer(),
                 Flexible(
                   flex: 3,
@@ -104,15 +109,15 @@ class AuthLayout extends StatelessWidget {
                 ),
                 SizedBox(height: 32.h),
                 Text(
-                  S.of(context).heroTitle,
+                  FormatHelper.capitalize(S.of(context).heroTitle),
                   style: StyleText.fontSize28Weight600
-                      .copyWith(color: Colors.white),
+                      .copyWith(color: _brandText),
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  S.of(context).heroSubtitle,
+                  FormatHelper.capitalize(S.of(context).heroSubtitle),
                   style: StyleText.fontSize15Weight400
-                      .copyWith(color: Colors.white70),
+                      .copyWith(color: _brandSubtext),
                 ),
                 const Spacer(),
               ],
@@ -202,14 +207,7 @@ class AuthLayout extends StatelessWidget {
                 compact ? 14.h : 20.h,
               ),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    AppColors.primary,
-                    AppColors.secondaryPrimary,
-                  ],
-                ),
+                color: _brandBackground,
                 borderRadius:
                     BorderRadius.vertical(bottom: Radius.circular(28.r)),
               ),
@@ -218,13 +216,9 @@ class AuthLayout extends StatelessWidget {
                 children: <Widget>[
                   const Align(
                     alignment: AlignmentDirectional.centerEnd,
-                    child: AuthLanguageToggle(onDark: true),
+                    child: AuthLanguageToggle(onLight: true),
                   ),
-                  BrandMark(
-                    size: compact ? 44 : 56,
-                    vertical: !compact,
-                    onDark: true,
-                  ),
+                  _logo(compact ? 64 : 92),
                   if (illustrationHeight > 0) ...<Widget>[
                     SizedBox(height: 12.h),
                     SizedBox(
@@ -274,11 +268,7 @@ class AuthLayout extends StatelessWidget {
             padding:
                 EdgeInsets.fromLTRB(AppPadding.h, 56.h, AppPadding.h, 36.h),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[AppColors.primary, AppColors.secondaryPrimary],
-              ),
+              color: _brandBackground,
               borderRadius:
                   BorderRadius.vertical(bottom: Radius.circular(36.r)),
             ),
@@ -286,9 +276,9 @@ class AuthLayout extends StatelessWidget {
               children: <Widget>[
                 const Align(
                   alignment: AlignmentDirectional.centerEnd,
-                  child: AuthLanguageToggle(onDark: true),
+                  child: AuthLanguageToggle(onLight: true),
                 ),
-                const BrandMark(size: 64, vertical: true, onDark: true),
+                _logo(100),
                 SizedBox(height: 20.h),
                 SizedBox(
                   height: 140.h,
@@ -315,20 +305,25 @@ class AuthLayout extends StatelessWidget {
 
 /// EN | ع — switches the whole app's language.
 class AuthLanguageToggle extends StatelessWidget {
-  const AuthLanguageToggle({super.key, this.onDark = false});
+  const AuthLanguageToggle({super.key, this.onDark = false, this.onLight = false});
 
   final bool onDark;
+
+  /// On the brand header (kept for call sites; follows the theme).
+  final bool onLight;
 
   @override
   Widget build(BuildContext context) {
     final ThemeController theme = ThemeController.to;
-    final Color color = onDark ? Colors.white : AppColors.text;
+    final Color color = onDark
+        ? Colors.white
+        : AppColors.text;
     return Obx(
       () => TextButton.icon(
         onPressed: theme.toggleLanguage,
         icon: AppIcon(Icons.translate_rounded, color: color, size: 18.sp),
         label: Text(
-          theme.languageCode.value == 'ar' ? 'English' : 'العربية',
+          FormatHelper.capitalize(theme.languageCode.value == 'ar' ? 'English' : 'العربية'),
           style: StyleText.fontSize13Weight600.copyWith(color: color),
         ),
       ),

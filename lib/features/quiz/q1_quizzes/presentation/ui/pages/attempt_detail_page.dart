@@ -23,6 +23,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart'
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_question.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// THE MARKING IS RE-RUN HERE, NOT READ OFF THE ATTEMPT.
 ///
@@ -62,11 +63,11 @@ class AttemptDetailPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              attempt.userName.isEmpty ? attempt.userId : attempt.userName,
+              FormatHelper.capitalize(attempt.userName.isEmpty ? attempt.userId : attempt.userName),
               style: StyleText.fontSize18Weight600,
             ),
             Text(
-              quiz.title,
+              FormatHelper.capitalize(quiz.title),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: StyleText.fontSize12Weight400
@@ -96,15 +97,15 @@ class AttemptDetailPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
-                            attempt.userName.isEmpty
+                            FormatHelper.capitalize(attempt.userName.isEmpty
                                 ? attempt.userId
-                                : attempt.userName,
+                                : attempt.userName),
                             style: StyleText.fontSize16Weight600,
                           ),
                           if (attempt.userEmail.isNotEmpty) ...<Widget>[
                             SizedBox(height: 2.h),
                             Text(
-                              attempt.userEmail,
+                              FormatHelper.capitalize(attempt.userEmail),
                               style: StyleText.fontSize12Weight400
                                   .copyWith(color: AppColors.secondaryText),
                             ),
@@ -117,12 +118,12 @@ class AttemptDetailPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          '${attempt.score}/${attempt.totalPoints}',
+                          FormatHelper.capitalize('${attempt.score}/${attempt.totalPoints}'),
                           style: StyleText.fontSize22Weight700
                               .copyWith(color: color),
                         ),
                         Text(
-                          '${attempt.percent.round()}%',
+                          FormatHelper.capitalize('${attempt.percent.round()}%'),
                           style: StyleText.fontSize12Weight500
                               .copyWith(color: AppColors.secondaryText),
                         ),
@@ -229,12 +230,12 @@ class _Row extends StatelessWidget {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              label,
+              FormatHelper.capitalize(label),
               style: StyleText.fontSize13Weight400
                   .copyWith(color: AppColors.secondaryText),
             ),
           ),
-          Text(value, style: StyleText.fontSize13Weight600),
+          Text(FormatHelper.capitalize(value), style: StyleText.fontSize13Weight600),
         ],
       ),
     );
@@ -284,13 +285,13 @@ class _QuestionSheet extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        s.questionNumber('${index + 1}'),
+                        FormatHelper.capitalize(s.questionNumber('${index + 1}')),
                         style: StyleText.fontSize11Weight600
                             .copyWith(color: AppColors.secondaryText),
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        question.text,
+                        FormatHelper.capitalize(question.text),
                         style: StyleText.fontSize14Weight600,
                       ),
                     ],
@@ -298,10 +299,10 @@ class _QuestionSheet extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  s.pointsEarned(
+                  FormatHelper.capitalize(s.pointsEarned(
                     '${correct ? question.points : 0}',
                     '${question.points}',
-                  ),
+                  )),
                   style: StyleText.fontSize12Weight600.copyWith(color: verdict),
                 ),
               ],
@@ -316,7 +317,7 @@ class _QuestionSheet extends StatelessWidget {
             if (chosen == null) ...<Widget>[
               SizedBox(height: 4.h),
               Text(
-                s.noAnswer,
+                FormatHelper.capitalize(s.noAnswer),
                 style: StyleText.fontSize12Weight600
                     .copyWith(color: AppColors.statusPending),
               ),
@@ -375,7 +376,7 @@ class _OptionRow extends StatelessWidget {
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
-                label,
+                FormatHelper.capitalize(label),
                 style: highlight
                     ? StyleText.fontSize13Weight600.copyWith(color: AppColors.onChip)
                     : StyleText.fontSize13Weight400,
@@ -389,7 +390,7 @@ class _OptionRow extends StatelessWidget {
                   borderRadius: AppRadius.buttonR,
                 ),
                 child: Text(
-                  s.theirAnswer,
+                  FormatHelper.capitalize(s.theirAnswer),
                   style: StyleText.fontSize10Weight600.copyWith(color: AppColors.onChip),
                 ),
               ),

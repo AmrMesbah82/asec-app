@@ -16,6 +16,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// A tappable field that opens the date picker and then the time picker.
 /// Null is a first-class value here — "no bound that way" — so the field
@@ -73,7 +74,7 @@ class DateTimeField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          label,
+          FormatHelper.capitalize(label),
           style: StyleText.fontSize13Weight600
               .copyWith(color: AppColors.secondaryText),
         ),
@@ -92,7 +93,7 @@ class DateTimeField extends StatelessWidget {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      isSet ? AppDates.dateTime(context, value) : s.notSet,
+                      FormatHelper.capitalize(isSet ? AppDates.dateTime(context, value) : s.notSet),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: isSet

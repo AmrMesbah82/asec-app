@@ -28,6 +28,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class StatusChipFilter extends StatelessWidget {
   /// List of chip items to display.
@@ -141,7 +142,7 @@ class _StatusChip extends StatelessWidget {
                 borderRadius: AppRadius.buttonR,
               ),
               child: Text(
-                item.label,
+                FormatHelper.capitalize(item.label),
                 style: StyleText.fontSize14Weight500.copyWith(
                   color: isSelected ? AppColors.textButton : AppColors.text,
                 ),
@@ -196,7 +197,7 @@ class _StatusChip extends StatelessWidget {
 
             // ── Label ─────────────────────────────────────────────────────
             Text(
-              item.label,
+              FormatHelper.capitalize(item.label),
               style: StyleText.fontSize16Weight600.copyWith(color: labelColor),
             ),
 

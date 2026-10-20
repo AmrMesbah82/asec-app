@@ -25,8 +25,12 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempts_page.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_editor_page.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_card.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AdminQuizzesPage extends StatefulWidget {
   const AdminQuizzesPage({
@@ -47,6 +51,8 @@ class AdminQuizzesPage extends StatefulWidget {
 class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
   final QuizBaseRepository _repository = QuizRepository();
   late final Stream<List<Quiz>> _quizzes = _repository.watchAll();
+
+  AppUser get _me => SessionController.to.current;
 
   Future<void> _openEditor([Quiz? quiz]) => Navigator.of(context).push(
         MaterialPageRoute<bool>(
@@ -70,7 +76,7 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
         final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
         final String deleted = s.deleted;
         await _repository.delete(quiz.id);
-        messenger.showSnackBar(SnackBar(content: Text(deleted)));
+        messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(deleted))));
       },
     );
   }
@@ -84,7 +90,10 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: FloatingActionButton.extended(
+      // Quizzes → Create (Certificate quizzes need that action too).
+      floatingActionButton: !SessionController.to.current.canDo(AdminAction.quizzesCreate)
+          ? null
+          : FloatingActionButton.extended(
         // Unique per section: see the videos FAB for why.
         heroTag: cert ? 'asec_fab_cert_quizzes' : 'asec_fab_quizzes',
         onPressed: _openEditor,
@@ -94,7 +103,7 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
           color: Colors.white,
         ),
         label: Text(
-          cert ? s.newCertificateQuiz : s.newQuiz,
+          FormatHelper.capitalize(cert ? s.newCertificateQuiz : s.newQuiz),
           style: StyleText.fontSize14Weight600.copyWith(color: Colors.white),
         ),
       ),
@@ -139,9 +148,14 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
                   final Quiz quiz = quizzes[index];
                   return FadeSlideIn(delay: staggerDelay(index, stepMs: 55), child: HoverLift(child: QuizCard(
                     quiz: quiz,
-                    onTap: () => _openEditor(quiz),
+                    onTap: _me.canDo(AdminAction.quizzesEdit)
+                        ? () => _openEditor(quiz)
+                        : null,
                     trailing: _QuizMenu(
                       quiz: quiz,
+                      canEdit: _me.canDo(AdminAction.quizzesEdit),
+                      canOpen: _me.canDo(AdminAction.quizzesOpen),
+                      canDelete: _me.canDo(AdminAction.quizzesDelete),
                       onEdit: () => _openEditor(quiz),
                       onResults: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
@@ -171,6 +185,9 @@ enum _QuizAction { edit, results, publish, delete }
 class _QuizMenu extends StatelessWidget {
   const _QuizMenu({
     required this.quiz,
+    required this.canEdit,
+    required this.canOpen,
+    required this.canDelete,
     required this.onEdit,
     required this.onResults,
     required this.onTogglePublished,
@@ -178,6 +195,9 @@ class _QuizMenu extends StatelessWidget {
   });
 
   final Quiz quiz;
+  final bool canEdit;
+  final bool canOpen;
+  final bool canDelete;
   final VoidCallback onEdit;
   final VoidCallback onResults;
   final VoidCallback onTogglePublished;
@@ -202,22 +222,25 @@ class _QuizMenu extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<_QuizAction>>[
+        if (canEdit)
         PopupMenuItem<_QuizAction>(
           value: _QuizAction.edit,
-          child: Text(s.edit),
+          child: Text(FormatHelper.capitalize(s.edit)),
         ),
         PopupMenuItem<_QuizAction>(
           value: _QuizAction.results,
-          child: Text(s.results),
+          child: Text(FormatHelper.capitalize(s.results)),
         ),
+        if (canOpen)
         PopupMenuItem<_QuizAction>(
           value: _QuizAction.publish,
-          child: Text(quiz.published ? s.switchOff : s.publish),
+          child: Text(FormatHelper.capitalize(quiz.published ? s.switchOff : s.publish)),
         ),
+        if (canDelete)
         PopupMenuItem<_QuizAction>(
           value: _QuizAction.delete,
           child: Text(
-            s.delete,
+            FormatHelper.capitalize(s.delete),
             style: StyleText.fontSize14Weight500.copyWith(color: AppColors.red),
           ),
         ),

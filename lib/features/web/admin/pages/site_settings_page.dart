@@ -12,6 +12,7 @@ import 'package:asec/features/web/admin/widgets.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class SiteSettingsPage extends StatefulWidget {
   const SiteSettingsPage({super.key});
@@ -68,7 +69,7 @@ class _SiteSettingsPageState extends State<SiteSettingsPage> {
         FilledButton.icon(
           onPressed: _saving || _values == null ? null : _save,
           icon: const AppIcon(Icons.save_rounded),
-          label: Text(const L('حفظ', 'Save').t),
+          label: Text(FormatHelper.capitalize(const L('حفظ', 'Save').t)),
         ),
       ],
       child: _error != null

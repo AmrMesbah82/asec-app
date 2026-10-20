@@ -14,8 +14,12 @@
 /// switches the shell's section (AppShell.open) or opens a "My space" page on
 /// top of it.
 ///
-/// THE MAIN THREE come first and biggest: Videos, the unit converter and the
-/// quizzes; CVs and the "My space" pages follow as smaller tiles.
+/// LIBRARY (was "Quick access"): the admin's files, "The best" (members
+/// ranked by stars) and the certificate. Videos, the converter and quizzes
+/// stay one tap away in the menu.
+///
+/// TIPS & TRICKS from the admin are laid over the page once per launch
+/// (TipsLayer): the page fades back behind them.
 
 import 'dart:async';
 import 'dart:math' as math;
@@ -33,16 +37,23 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/app_shell.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/course_settings.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/pages/library_pages.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/partners_orbit.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/stars_row.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/tips_overlay.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_quizzes_page.dart';
 import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
-import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
-import 'package:asec/features/video/v1_videos/domain/base_repository/video_base_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/video_player_page.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_categories.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
+import 'package:asec/features/video/v1_videos/presentation/controller/member_videos.dart';
 
 /// Section ids the home page jumps to (see UserShell).
 abstract final class MemberSectionIds {
@@ -62,14 +73,18 @@ class MemberHomePage extends StatefulWidget {
 }
 
 class _MemberHomePageState extends State<MemberHomePage> {
-  final VideoBaseRepository _repository = VideoRepository();
-  late final Stream<List<VideoItem>> _videos = _repository.watchPublished();
+  // Only what this member may read (firestore.rules checks it too).
+  late final Stream<List<VideoItem>> _videos = MemberVideos.watch();
 
   /// Watch progress is written to the device while a lesson plays (from the
   /// Videos tab too), so the page listens and refreshes — at most once a
   /// second, not on every saved position.
   VoidCallback? _unlisten;
   Timer? _debounce;
+
+  /// The watch progress already on this device is sent once per launch, so
+  /// the admin's stars include lessons watched before stars existed.
+  bool _backfilled = false;
 
   @override
   void initState() {
@@ -95,7 +110,8 @@ class _MemberHomePageState extends State<MemberHomePage> {
         builder: (_) => VideoPlayerPage(
           video: video,
           playlist: playlist,
-          sequential: AppFeatures.to.isOn(AppFeature.videoSequential),
+          // The admin's switch for THIS course.
+          sequential: CourseSettings.to.isSequential(video.category),
         ),
       ),
     );
@@ -106,20 +122,30 @@ class _MemberHomePageState extends State<MemberHomePage> {
   Widget build(BuildContext context) {
     return Obx(() {
       AppFeatures.to.values.length; // a switch flipped live
+      CourseSettings.to.sequential.length;
       final AppUser me = SessionController.to.current;
       return Scaffold(
         backgroundColor: AppColors.background,
-        body: StreamBuilder<List<VideoItem>>(
+        // TIPS & TRICKS lie over the page as layers once per launch.
+        body: TipsLayer(
+          user: me,
+          child: StreamBuilder<List<VideoItem>>(
           stream: _videos,
           builder: (BuildContext context, AsyncSnapshot<List<VideoItem>> snap) {
             final bool videosOn = AppFeatures.to.isOn(AppFeature.sectionVideos);
             final List<VideoItem> all = !videosOn || !snap.hasData
                 ? const <VideoItem>[]
                 : (snap.data!
-                    .where((VideoItem v) => v.hasFile && me.canSeeCourse(v.category))
+                    // The member's courses + every "default" video.
+                    .where((VideoItem v) =>
+                        v.hasFile && (v.free || me.canSeeCourse(v.category)))
                     .toList()
-                  ..sort((VideoItem a, VideoItem b) => (a.createdAt ?? DateTime(0))
-                      .compareTo(b.createdAt ?? DateTime(0))));
+                  ..sort((VideoItem a, VideoItem b) => (b.createdAt ?? DateTime(0))
+                      .compareTo(a.createdAt ?? DateTime(0))));
+            if (!_backfilled && all.isNotEmpty) {
+              _backfilled = true;
+              WatchSync.backfill(all);
+            }
             return _HomeBody(
               user: me,
               videos: all,
@@ -127,6 +153,7 @@ class _MemberHomePageState extends State<MemberHomePage> {
               onPlay: _play,
             );
           },
+          ),
         ),
       );
     });
@@ -201,44 +228,36 @@ class _HomeBody extends StatelessWidget {
       if (!AppShell.open(context, id)) fallback?.open(context);
     }
 
+    // LIBRARY: the admin's files, the leaderboard and the certificate.
     final List<_Tile> main = <_Tile>[
+      _Tile(
+        icon: Icons.folder_copy_rounded,
+        label: s.engLibraryFiles,
+        hint: s.engLibraryFilesHint,
+        onTap: () => PushedSectionPage.open(context, const LibraryFilesPage()),
+      ),
+      _Tile(
+        icon: Icons.emoji_events_rounded,
+        label: s.engLibraryBest,
+        hint: s.engLibraryBestHint,
+        onTap: () => PushedSectionPage.open(context, const LeaderboardPage()),
+      ),
       if (f.isOn(AppFeature.sectionVideos))
         _Tile(
-          icon: Icons.video_library_rounded,
-          label: s.typeVideos,
-          hint: s.homeVideosHint,
-          onTap: () => go(MemberSectionIds.videos),
-        ),
-      _Tile(
-        icon: Icons.calculate_rounded,
-        label: s.unitConverter,
-        hint: s.homeConverterHint,
-        onTap: () => go(MemberSectionIds.converter),
-      ),
-      if (f.isOn(AppFeature.sectionQuizzes))
-        _Tile(
-          icon: Icons.quiz_outlined,
-          label: s.quizzes,
-          hint: s.homeQuizzesHint,
-          onTap: () => go(MemberSectionIds.quizzes),
+          icon: Icons.workspace_premium_rounded,
+          label: s.engLibraryCertificate,
+          hint: s.homeCertificateHint,
+          onTap: () => PushedSectionPage.open(
+            context,
+            CertificateQuizzesPage(user: user),
+          ),
         ),
     ];
-    final List<_Tile> more = <_Tile>[
-      if (f.isOn(AppFeature.sectionCvDirectory))
-        _Tile(
-          icon: Icons.assignment_outlined,
-          label: s.cvs,
-          hint: s.homeCvsHint,
-          onTap: () => go(MemberSectionIds.cvs),
-        ),
-      for (final MemberLink link in MemberLinks.forUser(context, user))
-        _Tile(
-          icon: link.icon,
-          label: link.label,
-          hint: link.hint,
-          onTap: () => link.open(context),
-        ),
-    ];
+    // Every course's stars added up (1 per 20% watched, 5 per course).
+    final int stars = courses.fold<int>(
+      0,
+      (int sum, VideoCategory c) => sum + CourseStars.local(c.videos),
+    );
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints c) {
@@ -249,6 +268,7 @@ class _HomeBody extends StatelessWidget {
           watched: watched,
           total: total,
           showProgress: f.isOn(AppFeature.sectionVideos) && total > 0,
+          stars: stars,
         );
 
         final Widget? resumeCard = !f.isOn(AppFeature.sectionVideos) || (total == 0 && !loading)
@@ -264,13 +284,9 @@ class _HomeBody extends StatelessWidget {
         final Widget tiles = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _SectionTitle(s.homeQuickAccess),
+            _SectionTitle(s.engLibrary),
             SizedBox(height: 10.h),
             _TileGrid(tiles: main, big: true),
-            if (more.isNotEmpty) ...<Widget>[
-              SizedBox(height: 12.h),
-              _TileGrid(tiles: more, big: false),
-            ],
           ],
         );
 
@@ -306,16 +322,13 @@ class _HomeBody extends StatelessWidget {
                   child: tiles,
                 ),
               ],
-              if (courses.isNotEmpty) ...<Widget>[
-                SizedBox(height: 24.h),
-                FadeSlideIn(
-                  delay: const Duration(milliseconds: 200),
-                  child: _CoursesStrip(
-                    courses: courses,
-                    onSeeAll: () => go(MemberSectionIds.videos),
-                  ),
-                ),
-              ],
+              // "Your courses" was here — removed; the courses are in Videos.
+              // OUR PARTNERS: their logos turning in a 3D ring around ASEC.
+              SizedBox(height: 28.h),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 200),
+                child: PartnersSection(),
+              ),
             ],
           ),
         );
@@ -332,12 +345,16 @@ class _HeroCard extends StatelessWidget {
     required this.watched,
     required this.total,
     required this.showProgress,
+    this.stars = 0,
   });
 
   final AppUser user;
   final int watched;
   final int total;
   final bool showProgress;
+
+  /// Every course's stars added up.
+  final int stars;
 
   @override
   Widget build(BuildContext context) {
@@ -361,14 +378,14 @@ class _HeroCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                s.homeGreeting(user.firstName),
+                FormatHelper.capitalize(s.homeGreeting(user.firstName)),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: StyleText.fontSize22Weight700.copyWith(color: Colors.white),
               ),
               SizedBox(height: 4.h),
               Text(
-                s.homeSub,
+                FormatHelper.capitalize(s.homeSub),
                 style: StyleText.fontSize14Weight400
                     .copyWith(color: Colors.white.withOpacity(0.85)),
               ),
@@ -389,23 +406,25 @@ class _HeroCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                s.homeProgress,
+                FormatHelper.capitalize(s.homeProgress),
                 style: StyleText.fontSize12Weight600
                     .copyWith(color: Colors.white.withOpacity(0.8)),
               ),
               SizedBox(height: 2.h),
               Text(
-                s.courseProgress(watched, total),
+                FormatHelper.capitalize(s.courseProgress(watched, total)),
                 style: StyleText.fontSize15Weight600.copyWith(color: Colors.white),
               ),
               if (total > watched) ...<Widget>[
                 SizedBox(height: 2.h),
                 Text(
-                  s.homeLessonsLeft(total - watched),
+                  FormatHelper.capitalize(s.homeLessonsLeft(total - watched)),
                   style: StyleText.fontSize12Weight500
                       .copyWith(color: Colors.white.withOpacity(0.8)),
                 ),
               ],
+              SizedBox(height: 6.h),
+              StarsChip(label: s.engStarsCount(stars), onColor: true),
             ],
           ),
         ),
@@ -528,7 +547,7 @@ class _Ring extends StatelessWidget {
             ),
             Center(
               child: Text(
-                '${(v * 100).round()}%',
+                FormatHelper.capitalize('${(v * 100).round()}%'),
                 style: StyleText.fontSize14Weight700.copyWith(color: Colors.white),
               ),
             ),
@@ -618,7 +637,7 @@ class _ResumeCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Text(
-                            s.homeLessonOf(r.number, r.course.length),
+                            FormatHelper.capitalize(s.homeLessonOf(r.number, r.course.length)),
                             style: StyleText.fontSize11Weight600.copyWith(color: Colors.white),
                           ),
                         ),
@@ -665,14 +684,14 @@ class _ResumeCard extends StatelessWidget {
           ),
           SizedBox(height: 14.h),
           Text(
-            category,
+            FormatHelper.capitalize(category),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: StyleText.fontSize12Weight600.copyWith(color: AppColors.primary),
           ),
           SizedBox(height: 4.h),
           Text(
-            r.video.title,
+            FormatHelper.capitalize(r.video.title),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
@@ -683,7 +702,7 @@ class _ResumeCard extends StatelessWidget {
               if (p > 0)
                 Expanded(
                   child: Text(
-                    '${(p * 100).round()}%',
+                    FormatHelper.capitalize('${(p * 100).round()}%'),
                     style: StyleText.fontSize13Weight500
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -740,14 +759,14 @@ class _Message extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            title,
+            FormatHelper.capitalize(title),
             textAlign: TextAlign.center,
             style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
           ),
           if (subtitle != null) ...<Widget>[
             SizedBox(height: 4.h),
             Text(
-              subtitle!,
+              FormatHelper.capitalize(subtitle!),
               textAlign: TextAlign.center,
               style: StyleText.fontSize13Weight400
                   .copyWith(color: AppColors.secondaryText),
@@ -849,7 +868,7 @@ class _TileCardState extends State<_TileCard> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          t.label,
+          FormatHelper.capitalize(t.label),
           maxLines: widget.big ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
@@ -857,7 +876,7 @@ class _TileCardState extends State<_TileCard> {
         if (t.hint != null) ...<Widget>[
           SizedBox(height: 2.h),
           Text(
-            t.hint!,
+            FormatHelper.capitalize(t.hint!),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: StyleText.fontSize12Weight400
@@ -932,134 +951,6 @@ class _TileCardState extends State<_TileCard> {
   }
 }
 
-// ── Courses ─────────────────────────────────────────────────────────────────
-
-class _CoursesStrip extends StatelessWidget {
-  const _CoursesStrip({required this.courses, required this.onSeeAll});
-
-  final List<VideoCategory> courses;
-  final VoidCallback onSeeAll;
-
-  @override
-  Widget build(BuildContext context) {
-    final S s = S.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(child: _SectionTitle(s.homeCourses)),
-            TextButton(
-              onPressed: onSeeAll,
-              child: Text(
-                s.homeSeeAll,
-                style: StyleText.fontSize13Weight600.copyWith(color: AppColors.primary),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8.h),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints c) {
-            final double gap = 12.w;
-            final int cols = math.max(1, math.min(4, (c.maxWidth + gap) ~/ (240 + gap)));
-            final double width = (c.maxWidth - gap * (cols - 1)) / cols;
-            return Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: <Widget>[
-                for (final VideoCategory course in courses)
-                  SizedBox(
-                    width: width,
-                    child: _CourseCard(course: course, onTap: onSeeAll),
-                  ),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _CourseCard extends StatelessWidget {
-  const _CourseCard({required this.course, required this.onTap});
-
-  final VideoCategory course;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final S s = S.of(context);
-    final int total = course.videos.length;
-    final int watched = course.watched;
-    final double ratio = total == 0 ? 0 : watched / total;
-    final bool done = total > 0 && watched == total;
-
-    return Material(
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(16.r),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16.r),
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.all(14.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Container(
-                    width: 38.r,
-                    height: 38.r,
-                    decoration: BoxDecoration(
-                      color: (done ? AppColors.statusApproved : AppColors.primary)
-                          .withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      done ? Icons.check_rounded : Icons.folder_rounded,
-                      size: 20.r,
-                      color: done ? AppColors.statusApproved : AppColors.primary,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      course.label(s),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: StyleText.fontSize14Weight600.copyWith(color: AppColors.text),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6.r),
-                child: LinearProgressIndicator(
-                  value: ratio,
-                  minHeight: 6,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    done ? AppColors.statusApproved : AppColors.primary,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                s.courseProgress(watched, total),
-                style: StyleText.fontSize12Weight500
-                    .copyWith(color: AppColors.secondaryText),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ── Pieces ──────────────────────────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
@@ -1069,7 +960,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
+        FormatHelper.capitalize(text),
         style: StyleText.fontSize18Weight600.copyWith(color: AppColors.text),
       );
 }

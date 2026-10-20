@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:asec/features/quiz/q2_certificates/data/certificate_data.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CertificateView extends StatelessWidget {
   const CertificateView({super.key, required this.data});
@@ -27,7 +28,7 @@ class CertificateView extends StatelessWidget {
   Widget _line(String text, double size,
       {Color color = _ink, bool bold = false, double spacing = 0}) {
     return Text(
-      text,
+      FormatHelper.capitalize(text),
       textAlign: TextAlign.center,
       textDirection: CertificateData.isArabic(text) ? TextDirection.rtl : TextDirection.ltr,
       maxLines: 2,

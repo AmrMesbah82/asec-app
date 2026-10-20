@@ -10,6 +10,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:asec/features/onboarding/o2_authentication/data/device/device_identity.dart';
 import 'package:asec/core/constants/firebase_collections.dart';
 import 'package:asec/core/network/app_firebase.dart';
 import 'package:asec/features/cv/c1_cv/data/data_source/remote_data_source/cv_remote_data_source.dart';
@@ -24,11 +25,16 @@ class UsersRemoteDataSource {
 
   // ── Auth ─────────────────────────────────────────────────────────────────
 
-  Future<UserCredential> signIn(String email, String password) =>
-      AppFirebase.auth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+  Future<UserCredential> signIn(String email, String password) async {
+    final UserCredential credential = await AppFirebase.auth.signInWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+    // Signing in is the member choosing THIS device: if the admin freed the
+    // account's device slot, this device may take it now.
+    DeviceIdentity.forgetBinding();
+    return credential;
+  }
 
   Future<void> signOut() => AppFirebase.auth.signOut();
 
@@ -188,6 +194,26 @@ class UsersRemoteDataSource {
       FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
     });
   }
+
+  /// Locks the member's account to THIS device. The rules allow it only
+  /// while no device is set, so two devices can never both win.
+  Future<void> bindDevice(String uid) async {
+    await _users.doc(uid).update(<String, dynamic>{
+      UserModel.deviceId: DeviceIdentity.id,
+      UserModel.deviceName: DeviceIdentity.name,
+      UserModel.deviceBoundAt: FieldValue.serverTimestamp(),
+    });
+    DeviceIdentity.markBound(uid);
+  }
+
+  /// The admin frees the member's device: the old one is shut out at once,
+  /// and the next device the member signs in on takes the slot.
+  Future<void> clearDevice(String uid) => _users.doc(uid).update(<String, dynamic>{
+        UserModel.deviceId: '',
+        UserModel.deviceName: '',
+        UserModel.deviceBoundAt: null,
+        FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
+      });
 
   Future<void> setActive(String uid, bool active) =>
       _users.doc(uid).update(<String, dynamic>{

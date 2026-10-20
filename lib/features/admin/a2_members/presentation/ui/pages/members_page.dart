@@ -31,7 +31,10 @@ import 'package:asec/features/onboarding/o2_authentication/domain/base_repositor
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/admin/a2_members/presentation/ui/pages/member_access_page.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class MembersPage extends StatefulWidget {
   const MembersPage({super.key});
@@ -104,6 +107,7 @@ class _MembersPageState extends State<MembersPage> {
   @override
   Widget build(BuildContext context) {
     final S s = S.of(context);
+    final AppUser me = SessionController.to.current;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -218,8 +222,10 @@ class _MembersPageState extends State<MembersPage> {
                           trueLabel: s.active,
                           falseLabel: s.inactive,
                           trueColor: AppColors.green,
-                          onChanged: (bool value) =>
-                              _repository.setActive(u.uid, value),
+                          // Members → Activate / block.
+                          onChanged: !me.canDo(AdminAction.membersBlock)
+                              ? null
+                              : (bool value) => _repository.setActive(u.uid, value),
                         ),
                       ),
                       AppTableColumn<AppUser>(
@@ -230,8 +236,10 @@ class _MembersPageState extends State<MembersPage> {
                           trueLabel: s.cvAllowed,
                           falseLabel: s.cvNotAllowed,
                           trueColor: AppColors.primary,
-                          onChanged: (bool value) =>
-                              _repository.setCanCreateCv(u.uid, value),
+                          // CVs → Give CV rights.
+                          onChanged: !me.canDo(AdminAction.cvsGrant)
+                              ? null
+                              : (bool value) => _repository.setCanCreateCv(u.uid, value),
                         ),
                       ),
                       // The engineering calculators are a paid extra: the
@@ -244,8 +252,10 @@ class _MembersPageState extends State<MembersPage> {
                           trueLabel: s.calcAllowed,
                           falseLabel: s.calcNotAllowed,
                           trueColor: AppColors.primary,
-                          onChanged: (bool value) =>
-                              _repository.setCanUseCalcs(u.uid, value),
+                          // Members → Edit access.
+                          onChanged: !me.canDo(AdminAction.membersAccess)
+                              ? null
+                              : (bool value) => _repository.setCanUseCalcs(u.uid, value),
                         ),
                       ),
                       // What the member may use: courses · devices · period,
@@ -255,7 +265,10 @@ class _MembersPageState extends State<MembersPage> {
                         fixedWidth: 240.w,
                         cell: (BuildContext context, AppUser u) => _AccessCell(
                           member: u,
-                          onTap: () => Navigator.of(context).push(
+                          onTap: !(me.canDo(AdminAction.membersAccess) ||
+                                  me.canDo(AdminAction.membersDevice))
+                              ? () {}
+                              : () => Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => MemberAccessPage(member: u),
                             ),
@@ -290,7 +303,9 @@ class _ChoiceCell extends StatelessWidget {
   final String trueLabel;
   final String falseLabel;
   final Color trueColor;
-  final ValueChanged<bool> onChanged;
+
+  /// Null = this admin may not change it (shown, not editable).
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -301,8 +316,9 @@ class _ChoiceCell extends StatelessWidget {
       fillColor: AppColors.chip,
       valueStyle: StyleText.fontSize12Weight600.copyWith(color: AppColors.onChip),
       itemStyle: StyleText.fontSize12Weight500,
+      enabled: onChanged != null,
       onChanged: (bool? next) {
-        if (next != null && next != value) onChanged(next);
+        if (next != null && next != value) onChanged?.call(next);
       },
       items: <DropdownItem<bool>>[
         DropdownItem<bool>(value: true, label: trueLabel),
@@ -356,13 +372,13 @@ class _AccessCell extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  '$courses · $devices',
+                  FormatHelper.capitalize('$courses · $devices'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize12Weight600.copyWith(color: AppColors.text),
                 ),
                 Text(
-                  period,
+                  FormatHelper.capitalize(period),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize11Weight600.copyWith(color: periodColor),

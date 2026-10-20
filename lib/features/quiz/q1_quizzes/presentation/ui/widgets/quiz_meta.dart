@@ -20,6 +20,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/enums/quiz_window_state.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// An icon and a word on the shared chip ground — "12 questions", "20 min",
 /// "Open now". Every chip looks the same: [AppColors.chip] behind,
@@ -52,7 +53,7 @@ class QuizChip extends StatelessWidget {
           AppIcon(icon, size: 14.sp, color: c),
           SizedBox(width: 5.w),
           Text(
-            label,
+            FormatHelper.capitalize(label),
             style: StyleText.fontSize11Weight600.copyWith(color: c),
           ),
         ],
@@ -134,7 +135,7 @@ class CountdownPill extends StatelessWidget {
           AppIcon(Icons.timer_outlined, size: 16.sp, color: color),
           SizedBox(width: 6.w),
           Text(
-            format(remaining),
+            FormatHelper.capitalize(format(remaining)),
             style: StyleText.fontSize14Weight700.copyWith(
               color: color,
               fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],

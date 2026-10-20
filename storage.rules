@@ -28,9 +28,21 @@ service firebase.storage {
       return can('videos') || can('cvs');
     }
 
+    // A member in good standing: profile switched on, not paused, inside
+    // the access period. Same test as firestore.rules memberOk().
+    function memberOk() {
+      return isSuper() || (request.auth != null
+        && adminDoc().get('active', true) == true
+        && adminDoc().get('paused_at', null) == null
+        && (adminDoc().get('access_from', null) == null
+            || adminDoc().access_from <= request.time)
+        && (adminDoc().get('access_until', null) == null
+            || adminDoc().access_until > request.time));
+    }
+
     // videos/{uid}/{timestamp}_{name}
     match /videos/{uid}/{fileName} {
-      allow read: if request.auth != null;
+      allow read: if memberOk();
 
       // 500 MB, and it has to actually be a video — the app caps the size
       // too, but the bucket is the boundary that counts.
@@ -84,6 +96,17 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
       allow delete: if can('website');
+    }
+
+    // files/{library|course}/{timestamp}_{name} — the member Library and the
+    // files inside each course's folders. Any type, 200 MB at most.
+    match /files/{folder}/{fileName} {
+      allow read: if memberOk();
+      // Course files (Videos) or the Library (Engagement); firestore.rules
+      // decides the finer actions on the matching course_files document.
+      allow write: if (can('videos') || can('engagement'))
+        && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if can('videos') || can('engagement');
     }
 
     // Nothing else is writable from a client.

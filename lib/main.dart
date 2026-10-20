@@ -12,6 +12,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'package:asec/core/constants/app_constants.dart';
 import 'package:asec/core/helper/main_helper/platform_helper.dart';
@@ -31,6 +32,14 @@ import 'package:asec/core/settings/super_admin_bootstrap.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // A hot restart (or a reload of the Dart side) loses the old
+  // VideoPlayerControllers without disposing them, so the native player kept
+  // playing with no screen. init() disposes every native player left over.
+  // Windows/Linux have no implementation — that throw is fine to ignore.
+  try {
+    await VideoPlayerPlatform.instance.init();
+  } catch (_) {}
 
   // Storage first — the theme controller reads it during construction.
   await GetStorage.init();

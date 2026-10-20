@@ -1,0 +1,129 @@
+/// Module: video / v1_videos
+///
+///*************************** FILE INFO ****************************///
+/// File Name: member_videos.dart
+/// Purpose: Declares `MemberVideos.watch()` — the lessons THIS member may
+///          read, asked for in a way firestore.rules can allow.
+/// Author: ASEC team
+/// Created: 16/10/2026
+///
+/// WHY NOT ONE QUERY. firestore.rules only lets a member read a video of a
+/// course the admin opened for them (or a "default" video). A query for
+/// every published video would include ones they may not read, so
+/// Firestore would refuse the whole query. A member with only some courses
+/// therefore asks for exactly what they may read:
+///
+///   published == true AND category IN [their courses]   (30 per query)
+///   published == true AND free == true                  (default videos)
+///
+/// and the answers are merged. Admins, and members with "every course",
+/// keep the single query.
+///
+/// LIVE. When the admin changes the member's courses, the queries are
+/// rebuilt for the new list.
+
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:asec/core/constants/firebase_collections.dart';
+import 'package:asec/core/network/app_firebase.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/video/v1_videos/data/models/video_model.dart';
+import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
+
+abstract final class MemberVideos {
+  const MemberVideos._();
+
+  static CollectionReference<Map<String, dynamic>> get _videos =>
+      AppFirebase.db.collection(FirebaseCollections.videos);
+
+  /// What decides the queries: rebuilt only when this changes.
+  static String _signature(AppUser u) => u.isAdmin || u.allCourses
+      ? 'all'
+      : (List<String>.of(u.courses)..sort()).join('\u0001');
+
+  static Stream<List<VideoItem>> watch() {
+    late StreamController<List<VideoItem>> out;
+    final List<StreamSubscription<dynamic>> subs = <StreamSubscription<dynamic>>[];
+    StreamSubscription<AppUser?>? userSub;
+    String? current;
+
+    void cancelQueries() {
+      for (final StreamSubscription<dynamic> s in subs) {
+        s.cancel();
+      }
+      subs.clear();
+    }
+
+    void start(AppUser user) {
+      final String sig = _signature(user);
+      if (sig == current) return;
+      current = sig;
+      cancelQueries();
+
+      final List<Query<Map<String, dynamic>>> queries;
+      final Query<Map<String, dynamic>> published =
+          _videos.where(FirebaseCollections.publishedField, isEqualTo: true);
+      if (sig == 'all') {
+        queries = <Query<Map<String, dynamic>>>[published];
+      } else {
+        final List<String> courses =
+            user.courses.map((String c) => c.trim()).toSet().toList();
+        queries = <Query<Map<String, dynamic>>>[
+          // Default videos — everybody sees them.
+          published.where(FirebaseCollections.freeField, isEqualTo: true),
+          // The member's own courses, 30 names per query (Firestore's limit).
+          for (int i = 0; i < courses.length; i += 30)
+            published.where(
+              VideoModel.category,
+              whereIn: courses.sublist(i, i + 30 > courses.length ? courses.length : i + 30),
+            ),
+        ];
+      }
+
+      final List<Map<String, VideoItem>?> latest =
+          List<Map<String, VideoItem>?>.filled(queries.length, null);
+      void emit() {
+        if (latest.any((Map<String, VideoItem>? m) => m == null)) return;
+        final Map<String, VideoItem> merged = <String, VideoItem>{
+          for (final Map<String, VideoItem>? m in latest) ...m!,
+        };
+        final List<VideoItem> list = merged.values.toList()
+          ..sort((VideoItem a, VideoItem b) => (b.createdAt ?? DateTime(0))
+              .compareTo(a.createdAt ?? DateTime(0)));
+        if (!out.isClosed) out.add(list);
+      }
+
+      for (int i = 0; i < queries.length; i++) {
+        subs.add(queries[i].snapshots().listen(
+          (QuerySnapshot<Map<String, dynamic>> snap) {
+            latest[i] = <String, VideoItem>{
+              for (final QueryDocumentSnapshot<Map<String, dynamic>> d in snap.docs)
+                d.id: VideoModel.fromDoc(d),
+            };
+            emit();
+          },
+          onError: (Object e) {
+            if (!out.isClosed) out.addError(e);
+          },
+        ));
+      }
+    }
+
+    out = StreamController<List<VideoItem>>(
+      onListen: () {
+        start(SessionController.to.current);
+        userSub = SessionController.to.user.listen((AppUser? u) {
+          if (u != null && !u.isEmpty) start(u);
+        });
+      },
+      onCancel: () {
+        cancelQueries();
+        userSub?.cancel();
+      },
+    );
+    return out.stream;
+  }
+}

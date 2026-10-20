@@ -24,6 +24,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CustomTabs extends StatelessWidget {
   /// Visible tab titles (already translated).
@@ -89,7 +90,7 @@ class CustomTabs extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(
-                        tabs[i],
+                        FormatHelper.capitalize(tabs[i]),
                         style: baseStyle.copyWith(
                           height: 1.3.h,
                           color: selectedValue == tabValues[i]

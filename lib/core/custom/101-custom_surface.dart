@@ -34,6 +34,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Standard CONTAINER corner radius, kept as an alias so the call sites that
 /// already read `kAppRadius` do not all have to change. The number itself
@@ -210,7 +211,7 @@ class AppSectionHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                title,
+                FormatHelper.capitalize(title),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: (titleStyle ?? StyleText.fontSize16Weight600)
@@ -219,7 +220,7 @@ class AppSectionHeader extends StatelessWidget {
               if (caption != null) ...<Widget>[
                 SizedBox(height: 2.sp),
                 Text(
-                  caption!,
+                  FormatHelper.capitalize(caption!),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize11Weight400
@@ -335,7 +336,7 @@ class AppTextBadge extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Text(
-        text,
+        FormatHelper.capitalize(text),
         maxLines: 1,
         style: (textStyle ?? StyleText.fontSize14Weight700)
             .copyWith(color: foreground ?? AppColors.textButton),
@@ -406,7 +407,7 @@ class AppStatusChip extends StatelessWidget {
             SizedBox(width: 6.sp),
           ],
           Text(
-            label,
+            FormatHelper.capitalize(label),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: (dense
@@ -425,7 +426,7 @@ class AppStatusChip extends StatelessWidget {
                 borderRadius: AppRadius.buttonR,
               ),
               child: Text(
-                '$count',
+                FormatHelper.capitalize('$count'),
                 style: StyleText.fontSize11Weight700.copyWith(color: content),
               ),
             ),
@@ -499,7 +500,7 @@ class AppStatCard extends StatelessWidget {
               SizedBox(width: 10.sp),
               Expanded(
                 child: Text(
-                  label,
+                  FormatHelper.capitalize(label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: StyleText.fontSize12Weight500
@@ -522,7 +523,7 @@ class AppStatCard extends StatelessWidget {
                         .copyWith(color: AppColors.text),
                   )
                 : Text(
-                    value,
+                    FormatHelper.capitalize(value),
                     style: StyleText.fontSize28Weight600
                         .copyWith(color: AppColors.text),
                   ),
@@ -530,7 +531,7 @@ class AppStatCard extends StatelessWidget {
           if (caption != null) ...<Widget>[
             SizedBox(height: 4.sp),
             Text(
-              caption!,
+              FormatHelper.capitalize(caption!),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: StyleText.fontSize11Weight400

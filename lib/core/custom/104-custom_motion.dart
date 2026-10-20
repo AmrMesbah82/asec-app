@@ -33,6 +33,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:asec/core/custom/102-custom_entrance.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The console's motion constants. Change them here, everywhere follows.
 abstract final class AppMotion {
@@ -216,7 +217,7 @@ class AnimatedCount extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!enabled) {
       return Text(
-        format(value),
+        FormatHelper.capitalize(format(value)),
         style: style,
         textAlign: textAlign,
         maxLines: maxLines,
@@ -234,7 +235,7 @@ class AnimatedCount extends StatelessWidget {
       curve: AppMotion.curve,
       builder: (BuildContext context, double running, Widget? _) {
         return Text(
-          format(running),
+          FormatHelper.capitalize(format(running)),
           style: style,
           textAlign: textAlign,
           maxLines: maxLines,

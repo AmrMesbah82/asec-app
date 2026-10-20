@@ -22,6 +22,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 abstract final class AppMotion {
   const AppMotion._();
@@ -151,7 +152,7 @@ class CountUp extends StatelessWidget {
         final String text = value is int
             ? v.round().toString()
             : v.toStringAsFixed(1);
-        return Text('$text$suffix', style: style);
+        return Text(FormatHelper.capitalize('$text$suffix'), style: style);
       },
     );
   }

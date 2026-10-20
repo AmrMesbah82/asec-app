@@ -23,6 +23,7 @@ import 'package:asec/features/admin/a5_demo/data/data_source/remote_data_source/
 import 'package:asec/features/admin/a5_demo/domain/constants/demo_seed.dart';
 import 'package:asec/features/admin/a5_demo/presentation/controller/demo_cubit.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class DemoDataCard extends StatelessWidget {
   const DemoDataCard({super.key, required this.adminUid});
@@ -73,7 +74,7 @@ class _DemoDataView extends StatelessWidget {
 
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(message)));
+          ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(message))));
       },
       builder: (BuildContext context, DemoState state) {
         final DemoCubit cubit = context.read<DemoCubit>();
@@ -141,7 +142,7 @@ class _DemoDataView extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
               Text(
-                s.demoAccountsHint,
+                FormatHelper.capitalize(s.demoAccountsHint),
                 style: StyleText.fontSize12Weight400
                     .copyWith(color: AppColors.secondaryText),
               ),

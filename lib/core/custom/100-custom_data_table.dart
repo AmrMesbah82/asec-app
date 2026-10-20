@@ -69,6 +69,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// One column of [AppDataTable].
 class AppTableColumn<T> {
@@ -164,7 +165,7 @@ class AppTableCellText extends StatelessWidget {
             : StyleText.fontSize13Weight400);
 
     return Text(
-      value,
+      FormatHelper.capitalize(value),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       textAlign: textAlign,
@@ -381,7 +382,7 @@ class _Header<T> extends StatelessWidget {
             SizedBox(
               width: rowNumberWidth,
               child: Text(
-                rowNumberLabel,
+                FormatHelper.capitalize(rowNumberLabel),
                 style: StyleText.fontSize14Weight500
                     .copyWith(color: AppColors.white),
               ),
@@ -424,7 +425,7 @@ class _HeaderLabel<T> extends StatelessWidget {
       children: <Widget>[
         Flexible(
           child: Text(
-            column.label,
+            FormatHelper.capitalize(column.label),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: StyleText.fontSize14Weight500.copyWith(
@@ -513,7 +514,7 @@ class _RowState<T> extends State<_Row<T>> {
             SizedBox(
               width: widget.rowNumberWidth,
               child: Text(
-                LocalizedNumber.of(context, widget.index + 1),
+                FormatHelper.capitalize(LocalizedNumber.of(context, widget.index + 1)),
                 style: StyleText.fontSize12Weight600
                     .copyWith(color: AppColors.secondaryText),
               ),
@@ -759,7 +760,7 @@ class _RecordCard<T> extends StatelessWidget {
               children: <Widget>[
                 if (showNumber) ...<Widget>[
                   Text(
-                    LocalizedNumber.of(context, index + 1),
+                    FormatHelper.capitalize(LocalizedNumber.of(context, index + 1)),
                     style: StyleText.fontSize12Weight600
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -778,7 +779,7 @@ class _RecordCard<T> extends StatelessWidget {
                 SizedBox(
                     width: 96.w,
                     child: Text(
-                      column.label,
+                      FormatHelper.capitalize(column.label),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: StyleText.fontSize12Weight500
@@ -853,7 +854,7 @@ class _SortChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              label,
+              FormatHelper.capitalize(label),
               style: StyleText.fontSize12Weight600.copyWith(
                 color: active ? AppColors.text : AppColors.secondaryText,
               ),

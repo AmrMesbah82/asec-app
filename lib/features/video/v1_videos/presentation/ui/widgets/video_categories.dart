@@ -12,15 +12,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:asec/features/video/v1_videos/data/seed/drive_lessons.dart';
 import 'package:asec/core/animation/app_animations.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/stars_row.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_thumbnail.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// One category and its videos, in the order they were given.
 class VideoCategory {
@@ -64,6 +68,16 @@ class VideoCategory {
       for (final MapEntry<String, List<VideoItem>> e in byName.entries)
         VideoCategory(name: e.key, order: order[e.key]!, videos: e.value),
     ]..sort((VideoCategory a, VideoCategory b) {
+        // Sections by the number in their folder name — "Introduction-01",
+        // "Draw and Modify-02", "03-Annotation and Layout" … — whichever end
+        // it is on. Videos synced before this still carry the old order.
+        if (bySubcategory && a.name.isNotEmpty && b.name.isNotEmpty) {
+          final int? na = DriveVideoSync.folderNumber(a.name);
+          final int? nb = DriveVideoSync.folderNumber(b.name);
+          if (na != null && nb != null && na != nb) return na.compareTo(nb);
+          if (na != null && nb == null) return -1;
+          if (na == null && nb != null) return 1;
+        }
         final int c = a.order.compareTo(b.order);
         return c != 0 ? c : a.name.toLowerCase().compareTo(b.name.toLowerCase());
       });
@@ -79,8 +93,16 @@ class VideoCategoryGrid extends StatelessWidget {
     required this.onOpen,
     this.header,
     this.showProgress = true,
+    this.showStars = false,
     this.bottomPadding = 24,
+    this.pinned,
   });
+
+  /// Stays above the grid while it scrolls (the back button).
+  final Widget? pinned;
+
+  /// Courses (top level) show the member's stars: 1 per 20% watched.
+  final bool showStars;
 
   final List<VideoCategory> categories;
   final void Function(VideoCategory category) onOpen;
@@ -104,7 +126,7 @@ class VideoCategoryGrid extends StatelessWidget {
         final double tileWidth = (width - gapX * (columns - 1)) / columns;
         final double tileHeight = tileWidth * 9 / 16 + 12.h + 64.h;
 
-        return CustomScrollView(
+        final Widget scroll = CustomScrollView(
           slivers: <Widget>[
             if (header != null) SliverToBoxAdapter(child: header),
             SliverPadding(
@@ -125,6 +147,7 @@ class VideoCategoryGrid extends StatelessWidget {
                         category: category,
                         index: index,
                         showProgress: showProgress,
+                        showStars: showStars,
                         onTap: () => onOpen(category),
                       ),
                     );
@@ -134,6 +157,11 @@ class VideoCategoryGrid extends StatelessWidget {
               ),
             ),
           ],
+        );
+        if (pinned == null) return scroll;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[pinned!, Expanded(child: scroll)],
         );
       },
     );
@@ -146,11 +174,13 @@ class _CategoryCard extends StatefulWidget {
     required this.index,
     required this.showProgress,
     required this.onTap,
+    this.showStars = false,
   });
 
   final VideoCategory category;
   final int index;
   final bool showProgress;
+  final bool showStars;
   final VoidCallback onTap;
 
   @override
@@ -258,10 +288,20 @@ class _CategoryCardState extends State<_CategoryCard> {
                                 color: Colors.white.withOpacity(0.14),
                               ),
                             ),
+                            if (widget.showStars)
+                              PositionedDirectional(
+                                start: 0,
+                                bottom: 0,
+                                child: StarsRow(
+                                  stars: CourseStars.local(c.videos),
+                                  size: 17,
+                                  emptyColor: Colors.white.withOpacity(0.55),
+                                ),
+                              ),
                             Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: Text(
-                                c.label(s),
+                                FormatHelper.capitalize(c.label(s)),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: StyleText.fontSize22Weight700.copyWith(
@@ -287,7 +327,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                                         size: 16, color: Colors.white),
                                     SizedBox(width: 4.w),
                                     Text(
-                                      '$total',
+                                      FormatHelper.capitalize('$total'),
                                       style: StyleText.fontSize12Weight600
                                           .copyWith(color: Colors.white),
                                     ),
@@ -313,7 +353,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    c.label(s),
+                    FormatHelper.capitalize(c.label(s)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: StyleText.fontSize15Weight600
@@ -321,7 +361,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                   ),
                 ),
                 Text(
-                  s.videoCount(total),
+                  FormatHelper.capitalize(s.videoCount(total)),
                   style: StyleText.fontSize12Weight400
                       .copyWith(color: AppColors.secondaryText),
                 ),
@@ -347,7 +387,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '$watched/$total',
+                    FormatHelper.capitalize('$watched/$total'),
                     style: StyleText.fontSize11Weight600
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -401,13 +441,13 @@ class VideoCategoryHeader extends StatelessWidget {
                   size: 20.sp, color: AppColors.primary),
               SizedBox(width: 6.w),
               Text(
-                category.label(s),
+                FormatHelper.capitalize(category.label(s)),
                 style: StyleText.fontSize18Weight600
                     .copyWith(color: AppColors.text),
               ),
               SizedBox(width: 8.w),
               Text(
-                s.videoCount(category.videos.length),
+                FormatHelper.capitalize(s.videoCount(category.videos.length)),
                 style: StyleText.fontSize13Weight400
                     .copyWith(color: AppColors.secondaryText),
               ),

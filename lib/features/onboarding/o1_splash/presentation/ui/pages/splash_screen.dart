@@ -26,6 +26,7 @@ import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_rol
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/pages/sign_in_screen.dart';
 import 'package:asec/features/user/u1_shell/presentation/ui/pages/user_shell.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Where an account goes. Used by the splash after restoring a session, and by
 /// the sign-in and register screens after a fresh one — ONE copy of the rule.
@@ -153,7 +154,8 @@ class _SplashScreenState extends State<SplashScreen>
     // WHITE, with the logo big in the middle — the brand's own blue and red
     // read best on white, and it matches the native launch screen.
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Follows light / dark mode.
+      backgroundColor: AppColors.background,
       body: Center(
         child: ScaleTransition(
           scale: _scale,
@@ -171,20 +173,23 @@ class _SplashScreenState extends State<SplashScreen>
                     AppAssets.brandLogo,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
+                    // Dark mode: the logo all white, like everywhere else.
+                    color: AppTheme.isDark ? Colors.white : null,
+                    colorBlendMode: BlendMode.srcIn,
                   ),
                 ),
                 Text(
-                  S.of(context).appName,
+                  FormatHelper.capitalize(S.of(context).appName),
                   style: StyleText.fontSize30Weight600.copyWith(
-                    color: const Color(0xFF1B1B1F),
+                    color: AppColors.text,
                     letterSpacing: 1.5,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  S.of(context).appTagline,
+                  FormatHelper.capitalize(S.of(context).appTagline),
                   style: StyleText.fontSize14Weight500.copyWith(
-                    color: const Color(0xFF6B6B73),
+                    color: AppColors.secondaryText,
                   ),
                 ),
                 SizedBox(height: 36.h),

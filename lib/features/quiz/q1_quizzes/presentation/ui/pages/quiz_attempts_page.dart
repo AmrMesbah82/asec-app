@@ -24,6 +24,7 @@ import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/attempt_deta
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class QuizAttemptsPage extends StatelessWidget {
   QuizAttemptsPage({super.key, required this.quiz});
@@ -42,9 +43,9 @@ class QuizAttemptsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(quiz.title, style: StyleText.fontSize18Weight600),
+            Text(FormatHelper.capitalize(quiz.title), style: StyleText.fontSize18Weight600),
             Text(
-              s.attemptsSub,
+              FormatHelper.capitalize(s.attemptsSub),
               style: StyleText.fontSize12Weight400
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -142,10 +143,10 @@ class _Stat extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(value, style: StyleText.fontSize20Weight600),
+        Text(FormatHelper.capitalize(value), style: StyleText.fontSize20Weight600),
         SizedBox(height: 2.h),
         Text(
-          label,
+          FormatHelper.capitalize(label),
           textAlign: TextAlign.center,
           style: StyleText.fontSize12Weight400
               .copyWith(color: AppColors.secondaryText),
@@ -188,7 +189,7 @@ class _AttemptRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    attempt.userName.isEmpty ? attempt.userId : attempt.userName,
+                    FormatHelper.capitalize(attempt.userName.isEmpty ? attempt.userId : attempt.userName),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: StyleText.fontSize14Weight600,
@@ -232,11 +233,11 @@ class _AttemptRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  '${attempt.score}/${attempt.totalPoints}',
+                  FormatHelper.capitalize('${attempt.score}/${attempt.totalPoints}'),
                   style: StyleText.fontSize16Weight700.copyWith(color: color),
                 ),
                 Text(
-                  '${attempt.percent.round()}%',
+                  FormatHelper.capitalize('${attempt.percent.round()}%'),
                   style: StyleText.fontSize12Weight500
                       .copyWith(color: AppColors.secondaryText),
                 ),
@@ -271,7 +272,7 @@ class _Meta extends StatelessWidget {
         AppIcon(icon, size: 12.sp, color: AppColors.secondaryText),
         SizedBox(width: 4.w),
         Text(
-          text,
+          FormatHelper.capitalize(text),
           style: StyleText.fontSize11Weight400
               .copyWith(color: AppColors.secondaryText),
         ),

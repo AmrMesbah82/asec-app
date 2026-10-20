@@ -18,6 +18,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_question.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// THE CONTROLLERS LIVE HERE, NOT IN THE CUBIT.
 ///
@@ -121,14 +122,14 @@ class _QuestionEditorCardState extends State<QuestionEditorCard> {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    '${widget.index + 1}',
+                    FormatHelper.capitalize('${widget.index + 1}'),
                     style: StyleText.fontSize12Weight700
                         .copyWith(color: AppColors.onChip),
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
-                  child: Text(s.questionText, style: StyleText.fontSize14Weight600),
+                  child: Text(FormatHelper.capitalize(s.questionText), style: StyleText.fontSize14Weight600),
                 ),
                 SizedBox(
                   width: 92.w,
@@ -161,7 +162,7 @@ class _QuestionEditorCardState extends State<QuestionEditorCard> {
             ),
             SizedBox(height: 12.h),
             Text(
-              s.markCorrectHint,
+              FormatHelper.capitalize(s.markCorrectHint),
               style: StyleText.fontSize12Weight400
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -218,7 +219,7 @@ class _QuestionEditorCardState extends State<QuestionEditorCard> {
                     color: AppColors.primary,
                   ),
                   label: Text(
-                    s.addOption,
+                    FormatHelper.capitalize(s.addOption),
                     style: StyleText.fontSize13Weight600
                         .copyWith(color: AppColors.primary),
                   ),

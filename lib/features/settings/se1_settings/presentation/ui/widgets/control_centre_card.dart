@@ -19,6 +19,7 @@ import 'package:asec/core/settings/app_features.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class ControlCentreCard extends StatelessWidget {
   const ControlCentreCard({super.key});
@@ -105,7 +106,7 @@ class ControlCentreCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 10.h, bottom: 6.h),
                 child: Text(
-                  groupTitle(s, g).toUpperCase(),
+                  FormatHelper.capitalize(groupTitle(s, g).toUpperCase()),
                   style: StyleText.fontSize11Weight700.copyWith(
                     color: AppColors.primary,
                     letterSpacing: 0.8,
@@ -132,7 +133,7 @@ class ControlCentreCard extends StatelessWidget {
                           } catch (_) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(s.errUnknown)),
+                                SnackBar(content: Text(FormatHelper.capitalize(s.errUnknown))),
                               );
                             }
                           }
@@ -198,9 +199,9 @@ class _FeatureRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text(title, style: StyleText.fontSize14Weight600),
+                    Text(FormatHelper.capitalize(title), style: StyleText.fontSize14Weight600),
                     Text(
-                      hint,
+                      FormatHelper.capitalize(hint),
                       style: StyleText.fontSize12Weight400
                           .copyWith(color: AppColors.secondaryText),
                     ),

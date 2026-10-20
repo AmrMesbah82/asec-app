@@ -28,6 +28,7 @@ import 'package:asec/features/quiz/q1_quizzes/presentation/controller/quiz_attem
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
 import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class QuizAttemptPage extends StatelessWidget {
   const QuizAttemptPage({super.key, required this.quiz, required this.user});
@@ -78,7 +79,7 @@ class _AttemptView extends StatelessWidget {
           a.failure != b.failure && b.failure != null,
       listener: (BuildContext context, QuizAttemptState state) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.failure!.message(context))),
+          SnackBar(content: Text(FormatHelper.capitalize(state.failure!.message(context)))),
         );
       },
       builder: (BuildContext context, QuizAttemptState state) {
@@ -95,7 +96,7 @@ class _AttemptView extends StatelessWidget {
             backgroundColor: AppColors.background,
             appBar: AppBar(
               title: Text(
-                state.quiz.title,
+                FormatHelper.capitalize(state.quiz.title),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: StyleText.fontSize16Weight600,
@@ -189,11 +190,11 @@ class _Intro extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(quiz.title, style: StyleText.fontSize22Weight600),
+            Text(FormatHelper.capitalize(quiz.title), style: StyleText.fontSize22Weight600),
             if (quiz.description.trim().isNotEmpty) ...<Widget>[
               SizedBox(height: 8.h),
               Text(
-                quiz.description,
+                FormatHelper.capitalize(quiz.description),
                 style: StyleText.fontSize14Weight400
                     .copyWith(color: AppColors.secondaryText),
               ),
@@ -293,15 +294,15 @@ class _Questions extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Text(
-                    s.questionNofM(
+                    FormatHelper.capitalize(s.questionNofM(
                       '${state.currentIndex + 1}',
                       '${quiz.questionCount}',
-                    ),
+                    )),
                     style: StyleText.fontSize13Weight600,
                   ),
                   const Spacer(),
                   Text(
-                    '${s.answered}: ${state.answeredCount}/${quiz.questionCount}',
+                    FormatHelper.capitalize('${s.answered}: ${state.answeredCount}/${quiz.questionCount}'),
                     style: StyleText.fontSize12Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),
@@ -330,7 +331,7 @@ class _Questions extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(question.text, style: StyleText.fontSize18Weight600),
+                  Text(FormatHelper.capitalize(question.text), style: StyleText.fontSize18Weight600),
                   SizedBox(height: 16.h),
                   for (int i = 0; i < question.options.length; i++)
                     _OptionTile(
@@ -428,7 +429,7 @@ class _OptionTile extends StatelessWidget {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    label,
+                    FormatHelper.capitalize(label),
                     style: selected
                         ? StyleText.fontSize15Weight600
                             .copyWith(color: AppColors.primary)
@@ -491,13 +492,13 @@ class _Result extends StatelessWidget {
                     ),
                   ),
                 Text(
-                  heading,
+                  FormatHelper.capitalize(heading),
                   textAlign: TextAlign.center,
                   style: StyleText.fontSize20Weight600,
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  sub,
+                  FormatHelper.capitalize(sub),
                   textAlign: TextAlign.center,
                   style: StyleText.fontSize13Weight400
                       .copyWith(color: AppColors.secondaryText),
@@ -521,12 +522,12 @@ class _Result extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
-                            '${percent.round()}%',
+                            FormatHelper.capitalize('${percent.round()}%'),
                             style: StyleText.fontSize26Weight600
                                 .copyWith(color: color),
                           ),
                           Text(
-                            '${attempt.score}/${attempt.totalPoints}',
+                            FormatHelper.capitalize('${attempt.score}/${attempt.totalPoints}'),
                             style: StyleText.fontSize13Weight500
                                 .copyWith(color: AppColors.secondaryText),
                           ),
@@ -537,10 +538,10 @@ class _Result extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  s.correctOfTotal(
+                  FormatHelper.capitalize(s.correctOfTotal(
                     '${attempt.correctCount}',
                     '${attempt.questionCount}',
-                  ),
+                  )),
                   style: StyleText.fontSize14Weight600,
                 ),
                 SizedBox(height: 18.h),
@@ -636,7 +637,7 @@ class _ReviewRow extends StatelessWidget {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    '${index + 1}. ${question.text}',
+                    FormatHelper.capitalize('${index + 1}. ${question.text}'),
                     style: StyleText.fontSize14Weight600,
                   ),
                 ),
@@ -680,13 +681,13 @@ class _ReviewLine extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          '$label: ',
+          FormatHelper.capitalize('$label: '),
           style: StyleText.fontSize13Weight400
               .copyWith(color: AppColors.secondaryText),
         ),
         Expanded(
           child: Text(
-            value,
+            FormatHelper.capitalize(value),
             style: StyleText.fontSize13Weight600.copyWith(color: color),
           ),
         ),

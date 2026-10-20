@@ -32,9 +32,16 @@ abstract final class UserModel {
   static const String accessFrom = 'access_from';
   static const String accessUntil = 'access_until';
   static const String pausedAt = 'paused_at';
+  static const String deviceId = 'device_id';
+  static const String deviceName = 'device_name';
+  static const String deviceBoundAt = 'device_bound_at';
 
   static AppUser fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final Map<String, dynamic> data = doc.safeData;
+    final Set<String> keys = <String>{
+      ...(doc.data()?[permissions] as List<dynamic>? ?? const <dynamic>[])
+          .whereType<String>(),
+    };
 
     return AppUser(
       uid: doc.id,
@@ -52,10 +59,14 @@ abstract final class UserModel {
       accessFrom: data.date(accessFrom),
       accessUntil: data.date(accessUntil),
       pausedAt: data.date(pausedAt),
-      permissions: AdminPermission.fromKeys(
-        (doc.data()?[permissions] as List<dynamic>? ?? const <dynamic>[])
-            .whereType<String>(),
-      ),
+      deviceId: data.str(deviceId),
+      deviceName: data.str(deviceName),
+      deviceBoundAt: data.date(deviceBoundAt),
+      permissions: <AdminPermission>[
+        for (final AdminPermission p in AdminPermission.values)
+          if (AdminPerms.can(keys, p)) p,
+      ],
+      permissionKeys: keys,
     );
   }
 
@@ -68,7 +79,7 @@ abstract final class UserModel {
         FirebaseCollections.roleField: 'admin',
         FirebaseCollections.activeField: true,
         FirebaseCollections.canCreateCvField: false,
-        permissions: <String>[for (final AdminPermission p in admin.permissions) p.key],
+        permissions: admin.permissionKeys.toList(),
         FirebaseCollections.createdAtField: FieldValue.serverTimestamp(),
         FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
       };

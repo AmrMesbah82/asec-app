@@ -49,6 +49,7 @@ import 'package:asec/core/network/app_firebase.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 abstract final class AppUpdate {
   const AppUpdate._();
@@ -373,13 +374,13 @@ class _UpdateDialog extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Text(
-          title,
+          FormatHelper.capitalize(title),
           textAlign: TextAlign.center,
           style: StyleText.fontSize20Weight600.copyWith(color: AppColors.text),
         ),
         SizedBox(height: 8.h),
         Text(
-          message,
+          FormatHelper.capitalize(message),
           textAlign: TextAlign.center,
           style: StyleText.fontSize14Weight400
               .copyWith(color: AppColors.secondaryText, height: 1.5),
@@ -394,7 +395,7 @@ class _UpdateDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
-                version!,
+                FormatHelper.capitalize(version!),
                 style: StyleText.fontSize12Weight600
                     .copyWith(color: AppColors.primary),
               ),
@@ -418,7 +419,7 @@ class _UpdateDialog extends StatelessWidget {
                         size: 16.r, color: AppColors.primary),
                     SizedBox(width: 6.w),
                     Text(
-                      S.of(context).updateWhatsNew,
+                      FormatHelper.capitalize(S.of(context).updateWhatsNew),
                       style: StyleText.fontSize13Weight600
                           .copyWith(color: AppColors.text),
                     ),
@@ -429,7 +430,7 @@ class _UpdateDialog extends StatelessWidget {
                   constraints: BoxConstraints(maxHeight: 140.h),
                   child: SingleChildScrollView(
                     child: Text(
-                      notes!,
+                      FormatHelper.capitalize(notes!),
                       style: StyleText.fontSize13Weight400.copyWith(
                         color: AppColors.secondaryText,
                         height: 1.5,

@@ -9,6 +9,7 @@ import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/features/web/admin/admin_session.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -121,16 +122,26 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                           alignment: AlignmentDirectional.centerEnd,
                           child: TextButton(
                             onPressed: AppLang.toggle,
-                            child: Text(AppLang.isAr ? 'English' : 'عربي'),
+                            child: Text(FormatHelper.capitalize(AppLang.isAr ? 'English' : 'عربي')),
                           ),
                         ),
-                        Image.asset('assets/web/images/logo.png', height: 80),
+                        Transform.scale(
+              // The PNG is mostly margin — draw the mark bigger.
+              scale: 1.7,
+              child: Image.asset(
+              'assets/web/images/logo.png',
+              height: 80,
+              // Dark mode: the logo all white.
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null,
+              colorBlendMode: BlendMode.srcIn,
+            )
+            ),
                         const SizedBox(height: 14),
-                        Text(const L('لوحة التحكم', 'Control panel').t,
+                        Text(FormatHelper.capitalize(const L('لوحة التحكم', 'Control panel').t),
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: WebColors.navy)),
                         const SizedBox(height: 4),
-                        Text(const L('ادخل بحساب المشرف في تطبيق ASEC', 'Sign in with your ASEC app admin account').t,
+                        Text(FormatHelper.capitalize(const L('ادخل بحساب المشرف في تطبيق ASEC', 'Sign in with your ASEC app admin account').t),
                             textAlign: TextAlign.center, style: TextStyle(color: WebColors.muted)),
                         const SizedBox(height: 24),
                         TextField(
@@ -161,7 +172,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                         ),
                         if (_error != null) ...<Widget>[
                           const SizedBox(height: 12),
-                          Text(_error!, style: const TextStyle(color: WebColors.red)),
+                          Text(FormatHelper.capitalize(_error!), style: const TextStyle(color: WebColors.red)),
                         ],
                         const SizedBox(height: 20),
                         ElevatedButton(
@@ -169,10 +180,10 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                           child: _busy
                               ? const SizedBox(
                                   width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : Text(const L('دخول', 'Sign in').t),
+                              : Text(FormatHelper.capitalize(const L('دخول', 'Sign in').t)),
                         ),
-                        TextButton(onPressed: _reset, child: Text(const L('نسيت كلمة المرور؟', 'Forgot password?').t)),
-                        TextButton(onPressed: () => context.go('/'), child: Text(const L('العودة للموقع', 'Back to site').t)),
+                        TextButton(onPressed: _reset, child: Text(FormatHelper.capitalize(const L('نسيت كلمة المرور؟', 'Forgot password?').t))),
+                        TextButton(onPressed: () => context.go('/'), child: Text(FormatHelper.capitalize(const L('العودة للموقع', 'Back to site').t))),
                       ],
                     ),
                   ),

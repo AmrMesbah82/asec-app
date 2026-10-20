@@ -199,7 +199,7 @@ abstract final class Q {
   static const Qty load = Qty('power', 'kW', 'BTU/h');
   static const Qty loadTons = Qty('power', 'kW', 'TR');
   static const Qty tons = Qty('power', 'TR', 'TR');
-  static const Qty motor = Qty('power', 'kW', 'hp');
+  static const Qty motor = Qty('power', 'kW', 'HP');
   static const Qty temp = Qty('temperature', '°C', '°F');
   static const Qty tempDiff = Qty('tempDiff', 'Δ°C', 'Δ°F');
   static const Qty airSpeed = Qty('speed', 'm/s', 'FPM');

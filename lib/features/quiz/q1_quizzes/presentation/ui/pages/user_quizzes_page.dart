@@ -25,6 +25,7 @@ import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempt
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_card.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The quizzes and this member's attempts, as one value.
 class _QuizFeed {
@@ -80,7 +81,10 @@ class _UserQuizzesPageState extends State<UserQuizzesPage> {
           // reaches a member's list.
           // Certificate quizzes (courses' final exams) live in their own tab.
           final List<Quiz> quizzes = feed.quizzes
-              .where((Quiz q) => q.questionCount > 0 && !q.certificate)
+              .where((Quiz q) => q.questionCount > 0 && !q.certificate &&
+                  // Section quizzes sit at the end of their section in Videos,
+                  // locked until its lessons are watched.
+                  !q.isSectionQuiz)
               .toList();
 
           if (quizzes.isEmpty) {
@@ -153,7 +157,7 @@ class _ScoreBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(
-        '${attempt.score}/${attempt.totalPoints}',
+        FormatHelper.capitalize('${attempt.score}/${attempt.totalPoints}'),
         style: StyleText.fontSize13Weight600.copyWith(color: color),
       ),
     );

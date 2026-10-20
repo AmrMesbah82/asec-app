@@ -223,4 +223,8 @@ class UsersRepository implements UsersBaseRepository {
   @override
   Future<Either<AppFailure, Unit>> resumeAccess(AppUser member) =>
       guardUnit(() => _remote.resumeAccess(member));
+
+  @override
+  Future<Either<AppFailure, Unit>> clearDevice(String uid) =>
+      guardUnit(() => _remote.clearDevice(uid));
 }

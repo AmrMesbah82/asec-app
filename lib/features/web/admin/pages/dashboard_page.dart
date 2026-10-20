@@ -14,6 +14,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -35,6 +36,8 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          // Website → Inbox.
+          if (AdminSession.instance.canWeb('inbox')) ...<Widget>[
           _Heading(const L('الوارد الجديد', 'New in inbox').t),
           grid(<Widget>[
             _NewCount(coll: Coll.messages, label: const L('رسائل التواصل', 'Messages').t, icon: Icons.mail_outline_rounded, tab: 0),
@@ -43,6 +46,9 @@ class DashboardPage extends StatelessWidget {
             _NewCount(coll: Coll.jobApplications, label: const L('طلبات التوظيف', 'Job applications').t, icon: Icons.work_outline_rounded, tab: 2),
           ]),
           const SizedBox(height: 26),
+          ],
+          // Website → Content.
+          if (AdminSession.instance.canWeb('content')) ...<Widget>[
           _Heading(const L('محتوى الموقع', 'Website content').t),
           grid(<Widget>[
             _Count(coll: Coll.projects, label: const L('الأعمال', 'Projects').t, icon: Icons.apartment_rounded, path: '/admin/projects'),
@@ -52,6 +58,7 @@ class DashboardPage extends StatelessWidget {
             _Count(
                 coll: Coll.testimonials, label: const L('أراء العملاء', 'Testimonials').t, icon: Icons.format_quote_rounded, path: '/admin/testimonials'),
           ]),
+          ],
           if (isSuper) ...<Widget>[
             const SizedBox(height: 26),
             _Heading(const L('تطبيق ASEC', 'ASEC app').t),
@@ -83,7 +90,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: WebColors.navy)),
+        child: Text(FormatHelper.capitalize(text), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: WebColors.navy)),
       );
 }
 

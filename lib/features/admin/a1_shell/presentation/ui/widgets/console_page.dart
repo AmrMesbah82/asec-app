@@ -26,6 +26,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The height every control in a page header is drawn at, so a search box and
 /// a button beside it have their centres in line.
@@ -80,12 +81,12 @@ class ConsolePage extends StatelessWidget {
                   FadeSlideIn(
                     offset: const Offset(-16, 0),
                     scale: 1,
-                    child: Text(title, style: StyleText.fontSize26Weight600),
+                    child: Text(FormatHelper.capitalize(title), style: StyleText.fontSize26Weight600),
                   ),
                   if (subtitle != null) ...<Widget>[
                     SizedBox(height: 4.h),
                     Text(
-                      subtitle!,
+                      FormatHelper.capitalize(subtitle!),
                       style: StyleText.fontSize14Weight400
                           .copyWith(color: AppColors.secondaryText),
                     ),
@@ -244,7 +245,7 @@ class StatusPill extends StatelessWidget {
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(
-        label,
+        FormatHelper.capitalize(label),
         style: StyleText.fontSize12Weight600.copyWith(color: AppColors.onChip),
       ),
     );

@@ -25,6 +25,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CustomSegmentedTabs extends StatelessWidget {
   const CustomSegmentedTabs({
@@ -118,7 +119,7 @@ class CustomSegmentedTabs extends StatelessWidget {
           child: Center(
             child: FittedBox(
               child: Text(
-                title,
+                FormatHelper.capitalize(title),
                 style: (textStyle ?? StyleText.fontSize14Weight600).copyWith(
                   height: 1.h,
                   color: isSelected

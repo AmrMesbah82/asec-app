@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Title row + scrollable content, the same on every panel page.
 class AdminPageFrame extends StatelessWidget {
@@ -50,11 +51,11 @@ class AdminPageFrame extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: WebColors.navy)),
+                  Text(FormatHelper.capitalize(title), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: WebColors.navy)),
                   if (subtitle != null)
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: narrow ? 260 : 620),
-                      child: Text(subtitle!, style: TextStyle(color: WebColors.muted, fontSize: 13)),
+                      child: Text(FormatHelper.capitalize(subtitle!), style: TextStyle(color: WebColors.muted, fontSize: 13)),
                     ),
                 ],
               ),
@@ -84,14 +85,14 @@ Future<bool> confirm(BuildContext context, String title, String body, {String? a
     builder: (BuildContext c) => Directionality(
       textDirection: AppLang.direction,
       child: AlertDialog(
-        title: Text(title),
-        content: Text(body),
+        title: Text(FormatHelper.capitalize(title)),
+        content: Text(FormatHelper.capitalize(body)),
         actions: <Widget>[
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: Text(const L('إلغاء', 'Cancel').t)),
+          TextButton(onPressed: () => Navigator.of(c).pop(false), child: Text(FormatHelper.capitalize(const L('إلغاء', 'Cancel').t))),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: WebColors.red),
             onPressed: () => Navigator.of(c).pop(true),
-            child: Text(action ?? const L('تأكيد', 'Confirm').t),
+            child: Text(FormatHelper.capitalize(action ?? const L('تأكيد', 'Confirm').t)),
           ),
         ],
       ),
@@ -119,13 +120,13 @@ Future<bool> guarded(BuildContext context, Future<Object?> Function() run, {Stri
   try {
     await run();
     m.showSnackBar(SnackBar(
-      content: Text(done ?? const L('تم الحفظ', 'Saved').t),
+      content: Text(FormatHelper.capitalize(done ?? const L('تم الحفظ', 'Saved').t)),
       duration: const Duration(seconds: 2),
       backgroundColor: WebColors.success,
     ));
     return true;
   } catch (e) {
-    m.showSnackBar(SnackBar(content: Text(describeError(e)), backgroundColor: WebColors.red, duration: const Duration(seconds: 6)));
+    m.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(describeError(e))), backgroundColor: WebColors.red, duration: const Duration(seconds: 6)));
     return false;
   }
 }
@@ -187,8 +188,8 @@ class StatTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-                      Text(label, style: TextStyle(color: WebColors.muted, fontSize: 13)),
+                      Text(FormatHelper.capitalize(value), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+                      Text(FormatHelper.capitalize(label), style: TextStyle(color: WebColors.muted, fontSize: 13)),
                     ],
                   ),
                 ),

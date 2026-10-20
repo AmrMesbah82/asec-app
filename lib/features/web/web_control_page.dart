@@ -35,6 +35,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/site_preview_page.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class WebControlPage extends StatefulWidget {
   const WebControlPage({super.key});
@@ -72,7 +73,8 @@ class _WebControlPageState extends State<WebControlPage> {
 
   void _go(String path) {
     final Uri next = Uri.parse(path);
-    if (next.path == '/admin/admins' && !AdminSession.instance.isSuper) return;
+    final AdminNav? nav = AdminNav.of(next.path);
+    if (nav != null && !nav.allowedFor(AdminSession.instance)) return;
     if (next.toString() == _uri.toString()) return;
     setState(() => _uri = next);
   }
@@ -146,7 +148,7 @@ class _WebControlPageState extends State<WebControlPage> {
   /// [look] is the language + theme: part of the Navigator's key, so a
   /// language or dark-mode switch redraws the open page in the new look.
   Widget _frame(AdminSession s, String look) {
-    final List<AdminNav> items = kAdminNav.where((AdminNav n) => !n.superOnly || s.isSuper).toList();
+    final List<AdminNav> items = kAdminNav.where((AdminNav n) => n.allowedFor(s)).toList();
 
     // A fresh Navigator per page: switching pages drops any editor that was
     // open on the previous one, like the web panel's URL change does.
@@ -206,11 +208,21 @@ class _SideMenu extends StatelessWidget {
         padding: const EdgeInsetsDirectional.fromSTEB(18, 18, 18, 6),
         child: Row(
           children: <Widget>[
-            Image.asset('assets/web/images/logo.png', height: 30),
+            Transform.scale(
+              // The PNG is mostly margin — draw the mark bigger.
+              scale: 1.7,
+              child: Image.asset(
+              'assets/web/images/logo.png',
+              height: 30,
+              // Dark mode: the logo all white.
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null,
+              colorBlendMode: BlendMode.srcIn,
+            )
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                const L('الموقع الإلكتروني', 'Website').t,
+                FormatHelper.capitalize(const L('الموقع الإلكتروني', 'Website').t),
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: WebColors.navy),
               ),
             ),
@@ -223,7 +235,7 @@ class _SideMenu extends StatelessWidget {
       if (n.group != null && n.group != lastGroup) {
         tiles.add(Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 4),
-          child: Text(n.group!.t,
+          child: Text(FormatHelper.capitalize(n.group!.t),
               style: TextStyle(color: WebColors.muted, fontSize: 12, fontWeight: FontWeight.w700)),
         ));
         lastGroup = n.group;
@@ -240,7 +252,7 @@ class _SideMenu extends StatelessWidget {
           textColor: WebColors.ink,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           leading: AppIcon(n.icon, size: 20),
-          title: Text(n.label.t, style: TextStyle(fontWeight: active ? FontWeight.w700 : FontWeight.w500, fontSize: 14)),
+          title: Text(FormatHelper.capitalize(n.label.t), style: TextStyle(fontWeight: active ? FontWeight.w700 : FontWeight.w500, fontSize: 14)),
           onTap: () => onTap(n.path),
         ),
       ));
@@ -250,7 +262,7 @@ class _SideMenu extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onViewSite,
         icon: const AppIcon(Icons.open_in_new_rounded, size: 18),
-        label: Text(const L('عرض الموقع', 'View site').t),
+        label: Text(FormatHelper.capitalize(const L('عرض الموقع', 'View site').t)),
       ),
     ));
     // A Material, not a ColoredBox: ListTile paints its selected fill and
@@ -295,7 +307,7 @@ class _ChipMenu extends StatelessWidget {
                   selected: isActive(n),
                   showCheckmark: false,
                   avatar: AppIcon(n.icon, size: 18, color: isActive(n) ? WebColors.white : WebColors.ink),
-                  label: Text(n.label.t),
+                  label: Text(FormatHelper.capitalize(n.label.t)),
                   labelStyle: TextStyle(
                     color: isActive(n) ? WebColors.white : WebColors.ink,
                     fontWeight: FontWeight.w600,
@@ -310,7 +322,7 @@ class _ChipMenu extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(end: 8),
               child: ActionChip(
                 avatar: AppIcon(Icons.open_in_new_rounded, size: 18, color: WebColors.navy),
-                label: Text(const L('عرض الموقع', 'View site').t),
+                label: Text(FormatHelper.capitalize(const L('عرض الموقع', 'View site').t)),
                 backgroundColor: WebColors.surface,
                 side: BorderSide(color: WebColors.border),
                 onPressed: onViewSite,

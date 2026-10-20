@@ -31,6 +31,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/attempt_detail_page.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The quizzes and every attempt, as one value.
 class _Results {
@@ -345,10 +346,10 @@ class _Stat extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(value, style: StyleText.fontSize20Weight600),
+        Text(FormatHelper.capitalize(value), style: StyleText.fontSize20Weight600),
         SizedBox(height: 2.h),
         Text(
-          label,
+          FormatHelper.capitalize(label),
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -376,7 +377,7 @@ class _PercentChip extends StatelessWidget {
         borderRadius: AppRadius.buttonR,
       ),
       child: Text(
-        '${percent.round()}%',
+        FormatHelper.capitalize('${percent.round()}%'),
         textAlign: TextAlign.center,
         style: StyleText.fontSize12Weight700.copyWith(color: color),
       ),

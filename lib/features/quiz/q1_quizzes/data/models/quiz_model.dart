@@ -30,6 +30,7 @@ abstract final class QuizModel {
   static const String createdBy = 'created_by';
   static const String certificate = 'certificate';
   static const String course = 'course';
+  static const String section = 'section';
 
   // Inside one element of `questions`.
   static const String qId = 'id';
@@ -52,6 +53,7 @@ abstract final class QuizModel {
       published: data.boolean(FirebaseCollections.publishedField),
       certificate: data.boolean(certificate),
       course: data.str(course).trim(),
+      section: data.str(section).trim(),
       questions: rawQuestions is List
           ? rawQuestions
               .whereType<Map<dynamic, dynamic>>()
@@ -93,6 +95,7 @@ abstract final class QuizModel {
       FirebaseCollections.publishedField: quiz.published,
       certificate: quiz.certificate,
       course: quiz.course.trim(),
+      section: quiz.section.trim(),
       questions: <Map<String, dynamic>>[
         for (final QuizQuestion q in quiz.questions)
           <String, dynamic>{

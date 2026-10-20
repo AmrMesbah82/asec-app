@@ -14,6 +14,7 @@ import 'package:asec/features/admin/a2_members/presentation/ui/pages/members_pag
 import 'package:asec/features/admin/a3_dashboard/presentation/ui/pages/admin_dashboard_page.dart';
 import 'package:asec/features/admin/a4_results/presentation/ui/pages/admin_results_page.dart';
 import 'package:asec/features/cv/c1_cv/presentation/ui/pages/cv_directory_page.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/pages/admin_engagement_page.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/admin_quizzes_page.dart';
@@ -61,12 +62,19 @@ class AdminShell extends StatelessWidget {
             page: AdminQuizzesPage(adminUid: admin.uid),
           ),
           // Courses' final exams: pass with 70% → ASEC certificate.
-          if (admin.can(AdminPermission.quizzes))
+          if (admin.canDo(AdminAction.quizzesCertificates))
           ShellSection(
             icon: Icons.workspace_premium_rounded,
             label: s.certificateQuizzes,
             shortLabel: s.certificateShort,
             page: AdminQuizzesPage(adminUid: admin.uid, certificate: true),
+          ),
+          // Notifications, tips & tricks, the member Library and stars.
+          if (admin.can(AdminPermission.engagement))
+          ShellSection(
+            icon: Icons.campaign_rounded,
+            label: s.engEngagement,
+            page: const AdminEngagementPage(),
           ),
           // Results sits next to the quizzes it reports on, before the
           // people pages: the admin comes here far more often than to

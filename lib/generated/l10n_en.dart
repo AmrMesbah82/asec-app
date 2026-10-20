@@ -1770,7 +1770,7 @@ class SEn extends S {
   String get noAttemptsMatchSub => 'Clear the search, or pick another quiz.';
 
   @override
-  String get cvs => 'CVs';
+  String get cvs => 'The Best';
 
   @override
   String get myCv => 'My CV';
@@ -2541,7 +2541,7 @@ class SEn extends S {
   String get allConversions => 'All conversions';
 
   @override
-  String get openUnitConverter => 'Unit converter (works offline)';
+  String get openUnitConverter => 'Unit converter';
 
   @override
   String copiedValue(String value) {
@@ -2933,4 +2933,494 @@ class SEn extends S {
 
   @override
   String get unitConverterShort => 'Converter';
+
+  @override
+  String get sectionQuizLabel => 'Section';
+
+  @override
+  String get sectionQuizCaption =>
+      'Optional. Link this quiz to a course section: members find it at the end of that section and can start it after watching all its lessons.';
+
+  @override
+  String get sectionNone => 'None — a general quiz';
+
+  @override
+  String get sectionQuizzesTitle => 'Section quiz';
+
+  @override
+  String get addSectionQuiz => 'Add quiz';
+
+  @override
+  String get sectionQuizLocked =>
+      'Watch every lesson of this section to unlock its quiz.';
+
+  @override
+  String get accessDevice => 'Login device';
+
+  @override
+  String get accessDeviceCaption =>
+      'Each member can use the app on one device only. To move them to a new device, remove this one — the next device they sign in on takes its place.';
+
+  @override
+  String get accessDeviceNone =>
+      'Not used on any device yet — the first device they sign in on will be locked to the account.';
+
+  @override
+  String get accessDeviceUnknown => 'A device';
+
+  @override
+  String accessDeviceSince(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get accessDeviceRemove => 'Remove device';
+
+  @override
+  String get accessDeviceRemoveQuestion => 'Remove this device?';
+
+  @override
+  String accessDeviceRemoveBody(String device) {
+    return 'The member is shut out of $device now. The next device they sign in on becomes their device.';
+  }
+
+  @override
+  String get accessDeviceRemoved =>
+      'Device removed. The member can sign in on the new device now.';
+
+  @override
+  String get blockedTitleOtherDevice =>
+      'This account is used on another device';
+
+  @override
+  String get blockedBodyOtherDevice =>
+      'Your account works on one device only. To use this device instead, ask the admin to remove the old one, then sign out and sign in again here.';
+
+  @override
+  String get blockedTitleDeviceRemoved => 'This device was removed';
+
+  @override
+  String get blockedBodyDeviceRemoved =>
+      'The admin removed this device from your account. To use it again, sign out and sign in.';
+
+  @override
+  String get tbAccountDevice => 'Account device';
+
+  @override
+  String get engEngagement => 'Engagement';
+
+  @override
+  String get engEngagementSub =>
+      'Notifications, tips & tricks, the members\' Library and their stars.';
+
+  @override
+  String get engNotifications => 'Notifications';
+
+  @override
+  String get engNotificationsSub => 'Messages from the ASEC team.';
+
+  @override
+  String get engNotificationsEmpty => 'No notifications yet';
+
+  @override
+  String get engNotificationsEmptySub =>
+      'New messages from the admin appear here.';
+
+  @override
+  String get engSendNotification => 'Send notification';
+
+  @override
+  String get engSend => 'Send';
+
+  @override
+  String get engNotifSent => 'Notification sent';
+
+  @override
+  String get engNotifTitleHint => 'Notification title';
+
+  @override
+  String get engNotifBodyHint => 'Write the message members will read';
+
+  @override
+  String get engNotifAdminSub =>
+      'Sent to every member — it appears under the bell in their app bar, with the number not read yet.';
+
+  @override
+  String get engTipsTricks => 'Tips & tricks';
+
+  @override
+  String get engTipsAdminSub =>
+      'Tips pop up over the members\' home page when they open the app. A member can save a tip; the number shows how many saved it.';
+
+  @override
+  String get engAddTip => 'Add tip';
+
+  @override
+  String get engTipAdded => 'Tip added';
+
+  @override
+  String get engTipTitleHint => 'Tip title';
+
+  @override
+  String get engTipBodyHint => 'Write the tip';
+
+  @override
+  String get engTipSavedToast =>
+      'Saved — find it under the bookmark icon at the top';
+
+  @override
+  String get engTipTapToClose => 'Tap anywhere to close';
+
+  @override
+  String engTipSavedCount(int count) {
+    return 'Saved by $count';
+  }
+
+  @override
+  String get engTipActive => 'Shown to members';
+
+  @override
+  String get engTipsEmpty => 'No tips yet';
+
+  @override
+  String get engSavedTips => 'Saved tips';
+
+  @override
+  String get engSavedTipsSub => 'The tips you saved.';
+
+  @override
+  String get engSavedTipsEmpty => 'Nothing saved yet';
+
+  @override
+  String get engTipUnsave => 'Remove from saved';
+
+  @override
+  String get engLibrary => 'Library';
+
+  @override
+  String get engLibraryFiles => 'Files';
+
+  @override
+  String get engLibraryFilesHint => 'Documents from ASEC';
+
+  @override
+  String get engLibraryBest => 'The best';
+
+  @override
+  String get engLibraryBestHint => 'Top members by stars';
+
+  @override
+  String get engLibraryCertificate => 'Certificate';
+
+  @override
+  String get engLibrarySub => 'Files the ASEC team shares with you.';
+
+  @override
+  String get engLibraryEmpty => 'No files yet';
+
+  @override
+  String get engLibraryEmptySub => 'Files added by the admin appear here.';
+
+  @override
+  String get engLibraryAdminSub =>
+      'Files in the members\' Library (home page → Library → Files).';
+
+  @override
+  String get engLeaderboardSub =>
+      'Members ranked by the stars they earned watching courses.';
+
+  @override
+  String get engLeaderboardEmpty => 'No stars yet';
+
+  @override
+  String get engYou => 'You';
+
+  @override
+  String get engMember => 'Member';
+
+  @override
+  String get engStarsTab => 'Stars';
+
+  @override
+  String get engStarsAdminSub =>
+      'Each member\'s stars per course — 1 star for every 20% watched, 5 at most per course. Tap a member to see their courses.';
+
+  @override
+  String get engStarsHint =>
+      '1 star for every 20% you watch — 5 stars per course';
+
+  @override
+  String engStarsCount(int count) {
+    return '$count stars';
+  }
+
+  @override
+  String get engFilesTab => 'Files';
+
+  @override
+  String get engNewFolder => 'New folder';
+
+  @override
+  String get engFolderName => 'Folder name';
+
+  @override
+  String get engFolderCreated => 'Folder created';
+
+  @override
+  String get engRename => 'Rename';
+
+  @override
+  String get engCourseFilesEmpty => 'No files in this course yet';
+
+  @override
+  String get engCourseFilesEmptyAdmin =>
+      'Create a folder, then upload files into it.';
+
+  @override
+  String get engFolderEmpty => 'This folder is empty';
+
+  @override
+  String get engAllFolders => 'All folders';
+
+  @override
+  String engFileCount(int count) {
+    return '$count files';
+  }
+
+  @override
+  String get engDeleteFolderBody =>
+      'The folder and every file in it will be deleted.';
+
+  @override
+  String get engDeleteBody => 'This cannot be undone.';
+
+  @override
+  String get engFileUploaded => 'File uploaded';
+
+  @override
+  String get engFileOpenFailed => 'Could not open the file';
+
+  @override
+  String get engFieldRequired => 'Required';
+
+  @override
+  String get engCourseSequential => 'Watch in order';
+
+  @override
+  String get engCourseSequentialHint =>
+      'A video opens only after the one before it is watched';
+
+  @override
+  String get engVideoDefault => 'Default';
+
+  @override
+  String get engVideoCustom => 'Custom';
+
+  @override
+  String get engMakeDefault => 'Make default (every member)';
+
+  @override
+  String get engMakeCustom => 'Make custom';
+
+  @override
+  String get engRulesMissing =>
+      'Not allowed by Firebase. Deploy the new rules: firebase deploy --only firestore:rules,storage';
+
+  @override
+  String get engChooseFolder => 'Upload into which folder?';
+
+  @override
+  String get engChooseFolderSub =>
+      'Pick a folder, or create a new one — then choose the file.';
+
+  @override
+  String get engNoFoldersYet => 'No folders yet — create the first one:';
+
+  @override
+  String get engOtherFiles => 'Other files';
+
+  @override
+  String get engPartners => 'Our partners';
+
+  @override
+  String get engPartnersSub => 'Companies that work with ASEC';
+
+  @override
+  String get engPartnersAdminSub =>
+      'Partner logos — they turn in a 3D ring around the ASEC logo on the members\' home page (and show on the website). Only published ones appear.';
+
+  @override
+  String get engPartnerAdd => 'Add partner';
+
+  @override
+  String get engPartnerName => 'Company name';
+
+  @override
+  String get engPartnerAdded => 'Partner added';
+
+  @override
+  String get engPartnersEmpty => 'No partners yet — add the first logo';
+
+  @override
+  String get updCardTitle => 'App update';
+
+  @override
+  String get updCardHint =>
+      'Ask Android users to update the app. Use the build number — the part after + in pubspec (1.0.1+9 → 9).';
+
+  @override
+  String get updLatestBuild => 'Latest build — optional update';
+
+  @override
+  String get updLatestBuildHint =>
+      'Builds below this see a \"New version\" message they can close.';
+
+  @override
+  String get updMinBuild => 'Minimum build — forced update';
+
+  @override
+  String get updMinBuildHint =>
+      'Builds below this must update. The message can\'t be closed.';
+
+  @override
+  String get updNotesEn => 'What\'s new (English)';
+
+  @override
+  String get updNotesAr => 'What\'s new (Arabic)';
+
+  @override
+  String get updWarning =>
+      'Raise these numbers only after the new version is live on Google Play — otherwise users will be asked to update to a version they can\'t download yet.';
+
+  @override
+  String updStatusForced(String build) {
+    return 'Forced update is on: builds below $build must update';
+  }
+
+  @override
+  String get updStatusOff => 'No forced update';
+
+  @override
+  String updThisApp(String version) {
+    return 'This app: $version';
+  }
+
+  @override
+  String get updStopForcing => 'Stop forcing';
+
+  @override
+  String get updSaved => 'Update settings saved';
+
+  @override
+  String get updUseThisVersion => 'Use this version';
+
+  @override
+  String get updBuildToUse => 'Build number to update to';
+
+  @override
+  String get updBuildToUseHint =>
+      'Filled from this app. Change it if your new Android build has a different number.';
+
+  @override
+  String get updForceQuestion => 'Should users be forced to update?';
+
+  @override
+  String get updOptional => 'Optional';
+
+  @override
+  String get updForced => 'Forced';
+
+  @override
+  String updOptionalSet(String build) {
+    return 'Optional update set: builds below $build will be asked to update';
+  }
+
+  @override
+  String get updEnterBuild => 'Enter the build number';
+
+  @override
+  String get permEngagement => 'Engagement';
+
+  @override
+  String get permViewOnly => 'View only';
+
+  @override
+  String get permDashboardCharts => 'Charts';
+
+  @override
+  String get permDashboardTable => 'Latest attempts table';
+
+  @override
+  String get permVideosAdd => 'Add / upload videos and course files';
+
+  @override
+  String get permVideosEdit => 'Edit videos and course files';
+
+  @override
+  String get permVideosDelete => 'Delete videos and course files';
+
+  @override
+  String get permVideosPublish => 'Publish / hide videos';
+
+  @override
+  String get permVideosAccess =>
+      'Course access (default / custom, watch in order)';
+
+  @override
+  String get permQuizzesCreate => 'Create quizzes';
+
+  @override
+  String get permQuizzesEdit => 'Edit quizzes';
+
+  @override
+  String get permQuizzesDelete => 'Delete quizzes';
+
+  @override
+  String get permQuizzesOpen => 'Open / close quizzes';
+
+  @override
+  String get permQuizzesCertificates => 'Certificate quizzes';
+
+  @override
+  String get permMembersBlock => 'Activate / block members';
+
+  @override
+  String get permMembersAccess =>
+      'Edit access (courses, period, pause, calculators)';
+
+  @override
+  String get permMembersDevice => 'Reset device';
+
+  @override
+  String get permCvsReview => 'Review CVs (status)';
+
+  @override
+  String get permCvsDelete => 'Delete CVs';
+
+  @override
+  String get permCvsGrant => 'Give CV rights';
+
+  @override
+  String get permEngNotifications => 'Notifications';
+
+  @override
+  String get permEngTips => 'Tips & tricks';
+
+  @override
+  String get permEngLibrary => 'Library';
+
+  @override
+  String get permEngStars => 'Stars';
+
+  @override
+  String get permEngPartners => 'Partners';
+
+  @override
+  String get permWebContent => 'Pages, articles and content';
+
+  @override
+  String get permWebInbox => 'Inbox';
+
+  @override
+  String get permWebSettings => 'Site settings and control centre';
 }

@@ -20,10 +20,13 @@ import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
+import 'package:asec/features/onboarding/o2_authentication/data/data_source/remote_data_source/users_remote_data_source.dart';
+import 'package:asec/features/onboarding/o2_authentication/data/device/device_identity.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/brand_mark.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class AccessGate extends StatefulWidget {
   const AccessGate({super.key, required this.user, required this.child});
@@ -37,6 +40,11 @@ class AccessGate extends StatefulWidget {
 
 class _AccessGateState extends State<AccessGate> {
   Timer? _tick;
+  bool _binding = false;
+
+  /// The account a lock was refused for (e.g. rules not deployed yet), so
+  /// the gate does not retry on every rebuild. Never blocks the member.
+  String? _refusedFor;
 
   @override
   void initState() {
@@ -44,6 +52,34 @@ class _AccessGateState extends State<AccessGate> {
     _tick = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) setState(() {});
     });
+    _claimDevice();
+  }
+
+  @override
+  void didUpdateWidget(covariant AccessGate old) {
+    super.didUpdateWidget(old);
+    _claimDevice();
+  }
+
+  /// ONE DEVICE PER MEMBER. An account with no device yet is locked to this
+  /// one — unless the admin just removed THIS device (then it waits for the
+  /// member to sign in again). Firestore rules allow the write only while
+  /// the slot is empty, so if two devices race, one wins and the other is
+  /// shown "used on another device".
+  void _claimDevice() {
+    final AppUser u = widget.user;
+    if (u.isEmpty || u.isAdmin) return;
+    // Only a write the SERVER accepted marks this device (bindDevice does
+    // that after the await). A device id seen here may still be the local,
+    // unconfirmed copy of our own write — marking from it would turn a
+    // refused write into "This device was removed".
+    if (u.hasDevice) return;
+    if (_binding || _refusedFor == u.uid || DeviceIdentity.boundUid == u.uid) return;
+    _binding = true;
+    UsersRemoteDataSource().bindDevice(u.uid).catchError((Object e) {
+      _refusedFor = u.uid;
+      debugPrint('Device lock refused (are the Firestore rules deployed?): $e');
+    }).whenComplete(() => _binding = false);
   }
 
   @override
@@ -54,7 +90,11 @@ class _AccessGateState extends State<AccessGate> {
 
   @override
   Widget build(BuildContext context) {
-    final AccessBlock block = MemberAccess.check(widget.user);
+    final AccessBlock block = MemberAccess.check(
+      widget.user,
+      thisDevice: DeviceIdentity.id,
+      boundHereUid: DeviceIdentity.boundUid,
+    );
     if (block == AccessBlock.none) return widget.child;
     return _BlockedView(user: widget.user, block: block);
   }
@@ -113,6 +153,18 @@ class _BlockedView extends StatelessWidget {
           s.blockedTitlePlatform,
           s.accessPlatformsCaption,
         ),
+      AccessBlock.otherDevice => (
+          Icons.phonelink_lock_rounded,
+          AppColors.red,
+          s.blockedTitleOtherDevice,
+          s.blockedBodyOtherDevice,
+        ),
+      AccessBlock.deviceRemoved => (
+          Icons.phonelink_erase_rounded,
+          AppColors.statusPending,
+          s.blockedTitleDeviceRemoved,
+          s.blockedBodyDeviceRemoved,
+        ),
       AccessBlock.none => (Icons.check_rounded, AppColors.green, '', ''),
     };
 
@@ -131,6 +183,8 @@ class _BlockedView extends StatelessWidget {
           user.platforms.map(MemberAccess.platformLabel).join('، '),
         ),
       ],
+      if (block == AccessBlock.otherDevice)
+        _Fact(Icons.devices_rounded, s.tbAccountDevice, user.deviceName, highlight: true),
       if (block == AccessBlock.paused)
         _Fact(Icons.pause_circle_outline_rounded, s.tbStatus,
             s.accessPausedSince(AppDates.day(context, user.pausedAt))),
@@ -282,12 +336,12 @@ class _Card extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            title,
+            FormatHelper.capitalize(title),
             style: StyleText.fontSize24Weight600.copyWith(color: AppColors.text, height: 1.25),
           ),
           const SizedBox(height: 8),
           Text(
-            body,
+            FormatHelper.capitalize(body),
             style: StyleText.fontSize14Weight400.copyWith(color: AppColors.secondaryText, height: 1.6),
           ),
           const SizedBox(height: 22),
@@ -324,12 +378,12 @@ class _Card extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Text(
-                                facts[i].label,
+                                FormatHelper.capitalize(facts[i].label),
                                 style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                facts[i].value,
+                                FormatHelper.capitalize(facts[i].value),
                                 style: StyleText.fontSize14Weight600.copyWith(
                                   color: facts[i].highlight ? accent : AppColors.text,
                                 ),

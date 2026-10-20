@@ -33,7 +33,9 @@ import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_fai
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/admins_card.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/control_centre_card.dart';
+import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/app_update_card.dart';
 import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.user});
@@ -122,21 +124,21 @@ class SettingsPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Text(
-                            user.displayName,
+                            FormatHelper.capitalize(user.displayName),
                             style: StyleText.fontSize16Weight600,
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            user.email,
+                            FormatHelper.capitalize(user.email),
                             style: StyleText.fontSize13Weight400
                                 .copyWith(color: AppColors.secondaryText),
                           ),
                           if (user.createdAt != null) ...<Widget>[
                             SizedBox(height: 2.h),
                             Text(
-                              s.memberSince(
+                              FormatHelper.capitalize(s.memberSince(
                                 AppDates.day(context, user.createdAt),
-                              ),
+                              )),
                               style: StyleText.fontSize12Weight400
                                   .copyWith(color: AppColors.secondaryText),
                             ),
@@ -154,7 +156,7 @@ class SettingsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
-                        user.role.label(context),
+                        FormatHelper.capitalize(user.role.label(context)),
                         style: StyleText.fontSize11Weight600
                             .copyWith(color: AppColors.onChip),
                       ),
@@ -222,9 +224,9 @@ class SettingsPage extends StatelessWidget {
                         title: s.language,
                         onTap: theme.toggleLanguage,
                         trailing: Text(
-                          theme.languageCode.value == 'ar'
+                          FormatHelper.capitalize(theme.languageCode.value == 'ar'
                               ? 'العربية'
-                              : 'English',
+                              : 'English'),
                           style: StyleText.fontSize13Weight600
                               .copyWith(color: AppColors.primary),
                         ),
@@ -330,6 +332,8 @@ class SettingsPage extends StatelessWidget {
               SizedBox(height: 16.h),
               const ControlCentreCard(),
               SizedBox(height: 16.h),
+              const AppUpdateCard(),
+              SizedBox(height: 16.h),
             ],
           ];
 
@@ -409,7 +413,7 @@ class _SettingsTile extends StatelessWidget {
         onTap: onTap,
         leading: AppIcon(icon, color: color),
         title: Text(
-          title,
+          FormatHelper.capitalize(title),
           style: color == null
               ? StyleText.fontSize14Weight500
               : StyleText.fontSize14Weight500.copyWith(color: color),

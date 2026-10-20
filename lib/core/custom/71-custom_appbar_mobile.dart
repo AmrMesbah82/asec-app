@@ -17,6 +17,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/haptic_controller.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The app bar every mobile page in this app uses.
 ///
@@ -102,7 +103,7 @@ class CustomAppBarMobile extends StatelessWidget implements PreferredSizeWidget 
                     child: Center(
                       child: titleWidget ??
                           Text(
-                            title ?? '',
+                            FormatHelper.capitalize(title ?? ''),
                             style: StyleText.fontSize16Weight600
                                 .copyWith(color: AppColors.text),
                             maxLines: 1,

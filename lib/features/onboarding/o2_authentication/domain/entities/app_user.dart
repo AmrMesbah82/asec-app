@@ -36,6 +36,10 @@ class AppUser {
   /// Ignored for the super admin (who may do everything) and for members.
   final List<AdminPermission> permissions;
 
+  /// The raw `permissions` strings: tabs ('videos'), actions
+  /// ('videos.delete') and the 'v2' marker. See AdminPerms.
+  final Set<String> permissionKeys;
+
   // ── Member access (set by the admin on the Members page) ──────────────────
 
   /// True = every course, including ones added later. False = only [courses].
@@ -56,6 +60,17 @@ class AppUser {
   /// is added to [accessUntil].
   final DateTime? pausedAt;
 
+  /// ONE DEVICE PER MEMBER: the id of the device the account is locked to
+  /// ('' = none yet — the next device it is used on takes it). Only the
+  /// admin can clear it, to move the member to a new device.
+  final String deviceId;
+
+  /// What the admin sees for that device ("Mac · amrs-macbook-air").
+  final String deviceName;
+  final DateTime? deviceBoundAt;
+
+  bool get hasDevice => deviceId.isNotEmpty;
+
   const AppUser({
     required this.uid,
     required this.email,
@@ -67,12 +82,16 @@ class AppUser {
     this.canUseCalcs = false,
     this.createdAt,
     this.permissions = const <AdminPermission>[],
+    this.permissionKeys = const <String>{},
     this.allCourses = true,
     this.courses = const <String>[],
     this.platforms = const <String>[],
     this.accessFrom,
     this.accessUntil,
     this.pausedAt,
+    this.deviceId = '',
+    this.deviceName = '',
+    this.deviceBoundAt,
   });
 
   bool get isPaused => pausedAt != null;
@@ -96,7 +115,12 @@ class AppUser {
 
   /// Whether this account may manage [p]. The super admin always may.
   bool can(AdminPermission p) =>
-      isSuperAdmin || (isAdmin && permissions.contains(p));
+      isSuperAdmin || (isAdmin && AdminPerms.can(permissionKeys, p));
+
+  /// Whether this account may do [a] inside its tab. The super admin always
+  /// may.
+  bool canDo(AdminAction a) =>
+      isSuperAdmin || (isAdmin && AdminPerms.canDo(permissionKeys, a));
 
   /// Whether the CV form should be offered. The admin needs no permission —
   /// the switch exists to let members in, not to keep the admin out.
@@ -135,6 +159,7 @@ class AppUser {
     bool? canCreateCv,
     bool? canUseCalcs,
     List<AdminPermission>? permissions,
+    Set<String>? permissionKeys,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -147,12 +172,16 @@ class AppUser {
       canUseCalcs: canUseCalcs ?? this.canUseCalcs,
       createdAt: createdAt,
       permissions: permissions ?? this.permissions,
+      permissionKeys: permissionKeys ?? this.permissionKeys,
       allCourses: allCourses,
       courses: courses,
       platforms: platforms,
       accessFrom: accessFrom,
       accessUntil: accessUntil,
       pausedAt: pausedAt,
+      deviceId: deviceId,
+      deviceName: deviceName,
+      deviceBoundAt: deviceBoundAt,
     );
   }
 }

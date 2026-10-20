@@ -17,6 +17,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/quiz_meta.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class QuizCard extends StatelessWidget {
   const QuizCard({
@@ -78,14 +79,14 @@ class QuizCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        quiz.title,
+                        FormatHelper.capitalize(quiz.title),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: StyleText.fontSize15Weight600,
                       ),
                       if (quiz.description.trim().isNotEmpty)
                         Text(
-                          quiz.description,
+                          FormatHelper.capitalize(quiz.description),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: StyleText.fontSize12Weight400

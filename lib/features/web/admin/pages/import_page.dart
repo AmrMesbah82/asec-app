@@ -8,6 +8,7 @@ import 'package:asec/features/web/admin/widgets.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/data/importers.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class ImportPage extends StatefulWidget {
   const ImportPage({super.key});
@@ -75,13 +76,13 @@ class _ImportPageState extends State<ImportPage> {
               contentPadding: EdgeInsets.zero,
               value: _overwrite,
               onChanged: (bool? v) => setState(() => _overwrite = v ?? false),
-              title: Text(const L('استبدال النصوص الموجودة في إعدادات الموقع', 'Overwrite texts already in Site settings').t),
+              title: Text(FormatHelper.capitalize(const L('استبدال النصوص الموجودة في إعدادات الموقع', 'Overwrite texts already in Site settings').t)),
               controlAffinity: ListTileControlAffinity.leading,
             ),
             button: FilledButton.icon(
               onPressed: _busy ? null : () => _run(() => Importers.importStarter(_add, overwriteSettings: _overwrite)),
               icon: const AppIcon(Icons.download_rounded),
-              label: Text(const L('استيراد المحتوى الأساسي', 'Import starter content').t),
+              label: Text(FormatHelper.capitalize(const L('استيراد المحتوى الأساسي', 'Import starter content').t)),
             ),
           ),
           const SizedBox(height: 16),
@@ -95,7 +96,7 @@ class _ImportPageState extends State<ImportPage> {
             button: FilledButton.icon(
               onPressed: _busy ? null : () => _run(() => Importers.importEnglish(_add)),
               icon: const AppIcon(Icons.translate_rounded),
-              label: Text(const L('إضافة المحتوى الإنجليزي', 'Add English content').t),
+              label: Text(FormatHelper.capitalize(const L('إضافة المحتوى الإنجليزي', 'Add English content').t)),
             ),
           ),
           const SizedBox(height: 16),
@@ -114,7 +115,7 @@ class _ImportPageState extends State<ImportPage> {
             button: FilledButton.icon(
               onPressed: _busy ? null : () => _run(() => Importers.importWordPress(_add, base: _base.text.trim())),
               icon: const AppIcon(Icons.article_outlined),
-              label: Text(const L('استيراد المقالات', 'Import articles').t),
+              label: Text(FormatHelper.capitalize(const L('استيراد المقالات', 'Import articles').t)),
             ),
           ),
           if (_log.isNotEmpty || _busy) ...<Widget>[
@@ -154,15 +155,15 @@ class _Step extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              CircleAvatar(backgroundColor: WebColors.red, child: Text(n, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
+              CircleAvatar(backgroundColor: WebColors.red, child: Text(FormatHelper.capitalize(n), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: WebColors.navy)),
+                    Text(FormatHelper.capitalize(title), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: WebColors.navy)),
                     const SizedBox(height: 6),
-                    Text(text, style: TextStyle(color: WebColors.muted, height: 1.7)),
+                    Text(FormatHelper.capitalize(text), style: TextStyle(color: WebColors.muted, height: 1.7)),
                     if (extra != null) ...<Widget>[const SizedBox(height: 10), extra!],
                     const SizedBox(height: 12),
                     button,

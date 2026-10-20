@@ -61,6 +61,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CustomDialogManager {
   const CustomDialogManager._();
@@ -402,7 +403,7 @@ class _ExportDialogState extends State<_ExportDialog> {
                   ),
                 ),
                 SizedBox(width: 8.sp),
-                Text(widget.title, style: StyleText.fontSize16Weight600),
+                Text(FormatHelper.capitalize(widget.title), style: StyleText.fontSize16Weight600),
               ],
             ),
             SizedBox(height: 15.sp),
@@ -516,11 +517,11 @@ class DialogShell extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(title, style: StyleText.fontSize18Weight600),
+                      Text(FormatHelper.capitalize(title), style: StyleText.fontSize18Weight600),
                       if (subtitle != null) ...<Widget>[
                         SizedBox(height: 2.h),
                         Text(
-                          subtitle!,
+                          FormatHelper.capitalize(subtitle!),
                           style: StyleText.fontSize13Weight400
                               .copyWith(color: AppColors.secondaryText),
                         ),

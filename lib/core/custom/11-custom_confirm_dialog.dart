@@ -41,6 +41,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/haptic_controller.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 // ─────────────────────────────────────────────
 //  SHARED HELPERS
@@ -99,7 +100,7 @@ Widget _primaryBtn({
         ),
         child: Center(
           child: Text(
-            label,
+            FormatHelper.capitalize(label),
             style: StyleText.fontSize14Weight500
                 .copyWith(color: AppColors.textButton),
           ),
@@ -128,7 +129,7 @@ Widget _secondaryBtn({
         ),
         child: Center(
           child: Text(
-            label,
+            FormatHelper.capitalize(label),
             style:
                 StyleText.fontSize14Weight500.copyWith(color: AppColors.text),
           ),
@@ -219,14 +220,14 @@ class _ConfirmDialog extends StatelessWidget {
           _buildIcon(),
           SizedBox(height: 16.h),
           Text(
-            title,
+            FormatHelper.capitalize(title),
             textAlign: TextAlign.center,
             style:
                 StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
           ),
           SizedBox(height: 8.h),
           Text(
-            subtitle,
+            FormatHelper.capitalize(subtitle),
             textAlign: TextAlign.center,
             style: StyleText.fontSize12Weight400.copyWith(
               color: AppColors.text.withOpacity(0.6),
@@ -336,14 +337,14 @@ class _SuccessDialog extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            title,
+            FormatHelper.capitalize(title),
             textAlign: TextAlign.center,
             style:
                 StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
           ),
           SizedBox(height: 8.h),
           Text(
-            subtitle,
+            FormatHelper.capitalize(subtitle),
             textAlign: TextAlign.center,
             style: StyleText.fontSize12Weight400.copyWith(
               color: AppColors.text.withOpacity(0.6),
@@ -441,14 +442,14 @@ class _MessageDialog extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            title,
+            FormatHelper.capitalize(title),
             textAlign: TextAlign.center,
             style:
                 StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
           ),
           SizedBox(height: 8.h),
           Text(
-            subtitle,
+            FormatHelper.capitalize(subtitle),
             textAlign: TextAlign.center,
             style: StyleText.fontSize12Weight400.copyWith(
               color: AppColors.text.withOpacity(0.6),
@@ -569,7 +570,7 @@ class _CommentDialogState extends State<_CommentDialog> {
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  widget.title,
+                  FormatHelper.capitalize(widget.title),
                   style: StyleText.fontSize14Weight600
                       .copyWith(color: AppColors.text),
                 ),
@@ -697,7 +698,7 @@ class _InputDialogState extends State<_InputDialog> {
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  widget.title,
+                  FormatHelper.capitalize(widget.title),
                   style: StyleText.fontSize14Weight600
                       .copyWith(color: AppColors.text),
                 ),
@@ -707,7 +708,7 @@ class _InputDialogState extends State<_InputDialog> {
           if (widget.subtitle.isNotEmpty) ...<Widget>[
             SizedBox(height: 8.h),
             Text(
-              widget.subtitle,
+              FormatHelper.capitalize(widget.subtitle),
               style: StyleText.fontSize12Weight400.copyWith(
                 color: AppColors.text.withOpacity(0.6),
               ),

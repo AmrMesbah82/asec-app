@@ -42,6 +42,7 @@ import 'package:asec/features/tools/t2_engineering_calc/data/calc_export.dart';
 import 'package:asec/features/tools/t2_engineering_calc/domain/calc_catalog.dart';
 import 'package:asec/features/tools/t2_engineering_calc/domain/calc_model.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class EngineeringCalcPage extends StatefulWidget {
   const EngineeringCalcPage({super.key});
@@ -98,7 +99,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(S.of(context).copiedValue(text)),
+        content: Text(FormatHelper.capitalize(S.of(context).copiedValue(text))),
         duration: const Duration(seconds: 2),
       ));
   }
@@ -129,12 +130,12 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
       if (saved != null) {
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(s.calcSaved(saved))));
+          ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.calcSaved(saved)))));
       }
     } catch (e, st) {
       debugPrint('Engineering calc export failed: $e\n$st');
       messenger.showSnackBar(SnackBar(
-        content: Text(kDebugMode ? '${s.errUnknown}\n$e' : s.errUnknown),
+        content: Text(FormatHelper.capitalize(kDebugMode ? '${s.errUnknown}\n$e' : s.errUnknown)),
         duration: const Duration(seconds: 6),
       ));
     } finally {
@@ -156,7 +157,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
 
         return AlertDialog(
           backgroundColor: AppColors.card,
-          title: Text(s.calcFileName, style: StyleText.fontSize16Weight500),
+          title: Text(FormatHelper.capitalize(s.calcFileName), style: StyleText.fontSize16Weight500),
           content: CustomTextField(
             controller: name,
             label: s.calcFileName,
@@ -286,7 +287,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  calc.name(ar),
+                  FormatHelper.capitalize(calc.name(ar)),
                   style: StyleText.fontSize18Weight600.copyWith(color: AppColors.text),
                 ),
               ),
@@ -298,7 +299,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
           ),
           SizedBox(height: 6.h),
           Text(
-            s.calcInputs,
+            FormatHelper.capitalize(s.calcInputs),
             style: StyleText.fontSize13Weight500.copyWith(color: AppColors.secondaryText),
           ),
           SizedBox(height: 12.h),
@@ -370,7 +371,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
         child: Padding(
           padding: EdgeInsets.only(bottom: 14.h),
           child: Text(
-            f.unit,
+            FormatHelper.capitalize(f.unit),
             textAlign: TextAlign.center,
             style: StyleText.fontSize13Weight600.copyWith(color: AppColors.secondaryText),
           ),
@@ -408,7 +409,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
               runSpacing: 8.h,
               children: <Widget>[
                 Text(
-                  s.calcResults,
+                  FormatHelper.capitalize(s.calcResults),
                   style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
                 ),
                 if (_exporting)
@@ -440,7 +441,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
             Padding(
               padding: EdgeInsets.all(8.r),
               child: Text(
-                s.calcFillAll,
+                FormatHelper.capitalize(s.calcFillAll),
                 style: StyleText.fontSize13Weight500.copyWith(color: AppColors.secondaryText),
               ),
             )
@@ -450,7 +451,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(4.w, 8.h, 4.w, 0),
             child: Text(
-              s.calcTapHint,
+              FormatHelper.capitalize(s.calcTapHint),
               style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
             ),
           ),
@@ -476,13 +477,13 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  r.name(ar),
+                  FormatHelper.capitalize(r.name(ar)),
                   style: StyleText.fontSize13Weight500.copyWith(color: AppColors.text),
                 ),
               ),
               SizedBox(width: 8.w),
               Text(
-                text,
+                FormatHelper.capitalize(text),
                 textDirection: TextDirection.ltr,
                 style: (r.primary ? StyleText.fontSize15Weight600 : StyleText.fontSize13Weight600)
                     .copyWith(color: r.primary ? AppColors.primary : AppColors.text),
@@ -502,27 +503,27 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(
-            s.calcFormula,
+            FormatHelper.capitalize(s.calcFormula),
             style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
           ),
           SizedBox(height: 10.h),
           Directionality(
             textDirection: TextDirection.ltr,
             child: Text(
-              calc.formula,
+              FormatHelper.capitalize(calc.formula),
               style: StyleText.fontSize13Weight500.copyWith(color: AppColors.primary, height: 1.6),
             ),
           ),
           if (calc.note(ar).isNotEmpty) ...<Widget>[
             SizedBox(height: 12.h),
             Text(
-              calc.note(ar),
+              FormatHelper.capitalize(calc.note(ar)),
               style: StyleText.fontSize13Weight500.copyWith(color: AppColors.text, height: 1.5),
             ),
           ],
           SizedBox(height: 12.h),
           Text(
-            s.calcDisclaimer,
+            FormatHelper.capitalize(s.calcDisclaimer),
             style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
           ),
         ],

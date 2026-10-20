@@ -36,6 +36,7 @@ import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 abstract final class AppIntegrity {
   static const MethodChannel _channel = MethodChannel('asec/screen_protection');
@@ -164,13 +165,13 @@ class IntegrityBlockedView extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    s.securityBlockedTitle,
+                    FormatHelper.capitalize(s.securityBlockedTitle),
                     textAlign: TextAlign.center,
                     style: StyleText.fontSize20Weight600.copyWith(color: AppColors.text),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    s.securityBlockedBody,
+                    FormatHelper.capitalize(s.securityBlockedBody),
                     textAlign: TextAlign.center,
                     style: StyleText.fontSize14Weight400
                         .copyWith(color: AppColors.secondaryText, height: 1.5),
@@ -186,7 +187,7 @@ class IntegrityBlockedView extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              _label(s, code),
+                              FormatHelper.capitalize(_label(s, code)),
                               style: StyleText.fontSize14Weight500
                                   .copyWith(color: AppColors.text),
                             ),

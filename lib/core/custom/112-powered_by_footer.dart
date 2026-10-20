@@ -13,6 +13,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class PoweredByFooter extends StatelessWidget {
   const PoweredByFooter({super.key, this.color});
@@ -30,13 +31,13 @@ class PoweredByFooter extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          arabic ? 'تطوير Amr Mesbah' : 'Powered by Amr Mesbah',
+          FormatHelper.capitalize(arabic ? 'تطوير ASEC' : 'Powered by ASEC'),
           textAlign: TextAlign.center,
           style: StyleText.fontSize12Weight600.copyWith(color: c),
         ),
         SizedBox(height: 2.h),
         Text(
-          arabic ? '© $year جميع الحقوق محفوظة' : '© $year All rights reserved',
+          FormatHelper.capitalize(arabic ? '© $year جميع الحقوق محفوظة' : '© $year All rights reserved'),
           textAlign: TextAlign.center,
           style: StyleText.fontSize12Weight400.copyWith(color: c),
         ),

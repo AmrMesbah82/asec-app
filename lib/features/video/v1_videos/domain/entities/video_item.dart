@@ -39,6 +39,12 @@ class VideoItem {
   final int subcategoryOrder;
 
   final bool published;
+
+  /// "Default" video (free): every member sees it, whatever courses the
+  /// admin opened for them. False = "custom" — only members with the course.
+  /// The app never says "free" or "paid"; the admin sees Default / Custom.
+  final bool free;
+
   final String createdBy;
   final DateTime? createdAt;
 
@@ -54,6 +60,7 @@ class VideoItem {
     this.subcategory = '',
     this.subcategoryOrder = 0,
     this.published = true,
+    this.free = false,
     this.createdBy = '',
     this.createdAt,
   });
@@ -77,6 +84,7 @@ class VideoItem {
     String? subcategory,
     int? subcategoryOrder,
     bool? published,
+    bool? free,
     String? createdBy,
   }) {
     return VideoItem(
@@ -91,6 +99,7 @@ class VideoItem {
       subcategory: subcategory ?? this.subcategory,
       subcategoryOrder: subcategoryOrder ?? this.subcategoryOrder,
       published: published ?? this.published,
+      free: free ?? this.free,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt,
     );

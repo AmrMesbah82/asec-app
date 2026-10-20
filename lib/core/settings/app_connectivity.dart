@@ -42,6 +42,7 @@ import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/en
 import 'package:asec/features/video/v1_videos/data/download/video_downloads.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/downloads_page.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 abstract final class AppConnectivity {
   static bool get enforced => !kIsWeb;
@@ -201,12 +202,12 @@ class _OfflineScreenState extends State<_OfflineScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          s.offlineTitle,
+                          FormatHelper.capitalize(s.offlineTitle),
                           style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          s.offlineBody,
+                          FormatHelper.capitalize(s.offlineBody),
                           style: StyleText.fontSize12Weight400
                               .copyWith(color: AppColors.secondaryText),
                         ),

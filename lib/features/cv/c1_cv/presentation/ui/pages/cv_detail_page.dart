@@ -40,7 +40,10 @@ import 'package:asec/features/cv/c1_cv/domain/base_repository/cv_base_repository
 import 'package:asec/features/cv/c1_cv/domain/entities/cv_profile.dart';
 import 'package:asec/features/cv/c1_cv/domain/enums/cv_status.dart';
 import 'package:asec/features/cv/c1_cv/presentation/ui/widgets/cv_card.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CvDetailPage extends StatelessWidget {
   CvDetailPage({super.key, required this.cv, this.isAdmin = false});
@@ -84,7 +87,7 @@ class CvDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(cv.fullName, style: StyleText.fontSize18Weight600),
+        title: Text(FormatHelper.capitalize(cv.fullName), style: StyleText.fontSize18Weight600),
         actions: <Widget>[
           if (cv.hasCvFile)
             IconButton(
@@ -92,7 +95,8 @@ class CvDetailPage extends StatelessWidget {
               onPressed: () => _open(cv.cvFileUrl),
               icon: const AppIcon(Icons.download_rounded),
             ),
-          if (isAdmin)
+          // CVs → Delete.
+          if (isAdmin && SessionController.to.current.canDo(AdminAction.cvsDelete))
             IconButton(
               tooltip: s.delete,
               onPressed: () => _confirmDelete(context),
@@ -113,7 +117,8 @@ class CvDetailPage extends StatelessWidget {
             ),
             children: <Widget>[
               // Outside the sheet: the admin's verdict.
-              if (isAdmin) ...<Widget>[
+              // CVs → Review.
+              if (isAdmin && SessionController.to.current.canDo(AdminAction.cvsReview)) ...<Widget>[
                 _ReviewCard(cv: cv, repository: _repository),
                 SizedBox(height: 16.h),
               ],
@@ -132,7 +137,7 @@ class CvDetailPage extends StatelessWidget {
               if (cv.updatedAt != null) ...<Widget>[
                 SizedBox(height: 14.h),
                 Text(
-                  s.cvUpdatedOn(AppDates.day(context, cv.updatedAt)),
+                  FormatHelper.capitalize(s.cvUpdatedOn(AppDates.day(context, cv.updatedAt))),
                   textAlign: TextAlign.center,
                   style: StyleText.fontSize11Weight400
                       .copyWith(color: AppColors.secondaryText),
@@ -235,7 +240,7 @@ class _Sheet extends StatelessWidget {
           _Section(
             title: s.cvSummary,
             child: Text(
-              cv.bio.trim(),
+              FormatHelper.capitalize(cv.bio.trim()),
               style: StyleText.fontSize14Weight400.copyWith(height: 1.6),
             ),
           ),
@@ -347,7 +352,7 @@ class _NameBlock extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      cv.fullName,
+                      FormatHelper.capitalize(cv.fullName),
                       style: StyleText.fontSize24Weight600.copyWith(
                         letterSpacing: 0.2,
                         height: 1.15,
@@ -356,7 +361,7 @@ class _NameBlock extends StatelessWidget {
                     if (cv.role.isNotEmpty) ...<Widget>[
                       SizedBox(height: 4.h),
                       Text(
-                        cv.role.toUpperCase(),
+                        FormatHelper.capitalize(cv.role.toUpperCase()),
                         style: StyleText.fontSize12Weight600.copyWith(
                           color: AppColors.primary,
                           letterSpacing: 1.4,
@@ -366,7 +371,7 @@ class _NameBlock extends StatelessWidget {
                     if (cv.specialization.isNotEmpty) ...<Widget>[
                       SizedBox(height: 4.h),
                       Text(
-                        cv.specialization,
+                        FormatHelper.capitalize(cv.specialization),
                         style: StyleText.fontSize13Weight400
                             .copyWith(color: AppColors.secondaryText),
                       ),
@@ -401,7 +406,7 @@ class _Section extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
-            title.toUpperCase(),
+            FormatHelper.capitalize(title.toUpperCase()),
             style: StyleText.fontSize11Weight700.copyWith(
               color: AppColors.text,
               letterSpacing: 1.6,
@@ -474,12 +479,12 @@ class _Pair extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
-            label,
+            FormatHelper.capitalize(label),
             style: StyleText.fontSize11Weight400
                 .copyWith(color: AppColors.secondaryText),
           ),
           SizedBox(height: 2.h),
-          Text(value, style: StyleText.fontSize13Weight600),
+          Text(FormatHelper.capitalize(value), style: StyleText.fontSize13Weight600),
         ],
       ),
     );
@@ -506,7 +511,7 @@ class _Chips extends StatelessWidget {
               borderRadius: AppRadius.buttonR,
             ),
             child: Text(
-              value,
+              FormatHelper.capitalize(value),
               style: StyleText.fontSize11Weight600.copyWith(color: AppColors.onChip),
             ),
           ),
@@ -541,7 +546,7 @@ class _LinkLine extends StatelessWidget {
               SizedBox(width: 9.w),
               Expanded(
                 child: Text(
-                  label,
+                  FormatHelper.capitalize(label),
                   style: StyleText.fontSize13Weight500
                       .copyWith(color: AppColors.primary),
                 ),
@@ -589,15 +594,15 @@ class _FileLine extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    cv.cvFileName.isEmpty ? s.driveLabel : cv.cvFileName,
+                    FormatHelper.capitalize(cv.cvFileName.isEmpty ? s.driveLabel : cv.cvFileName),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: StyleText.fontSize13Weight600,
                   ),
                   Text(
-                    cv.cvFileSizeLabel.isEmpty
+                    FormatHelper.capitalize(cv.cvFileSizeLabel.isEmpty
                         ? s.downloadCv
-                        : '${s.downloadCv} · ${cv.cvFileSizeLabel}',
+                        : '${s.downloadCv} · ${cv.cvFileSizeLabel}'),
                     style: StyleText.fontSize11Weight400
                         .copyWith(color: AppColors.secondaryText),
                   ),

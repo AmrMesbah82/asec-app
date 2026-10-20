@@ -28,6 +28,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:asec/core/custom/16-custom_card_styles.dart';
 import 'package:asec/core/custom/24-custom_chart_card.dart';
 import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Rewrite the ASCII digits in [value] as Arabic-Indic numerals (٠١٢…) when
 /// [arabic] is true, so the axis and the value labels read in Arabic figures
@@ -202,7 +203,7 @@ class BarChartCard extends StatelessWidget {
                 height: expandChild ? null : chartHeight.h,
                 child: Center(
                   child: Text(
-                    emptyMessage!,
+                    FormatHelper.capitalize(emptyMessage!),
                     style: CardStyles.label(13),
                     textAlign: TextAlign.center,
                   ),
@@ -256,7 +257,7 @@ class BarChartCard extends StatelessWidget {
                       // Guard against a stray tick just past the top.
                       if (v > meta.max + 0.0001) return const SizedBox.shrink();
                       return Text(
-                        _localizeDigits(v.round().toString(), isRtl),
+                        FormatHelper.capitalize(_localizeDigits(v.round().toString(), isRtl)),
                         style: CardStyles.label(10),
                       );
                     },
@@ -306,7 +307,7 @@ class BarChartCard extends StatelessWidget {
                               return Padding(
                                 padding: EdgeInsets.only(top: 6.h),
                                 child: Text(
-                                  bars[i].label,
+                                  FormatHelper.capitalize(bars[i].label),
                                   style: CardStyles.label(10),
                                   textAlign: TextAlign.center,
                                   maxLines: 1,

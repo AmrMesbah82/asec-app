@@ -19,6 +19,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_thumbnail.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The height a [VideoCard] needs below its thumbnail: avatar row with a
 /// two-line title and one meta line.
@@ -32,10 +33,14 @@ class VideoCard extends StatefulWidget {
     this.trailing,
     this.locked = false,
     this.lessonNumber,
+    this.badge,
   });
 
   final VideoItem video;
   final VoidCallback? onTap;
+
+  /// Drawn on the thumbnail's top corner (the admin's Default / Custom).
+  final Widget? badge;
 
   /// Usually a ⋮ menu (admin: edit / delete).
   final Widget? trailing;
@@ -68,14 +73,26 @@ class _VideoCardState extends State<VideoCard> {
             AnimatedScale(
               duration: const Duration(milliseconds: 160),
               scale: _hover && !widget.locked ? 1.02 : 1,
-              child: VideoThumbnail(
-                video: video,
-                hover: _hover,
-                locked: widget.locked,
-                lessonNumber: widget.lessonNumber,
-                lockedBehind: widget.lessonNumber == null
-                    ? null
-                    : widget.lessonNumber! - 1,
+              child: Stack(
+                // The thumbnail keeps the full width the column gives it.
+                fit: StackFit.passthrough,
+                children: <Widget>[
+                  VideoThumbnail(
+                    video: video,
+                    hover: _hover,
+                    locked: widget.locked,
+                    lessonNumber: widget.lessonNumber,
+                    lockedBehind: widget.lessonNumber == null
+                        ? null
+                        : widget.lessonNumber! - 1,
+                  ),
+                  if (widget.badge != null)
+                    PositionedDirectional(
+                      top: 8.h,
+                      end: 8.w,
+                      child: widget.badge!,
+                    ),
+                ],
               ),
             ),
             SizedBox(height: 10.h),
@@ -90,7 +107,7 @@ class _VideoCardState extends State<VideoCard> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        video.title,
+                        FormatHelper.capitalize(video.title),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: StyleText.fontSize15Weight600.copyWith(
@@ -183,7 +200,7 @@ class _VideoListTileState extends State<VideoListTile> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      video.title,
+                      FormatHelper.capitalize(video.title),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: StyleText.fontSize13Weight600.copyWith(
@@ -220,7 +237,7 @@ class _ChannelAvatar extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          'AS',
+          FormatHelper.capitalize('AS'),
           style: StyleText.fontSize11Weight700.copyWith(color: Colors.white),
         ),
       ),
@@ -254,7 +271,7 @@ class _Meta extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text('ASEC', style: style),
+            Text(FormatHelper.capitalize('ASEC'), style: style),
             SizedBox(width: 3.w),
             Icon(Icons.check_circle_rounded,
                 size: small ? 11 : 12, color: AppColors.secondaryText),
@@ -262,7 +279,7 @@ class _Meta extends StatelessWidget {
         ),
         if (parts.isNotEmpty)
           Text(
-            parts.join(' · '),
+            FormatHelper.capitalize(parts.join(' · ')),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: style,

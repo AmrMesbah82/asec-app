@@ -27,6 +27,7 @@ import 'package:asec/core/custom/35-custom_search_widget_custom.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// A search field plus optional filter, sort and trailing actions.
 ///
@@ -257,7 +258,7 @@ class _ToolbarDropdownButton<T> extends StatelessWidget {
                 value: item,
                 height: 40.sp,
                 child: Text(
-                  labelBuilder(item),
+                  FormatHelper.capitalize(labelBuilder(item)),
                   // The chosen row is bolder; there is no tick and no
                   // highlight bar, because the button below already shows
                   // which value is active.
@@ -350,7 +351,7 @@ class ToolbarActionButton extends StatelessWidget {
                     SizedBox(width: 8.sp),
                     Flexible(
                       child: Text(
-                        title,
+                        FormatHelper.capitalize(title),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: StyleText.fontSize14Weight500

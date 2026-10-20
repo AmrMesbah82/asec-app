@@ -20,6 +20,7 @@ import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 // ── Buttons ─────────────────────────────────────────────────────────────────
 
@@ -96,7 +97,7 @@ class AppButton extends StatelessWidget {
                 SizedBox(width: 8.w),
               ],
               Flexible(
-                child: Text(label,
+                child: Text(FormatHelper.capitalize(label),
                     style: textStyle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
@@ -281,7 +282,7 @@ class AppErrorView extends StatelessWidget {
             AppIcon(Icons.cloud_off_rounded, size: 48.sp, color: AppColors.secondaryText),
             SizedBox(height: 12.h),
             Text(
-              message,
+              FormatHelper.capitalize(message),
               textAlign: TextAlign.center,
               style: StyleText.fontSize14Weight500
                   .copyWith(color: AppColors.secondaryText),
@@ -318,12 +319,12 @@ class AppEmptyView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             CustomEmptyState(size: size, verticalPadding: 8),
-            Text(title,
+            Text(FormatHelper.capitalize(title),
                 textAlign: TextAlign.center, style: StyleText.fontSize16Weight600),
             if (subtitle != null) ...<Widget>[
               SizedBox(height: 6.h),
               Text(
-                subtitle!,
+                FormatHelper.capitalize(subtitle!),
                 textAlign: TextAlign.center,
                 style: StyleText.fontSize13Weight400
                     .copyWith(color: AppColors.secondaryText),
@@ -372,7 +373,7 @@ class InfoBanner extends StatelessWidget {
           AppIcon(icon, color: c, size: 20.sp),
           SizedBox(width: 10.w),
           Expanded(
-            child: Text(message,
+            child: Text(FormatHelper.capitalize(message),
                 style: StyleText.fontSize13Weight500.copyWith(color: AppColors.onChip)),
           ),
         ],

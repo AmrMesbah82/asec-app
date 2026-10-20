@@ -20,6 +20,7 @@ import 'package:asec/features/quiz/q2_certificates/data/certificate_data.dart';
 import 'package:asec/features/quiz/q2_certificates/data/certificate_pdf.dart';
 import 'package:asec/features/quiz/q2_certificates/presentation/ui/widgets/certificate_view.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CertificatePage extends StatefulWidget {
   const CertificatePage({super.key, required this.quiz, required this.attempt});
@@ -43,7 +44,7 @@ class _CertificatePageState extends State<CertificatePage> {
     try {
       await CertificatePdf.share(_data);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(failed)));
+      messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(failed))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -55,7 +56,7 @@ class _CertificatePageState extends State<CertificatePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(s.certificateTitle, style: StyleText.fontSize18Weight600),
+        title: Text(FormatHelper.capitalize(s.certificateTitle), style: StyleText.fontSize18Weight600),
       ),
       body: Center(
         child: SingleChildScrollView(

@@ -31,6 +31,7 @@ import 'package:asec/core/custom/32-custom_svg.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Height of a paired chart card on the console overview.
 ///
@@ -198,14 +199,14 @@ class ChartCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      title,
+                      FormatHelper.capitalize(title),
                       style: CardStyles.title(14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (caption != null)
                       Text(
-                        caption!,
+                        FormatHelper.capitalize(caption!),
                         style: CardStyles.label(11),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -286,14 +287,14 @@ class ChartLegendRow extends StatelessWidget {
           SizedBox(width: 6.w),
           Expanded(
             child: Text(
-              name,
+              FormatHelper.capitalize(name),
               style: CardStyles.label(fontSize),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           if (amount != null)
-            Text(amount!, style: CardStyles.value(fontSize)),
+            Text(FormatHelper.capitalize(amount!), style: CardStyles.value(fontSize)),
         ],
       ),
     );
@@ -326,7 +327,7 @@ class ChartLegendInline extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 4.w),
-              Text(item.label, style: CardStyles.label(fontSize)),
+              Text(FormatHelper.capitalize(item.label), style: CardStyles.label(fontSize)),
             ],
           ),
       ],
@@ -354,7 +355,7 @@ class ChartTabPill extends StatelessWidget {
           borderRadius: AppRadius.buttonR,
         ),
         child: Text(
-          text,
+          FormatHelper.capitalize(text),
           style: CardStyles.title(11).copyWith(color: AppColors.textButton),
         ),
       ),

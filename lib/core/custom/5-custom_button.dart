@@ -15,6 +15,7 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/haptic_controller.dart';
 import 'package:asec/core/custom/41-custom_button_sizing.dart';
 import 'package:asec/core/extensions/context_extensions.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 Widget customButton({
   required String title,
@@ -76,7 +77,7 @@ Widget customButton({
                       textStyle: effectiveStyle,
                     ));
 
-      final Widget text = Text(title, style: effectiveStyle);
+      final Widget text = Text(FormatHelper.capitalize(title), style: effectiveStyle);
 
       return GestureDetector(
         onTap: () {

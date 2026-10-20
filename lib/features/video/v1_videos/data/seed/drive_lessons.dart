@@ -11,7 +11,9 @@
 ///
 /// THE FOLDER
 /// ----------
-/// https://drive.google.com/drive/folders/1ubgsGhXfzZrCpT5de3dn3ZZk47S4ujyG
+/// Its id is NOT in the app (anyone could pull it out of the app file):
+/// it is read from Firestore `admin_config/drive` → `folder_id`, which only
+/// admins with the Videos permission may read.
 /// ("ASEC"). Every SUB-FOLDER of it is a CATEGORY (e.g. "GENERAL NOTES",
 /// "Reals"): the app shows the categories first, then the videos of the one
 /// opened. A folder INSIDE a category (e.g. AutoCAD → "Introduction-01",
@@ -220,17 +222,29 @@ class _DriveFile {
 
 /// One child of a Drive folder — a video or a sub-folder.
 class _DriveEntry {
-  const _DriveEntry(this.id, this.name, this.description, this.size, this.isFolder);
+  const _DriveEntry(this.id, this.name, this.description, this.size, this.isFolder,
+      [this.mimeType = '']);
 
   final String id;
   final String name;
   final String description;
   final int size;
   final bool isFolder;
+  final String mimeType;
+
+  bool get isVideo => mimeType.startsWith('video/');
 }
 
 abstract final class DriveVideoSync {
-  static const String folderId = '1ubgsGhXfzZrCpT5de3dn3ZZk47S4ujyG';
+  /// The ASEC folder's id — from `admin_config/drive`, admins only.
+  static Future<String?> _folderId() async {
+    final DocumentSnapshot<Map<String, dynamic>> d = await AppFirebase.db
+        .collection('admin_config')
+        .doc('drive')
+        .get();
+    final Object? id = d.data()?['folder_id'];
+    return id is String && id.trim().isNotEmpty ? id.trim() : null;
+  }
 
   static const String _folderMime = 'application/vnd.google-apps.folder';
 
@@ -241,6 +255,17 @@ abstract final class DriveVideoSync {
   static final DateTime _orderBase = DateTime(2026, 10, 1);
 
   static bool _running = false;
+
+  /// Why some Drive folders / files do NOT show in the app, from the last
+  /// listing: folders with no video inside (the app builds its sections from
+  /// videos, so an empty folder has nothing to show), and files that are not
+  /// videos (Drive does not see them as `video/*` — still uploading, a .zip,
+  /// a shortcut, …).
+  static final List<String> _emptyFolders = <String>[];
+  static final List<String> _skippedFiles = <String>[];
+
+  /// The last sync's report, for the admin. Null when everything showed.
+  static String? lastReport;
 
   /// Safe to call often: one sync at a time, and documents are only written
   /// when something actually changed. Never throws — a failed sync leaves
@@ -255,6 +280,8 @@ abstract final class DriveVideoSync {
     String? problem;
     try {
       List<_DriveFile>? listed;
+      _emptyFolders.clear();
+      _skippedFiles.clear();
       try {
         listed = await _listFolder();
         if (listed.isEmpty) {
@@ -266,7 +293,14 @@ abstract final class DriveVideoSync {
       } catch (e) {
         problem = 'Drive sync failed: $e';
       }
-      if (problem != null) debugPrint('DRIVE SYNC: $problem');
+      if (problem == null && listed != null) {
+        problem = _report();
+        lastReport = problem;
+        debugPrint('DRIVE SYNC: ${listed.length} videos listed'
+            '${problem == null ? ', every folder shown' : '\n$problem'}');
+      } else if (problem != null) {
+        debugPrint('DRIVE SYNC: $problem');
+      }
       final bool fromDrive = listed != null && listed.isNotEmpty;
       // Already in order: categories in folder order, lessons in each.
       final List<_DriveFile> files = fromDrive
@@ -392,12 +426,19 @@ abstract final class DriveVideoSync {
   /// name, its videos — including those of folders nested inside it — in
   /// lesson order.
   static Future<List<_DriveFile>> _listFolder() async {
+    final String? folderId = await _folderId();
+    if (folderId == null) {
+      throw 'the Drive folder id is not set. In the Firebase console add the '
+          'document admin_config/drive with a text field folder_id = the ASEC '
+          'folder\'s id.';
+    }
     final List<_DriveEntry> root = await _listChildren(folderId);
     final List<_DriveFile> out = <_DriveFile>[];
 
+    _noteSkipped(root, 'ASEC');
     final List<_DriveFile> loose = <_DriveFile>[
       for (final _DriveEntry e in root)
-        if (!e.isFolder) _DriveFile(e.id, e.name, e.description, e.size),
+        if (e.isVideo) _DriveFile(e.id, e.name, e.description, e.size),
     ]..sort(_lessonOrder);
     out.addAll(loose);
 
@@ -407,11 +448,13 @@ abstract final class DriveVideoSync {
     for (int c = 0; c < folders.length; c++) {
       final String category = folders[c].name.trim();
       final List<_DriveEntry> children = await _listChildren(folders[c].id);
+      _noteSkipped(children, category);
+      final int before = out.length;
 
       // Videos straight in the category folder: no sub-category.
       final List<_DriveFile> loose = <_DriveFile>[
         for (final _DriveEntry e in children)
-          if (!e.isFolder)
+          if (e.isVideo)
             _DriveFile(e.id, e.name, e.description, e.size,
                 category: category, categoryOrder: c + 1),
       ]..sort(_lessonOrder);
@@ -425,18 +468,43 @@ abstract final class DriveVideoSync {
         final List<_DriveFile> videos = <_DriveFile>[];
         await _collectVideos(subs[k].id, videos, category, c + 1,
             subcategory: subs[k].name.trim(), subcategoryOrder: k + 1, depth: 1);
+        if (videos.isEmpty) _emptyFolders.add('$category › ${subs[k].name.trim()}');
         videos.sort(_lessonOrder);
         out.addAll(videos);
       }
+      if (out.length == before) _emptyFolders.add(category);
     }
     return out;
+  }
+
+  static void _noteSkipped(List<_DriveEntry> entries, String where) {
+    for (final _DriveEntry e in entries) {
+      if (!e.isFolder && !e.isVideo) {
+        _skippedFiles.add('$where › ${e.name} (${e.mimeType})');
+      }
+    }
+  }
+
+  /// Null when every folder and file made it into the app.
+  static String? _report() {
+    if (_emptyFolders.isEmpty && _skippedFiles.isEmpty) return null;
+    final StringBuffer b = StringBuffer();
+    if (_emptyFolders.isNotEmpty) {
+      b.writeln('Not shown — no video inside (or videos not shared '
+          '"Anyone with the link"): ${_emptyFolders.join(', ')}');
+    }
+    if (_skippedFiles.isNotEmpty) {
+      b.write('Skipped — not a video file for Drive (still processing?): '
+          '${_skippedFiles.join(', ')}');
+    }
+    return b.toString().trim();
   }
 
   /// Folders by the number their name ends with ("Introduction-01" before
   /// "Draw and Modify-02"), else by name in natural order.
   static int _folderOrder(_DriveEntry a, _DriveEntry b) {
-    final int? sa = _sequence(a.name);
-    final int? sb = _sequence(b.name);
+    final int? sa = folderNumber(a.name);
+    final int? sb = folderNumber(b.name);
     if (sa != null && sb != null && sa != sb) return sa.compareTo(sb);
     return _natural(a.name.toLowerCase(), b.name.toLowerCase());
   }
@@ -458,6 +526,8 @@ abstract final class DriveVideoSync {
               subcategoryOrder: subcategoryOrder,
               depth: depth + 1);
         }
+      } else if (!e.isVideo) {
+        _skippedFiles.add('$subcategory › ${e.name} (${e.mimeType})');
       } else {
         into.add(_DriveFile(e.id, e.name, e.description, e.size,
             category: category,
@@ -476,8 +546,9 @@ abstract final class DriveVideoSync {
     String? pageToken;
     do {
       final Uri uri = Uri.https('www.googleapis.com', '/drive/v3/files', <String, String>{
-        'q': "'$parentId' in parents and trashed = false and "
-            "(mimeType contains 'video/' or mimeType = '$_folderMime')",
+        // Every child, so files the app cannot play are reported, not just
+        // silently missing. Non-video files are filtered out by the caller.
+        'q': "'$parentId' in parents and trashed = false",
         'fields': 'nextPageToken,files(id,name,description,size,mimeType)',
         'pageSize': '1000',
         'supportsAllDrives': 'true',
@@ -498,6 +569,7 @@ abstract final class DriveVideoSync {
           '${f['description'] ?? ''}',
           int.tryParse('${f['size'] ?? ''}') ?? 0,
           f['mimeType'] == _folderMime,
+          '${f['mimeType'] ?? ''}',
         ));
       }
       pageToken = body['nextPageToken'] as String?;
@@ -508,6 +580,17 @@ abstract final class DriveVideoSync {
   /// A number the file name ends with — "Intro.mp4-00" → 0,
   /// "CAD v.s BIM.mp4-01" → 1 — which is the lesson's place in its folder.
   static final RegExp _trailingNumber = RegExp(r'[-_ ]\s*(\d+)\s*$');
+
+  /// A folder's place: the number it STARTS with ("03-Annotation and
+  /// Layout" → 3) or ENDS with ("Introduction-01" → 1). Both styles are
+  /// used in Drive, so both must count, or "03-…" sorts after "Draw…-02".
+  static final RegExp _leadingNumber = RegExp(r'^\s*(\d+)\s*[-_. )]');
+
+  static int? folderNumber(String name) {
+    final Match? m = _leadingNumber.firstMatch(name);
+    if (m != null) return int.tryParse(m[1]!);
+    return _sequence(name);
+  }
 
   static int? _sequence(String name) {
     final Match? m = _trailingNumber.firstMatch(name.trim());

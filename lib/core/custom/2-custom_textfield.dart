@@ -17,6 +17,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// Custom text field widget — mirrors CustomDropdown API exactly.
 ///
@@ -776,13 +777,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
               Expanded(
                 child: hasError
                     ? Text(
-                  resolvedError!,
+                  FormatHelper.capitalize(resolvedError!),
                   style: widget.errorStyle ??
                       StyleText.fontSize12Weight400.copyWith(color: AppColors.red),
                 )
                     : widget.helperText != null
                     ? Text(
-                  widget.helperText!,
+                  FormatHelper.capitalize(widget.helperText!),
                   style: widget.helperStyle ??
                       StyleText.fontSize12Weight400.copyWith(
                         color: AppColors.text.withOpacity(0.5),
@@ -800,7 +801,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 Directionality(
                   textDirection: TextDirection.ltr,
                   child: Text(
-                    // FIXED 13/8/2026: the counter was always ASCII, so an
+                    FormatHelper.capitalize(// FIXED 13/8/2026: the counter was always ASCII, so an
                     // Arabic field showed "0 / 500" under Arabic text. The
                     // numerals follow the field, not the app: an RTL field
                     // counts in Arabic-Indic digits, an explicitly LTR field
@@ -812,7 +813,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     // to "٥٠٠ / ٠".
                     '${LocalizedNumber.forLocale(_charCount, _counterLocale(context))}'
                     ' / '
-                    '${LocalizedNumber.forLocale(_effectiveMaxLength!, _counterLocale(context))}',
+                    '${LocalizedNumber.forLocale(_effectiveMaxLength!, _counterLocale(context))}'),
                     textDirection: TextDirection.ltr,
                     style: widget.counterStyle ??
                         StyleText.fontSize12Weight400.copyWith(

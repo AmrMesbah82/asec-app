@@ -20,7 +20,6 @@ import 'package:asec/core/constants/firebase_collections.dart';
 import 'package:asec/core/network/app_firebase.dart';
 import 'package:asec/features/onboarding/o2_authentication/data/models/user_model.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
-import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 
 class AdminsRepository {
@@ -42,7 +41,7 @@ class AdminsRepository {
     required String fullName,
     required String email,
     required String password,
-    required List<AdminPermission> permissions,
+    required Set<String> permissionKeys,
   }) async {
     final String uid = await AppFirebase.createAccount(
       email: email,
@@ -53,16 +52,15 @@ class AdminsRepository {
       email: email.trim().toLowerCase(),
       fullName: fullName.trim(),
       role: UserRole.admin,
-      permissions: permissions,
+      permissionKeys: permissionKeys,
     );
     await _users.doc(uid).set(UserModel.toAdminMap(admin));
   }
 
-  Future<void> setPermissions(String uid, List<AdminPermission> permissions) =>
+  /// [keys]: tabs, actions and the 'v2' marker (see AdminPerms).
+  Future<void> setPermissions(String uid, Set<String> keys) =>
       _users.doc(uid).update(<String, dynamic>{
-        UserModel.permissions: <String>[
-          for (final AdminPermission p in permissions) p.key,
-        ],
+        UserModel.permissions: keys.toList(),
         FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
       });
 

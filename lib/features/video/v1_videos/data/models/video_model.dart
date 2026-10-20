@@ -40,6 +40,7 @@ abstract final class VideoModel {
       subcategory: data.str(subcategory).trim(),
       subcategoryOrder: data.integer(subcategoryOrder),
       published: data.boolean(FirebaseCollections.publishedField, true),
+      free: data.boolean(FirebaseCollections.freeField),
       createdBy: data.str(createdBy),
       createdAt: data.date(FirebaseCollections.createdAtField),
     );
@@ -57,6 +58,7 @@ abstract final class VideoModel {
         subcategory: video.subcategory.trim(),
         subcategoryOrder: video.subcategoryOrder,
         FirebaseCollections.publishedField: video.published,
+        FirebaseCollections.freeField: video.free,
         createdBy: video.createdBy,
         if (isCreate)
           FirebaseCollections.createdAtField: FieldValue.serverTimestamp(),
@@ -73,6 +75,7 @@ abstract final class VideoModel {
         storagePath: video.storagePath,
         category: video.category.trim(),
         FirebaseCollections.publishedField: video.published,
+        FirebaseCollections.freeField: video.free,
         FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
       };
 

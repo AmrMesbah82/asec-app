@@ -66,6 +66,8 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
     Quiz? existing,
     required this.adminUid,
     bool certificate = false,
+    String course = '',
+    String section = '',
     QuizBaseRepository? repository,
   })  : _repository = repository ?? QuizRepository(),
         _isNew = existing == null,
@@ -76,6 +78,8 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
                 title: '',
                 createdBy: adminUid,
                 certificate: certificate,
+                course: course,
+                section: section,
                 questions: <QuizQuestion>[QuizQuestion.blank(_freshId())],
               ),
         ));
@@ -126,6 +130,12 @@ class QuizEditorCubit extends Cubit<QuizEditorState> {
 
   void setCourse(String? value) => emit(state.copyWith(
         quiz: state.quiz.copyWith(course: value ?? ''),
+        clearErrors: true,
+      ));
+
+  /// Links an ordinary quiz to a course section ('' course = a general quiz).
+  void setSection(String course, String section) => emit(state.copyWith(
+        quiz: state.quiz.copyWith(course: course, section: section),
         clearErrors: true,
       ));
 

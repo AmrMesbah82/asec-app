@@ -29,6 +29,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class VideoLoadingView extends StatefulWidget {
   const VideoLoadingView({super.key, this.title = '', this.label = ''});
@@ -100,7 +101,7 @@ class _VideoLoadingViewState extends State<VideoLoadingView>
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 24.w),
                             child: Text(
-                              widget.title,
+                              FormatHelper.capitalize(widget.title),
                               maxLines: 2,
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
@@ -227,7 +228,7 @@ class _LoadingLabel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         Text(
-          text,
+          FormatHelper.capitalize(text),
           style: StyleText.fontSize13Weight500.copyWith(color: Colors.white70),
         ),
         const SizedBox(width: 6),

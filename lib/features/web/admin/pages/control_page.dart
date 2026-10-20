@@ -22,6 +22,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class Switch3 {
   const Switch3(this.key, this.label, this.hint, this.icon, {this.defaultOn = true});
@@ -194,7 +195,7 @@ class _Board extends StatelessWidget {
                     AppIcon(icon, color: WebColors.navy),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(title, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: WebColors.navy)),
+                      child: Text(FormatHelper.capitalize(title), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: WebColors.navy)),
                     ),
                     if (allOnButton)
                       TextButton.icon(
@@ -206,14 +207,14 @@ class _Board extends StatelessWidget {
                           }, SetOptions(merge: true)),
                         ),
                         icon: const AppIcon(Icons.done_all_rounded),
-                        label: Text(const L('تشغيل الكل', 'Turn all on').t),
+                        label: Text(FormatHelper.capitalize(const L('تشغيل الكل', 'Turn all on').t)),
                       ),
                   ],
                 ),
                 if (note != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(note!, style: TextStyle(color: WebColors.muted, fontSize: 13)),
+                    child: Text(FormatHelper.capitalize(note!), style: TextStyle(color: WebColors.muted, fontSize: 13)),
                   ),
                 if (snap.hasError) Padding(padding: const EdgeInsets.only(top: 12), child: ErrorNote(snap.error)),
                 if (!snap.hasData && !snap.hasError) const Loading(height: 120),
@@ -221,7 +222,7 @@ class _Board extends StatelessWidget {
                   for (final SwitchGroup g in groups) ...<Widget>[
                     Padding(
                       padding: const EdgeInsets.only(top: 18, bottom: 4),
-                      child: Text(g.title.t, style: TextStyle(fontWeight: FontWeight.w800, color: WebColors.muted)),
+                      child: Text(FormatHelper.capitalize(g.title.t), style: TextStyle(fontWeight: FontWeight.w800, color: WebColors.muted)),
                     ),
                     LayoutBuilder(
                       builder: (BuildContext c, BoxConstraints bc) {
@@ -236,8 +237,8 @@ class _Board extends StatelessWidget {
                                 child: SwitchListTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                                   secondary: AppIcon(s.icon, color: WebColors.navy),
-                                  title: Text(s.label.t, style: const TextStyle(fontWeight: FontWeight.w700)),
-                                  subtitle: Text(s.hint.t, style: const TextStyle(fontSize: 12)),
+                                  title: Text(FormatHelper.capitalize(s.label.t), style: const TextStyle(fontWeight: FontWeight.w700)),
+                                  subtitle: Text(FormatHelper.capitalize(s.hint.t), style: const TextStyle(fontSize: 12)),
                                   value: data[s.key] is bool ? data[s.key] as bool : s.defaultOn,
                                   onChanged: !canWrite
                                       ? null

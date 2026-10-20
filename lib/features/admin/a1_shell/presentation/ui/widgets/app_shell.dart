@@ -10,7 +10,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
@@ -21,12 +20,14 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/theme_controller.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/member_bar_actions.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/ui/widgets/brand_mark.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/animation/app_animations.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class ShellSection {
   const ShellSection({
@@ -163,12 +164,19 @@ class _AppShellState extends State<AppShell> {
         // NO TITLE HERE. Every page draws its own, bigger, with the line
         // that says what the page is for — two titles on one screen is one
         // too many. The bar keeps the controls.
-        title: const SizedBox.shrink(),
+        // On phone there is no rail, so the bar carries the brand — the left
+        // side is never an empty strip. With a rail the rail shows it.
+        title: hasRail
+            ? const SizedBox.shrink()
+            : const BrandMark(size: 30),
+        // One control only: the avatar. Dark mode and language are set once
+        // and forgotten, so they live in its menu instead of the bar.
         actions: <Widget>[
-          const _ThemeAction(),
-          const _LanguageAction(),
+          // Members: saved tips + the bell with the unread count.
+          if (!widget.user.isAdmin && !widget.user.isEmpty)
+            MemberBarActions(user: widget.user),
           _UserMenu(user: widget.user, onSignOut: _confirmSignOut),
-          SizedBox(width: 6.w),
+          SizedBox(width: 8.w),
         ],
       ),
       body: hasRail
@@ -259,7 +267,7 @@ class _AppShellState extends State<AppShell> {
               Padding(
                 padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
                 child: Text(
-                  S.of(sheetContext).moreTab,
+                  FormatHelper.capitalize(S.of(sheetContext).moreTab),
                   style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
                 ),
               ),
@@ -335,7 +343,7 @@ class _BarItem extends StatelessWidget {
                 AppIcon(icon, size: 21.sp, color: color),
                 SizedBox(height: 3.h),
                 Text(
-                  label,
+                  FormatHelper.capitalize(label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -438,7 +446,7 @@ class _RailItem extends StatelessWidget {
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
-                section.label,
+                FormatHelper.capitalize(section.label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: (selected
@@ -465,40 +473,6 @@ class _RailItem extends StatelessWidget {
   }
 }
 
-class _ThemeAction extends StatelessWidget {
-  const _ThemeAction();
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeController theme = ThemeController.to;
-    return Obx(
-      () => IconButton(
-        onPressed: theme.toggleDarkMode,
-        tooltip: S.of(context).darkMode,
-        icon: AppIcon(
-          theme.isDarkMode.value
-              ? Icons.light_mode_rounded
-              : Icons.dark_mode_rounded,
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageAction extends StatelessWidget {
-  const _LanguageAction();
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeController theme = ThemeController.to;
-    return IconButton(
-      onPressed: theme.toggleLanguage,
-      tooltip: S.of(context).language,
-      icon: const AppIcon(Icons.translate_rounded),
-    );
-  }
-}
-
 class _UserMenu extends StatelessWidget {
   const _UserMenu({required this.user, required this.onSignOut});
 
@@ -513,7 +487,17 @@ class _UserMenu extends StatelessWidget {
       tooltip: user.displayName,
       offset: Offset(0, 46.h),
       icon: AppAvatar(name: user.displayName, size: 32),
-      onSelected: (_) => onSignOut(),
+      onSelected: (int value) {
+        final ThemeController theme = ThemeController.to;
+        switch (value) {
+          case 1:
+            theme.toggleDarkMode();
+          case 2:
+            theme.toggleLanguage();
+          default:
+            onSignOut();
+        }
+      },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
         PopupMenuItem<int>(
           enabled: false,
@@ -521,18 +505,54 @@ class _UserMenu extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(user.displayName, style: StyleText.fontSize14Weight600),
+              Text(FormatHelper.capitalize(user.displayName), style: StyleText.fontSize14Weight600),
               Text(
-                user.email,
+                FormatHelper.capitalize(user.email),
                 style: StyleText.fontSize12Weight400
                     .copyWith(color: AppColors.secondaryText),
               ),
               SizedBox(height: 4.h),
               Text(
-                user.role.label(context),
+                FormatHelper.capitalize(user.role.label(context)),
                 style: StyleText.fontSize11Weight600
                     .copyWith(color: AppColors.primary),
               ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: <Widget>[
+              AppIcon(
+                ThemeController.to.isDarkMode.value
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+                size: 18.sp,
+              ),
+              SizedBox(width: 10.w),
+              Text(FormatHelper.capitalize(s.darkMode), style: StyleText.fontSize14Weight500),
+              const Spacer(),
+              AppIcon(
+                ThemeController.to.isDarkMode.value
+                    ? Icons.toggle_on_rounded
+                    : Icons.toggle_off_rounded,
+                size: 24.sp,
+                color: ThemeController.to.isDarkMode.value
+                    ? AppColors.primary
+                    : AppColors.secondaryText,
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 2,
+          child: Row(
+            children: <Widget>[
+              AppIcon(Icons.translate_rounded, size: 18.sp),
+              SizedBox(width: 10.w),
+              Text(FormatHelper.capitalize(s.language), style: StyleText.fontSize14Weight500),
             ],
           ),
         ),
@@ -544,7 +564,7 @@ class _UserMenu extends StatelessWidget {
               AppIcon(Icons.logout_rounded, size: 18.sp, color: AppColors.red),
               SizedBox(width: 10.w),
               Text(
-                s.signOut,
+                FormatHelper.capitalize(s.signOut),
                 style: StyleText.fontSize14Weight500
                     .copyWith(color: AppColors.red),
               ),

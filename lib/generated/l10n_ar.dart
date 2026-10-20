@@ -1734,7 +1734,7 @@ class SAr extends S {
   String get noAttemptsMatchSub => 'امسح البحث أو اختر اختبارًا آخر.';
 
   @override
-  String get cvs => 'السير الذاتية';
+  String get cvs => 'الأفضل';
 
   @override
   String get myCv => 'سيرتي الذاتية';
@@ -2489,7 +2489,7 @@ class SAr extends S {
   String get allConversions => 'كل التحويلات';
 
   @override
-  String get openUnitConverter => 'محوّل الوحدات (يعمل بدون إنترنت)';
+  String get openUnitConverter => 'محوّل الوحدات';
 
   @override
   String copiedValue(String value) {
@@ -2882,4 +2882,487 @@ class SAr extends S {
 
   @override
   String get unitConverterShort => 'المحوّل';
+
+  @override
+  String get sectionQuizLabel => 'القسم';
+
+  @override
+  String get sectionQuizCaption =>
+      'اختياري. اربط الاختبار بقسم من الكورس: يجده العضو في نهاية هذا القسم ويبدأه بعد مشاهدة كل دروسه.';
+
+  @override
+  String get sectionNone => 'بدون — اختبار عام';
+
+  @override
+  String get sectionQuizzesTitle => 'اختبار القسم';
+
+  @override
+  String get addSectionQuiz => 'إضافة اختبار';
+
+  @override
+  String get sectionQuizLocked => 'شاهد كل دروس هذا القسم لفتح الاختبار.';
+
+  @override
+  String get accessDevice => 'جهاز الدخول';
+
+  @override
+  String get accessDeviceCaption =>
+      'كل عضو يستخدم التطبيق على جهاز واحد فقط. لنقله إلى جهاز جديد، أزل هذا الجهاز — وأول جهاز يسجّل الدخول منه بعدها يصبح جهازه.';
+
+  @override
+  String get accessDeviceNone =>
+      'لم يُستخدم على أي جهاز بعد — أول جهاز يسجّل الدخول منه سيُربط بالحساب.';
+
+  @override
+  String get accessDeviceUnknown => 'جهاز';
+
+  @override
+  String accessDeviceSince(String date) {
+    return 'منذ $date';
+  }
+
+  @override
+  String get accessDeviceRemove => 'إزالة الجهاز';
+
+  @override
+  String get accessDeviceRemoveQuestion => 'إزالة هذا الجهاز؟';
+
+  @override
+  String accessDeviceRemoveBody(String device) {
+    return 'سيُمنع العضو من الدخول على $device الآن، وأول جهاز يسجّل الدخول منه بعدها يصبح جهازه.';
+  }
+
+  @override
+  String get accessDeviceRemoved =>
+      'تمت إزالة الجهاز. يمكن للعضو الآن تسجيل الدخول من الجهاز الجديد.';
+
+  @override
+  String get blockedTitleOtherDevice => 'هذا الحساب مستخدم على جهاز آخر';
+
+  @override
+  String get blockedBodyOtherDevice =>
+      'حسابك يعمل على جهاز واحد فقط. لاستخدام هذا الجهاز بدلًا منه، اطلب من الإدارة إزالة الجهاز القديم، ثم سجّل الخروج وادخل من جديد هنا.';
+
+  @override
+  String get blockedTitleDeviceRemoved => 'تمت إزالة هذا الجهاز';
+
+  @override
+  String get blockedBodyDeviceRemoved =>
+      'أزالت الإدارة هذا الجهاز من حسابك. لاستخدامه مرة أخرى، سجّل الخروج ثم ادخل من جديد.';
+
+  @override
+  String get tbAccountDevice => 'جهاز الحساب';
+
+  @override
+  String get engEngagement => 'التفاعل';
+
+  @override
+  String get engEngagementSub => 'الإشعارات والنصائح ومكتبة الأعضاء ونجومهم.';
+
+  @override
+  String get engNotifications => 'الإشعارات';
+
+  @override
+  String get engNotificationsSub => 'رسائل من فريق ASEC.';
+
+  @override
+  String get engNotificationsEmpty => 'لا توجد إشعارات بعد';
+
+  @override
+  String get engNotificationsEmptySub =>
+      'ستظهر هنا الرسائل الجديدة من الإدارة.';
+
+  @override
+  String get engSendNotification => 'إرسال إشعار';
+
+  @override
+  String get engSend => 'إرسال';
+
+  @override
+  String get engNotifSent => 'تم إرسال الإشعار';
+
+  @override
+  String get engNotifTitleHint => 'عنوان الإشعار';
+
+  @override
+  String get engNotifBodyHint => 'اكتب الرسالة التي سيقرأها الأعضاء';
+
+  @override
+  String get engNotifAdminSub =>
+      'تُرسل لكل الأعضاء — تظهر تحت أيقونة الجرس في أعلى التطبيق مع عدد غير المقروء.';
+
+  @override
+  String get engTipsTricks => 'نصائح وحيل';
+
+  @override
+  String get engTipsAdminSub =>
+      'تظهر النصائح فوق الصفحة الرئيسية للأعضاء عند فتح التطبيق. يمكن للعضو حفظ النصيحة، والرقم يوضح عدد من حفظها.';
+
+  @override
+  String get engAddTip => 'إضافة نصيحة';
+
+  @override
+  String get engTipAdded => 'تمت إضافة النصيحة';
+
+  @override
+  String get engTipTitleHint => 'عنوان النصيحة';
+
+  @override
+  String get engTipBodyHint => 'اكتب النصيحة';
+
+  @override
+  String get engTipSavedToast => 'تم الحفظ — تجدها في أيقونة المحفوظات بالأعلى';
+
+  @override
+  String get engTipTapToClose => 'اضغط في أي مكان للإغلاق';
+
+  @override
+  String engTipSavedCount(int count) {
+    return 'حفظها $count';
+  }
+
+  @override
+  String get engTipActive => 'تظهر للأعضاء';
+
+  @override
+  String get engTipsEmpty => 'لا توجد نصائح بعد';
+
+  @override
+  String get engSavedTips => 'النصائح المحفوظة';
+
+  @override
+  String get engSavedTipsSub => 'النصائح التي حفظتها.';
+
+  @override
+  String get engSavedTipsEmpty => 'لا توجد محفوظات بعد';
+
+  @override
+  String get engTipUnsave => 'إزالة من المحفوظات';
+
+  @override
+  String get engLibrary => 'المكتبة';
+
+  @override
+  String get engLibraryFiles => 'الملفات';
+
+  @override
+  String get engLibraryFilesHint => 'مستندات من ASEC';
+
+  @override
+  String get engLibraryBest => 'الأفضل';
+
+  @override
+  String get engLibraryBestHint => 'أفضل الأعضاء بالنجوم';
+
+  @override
+  String get engLibraryCertificate => 'الشهادة';
+
+  @override
+  String get engLibrarySub => 'ملفات يشاركها معك فريق ASEC.';
+
+  @override
+  String get engLibraryEmpty => 'لا توجد ملفات بعد';
+
+  @override
+  String get engLibraryEmptySub => 'ستظهر هنا الملفات التي تضيفها الإدارة.';
+
+  @override
+  String get engLibraryAdminSub =>
+      'ملفات مكتبة الأعضاء (الصفحة الرئيسية ← المكتبة ← الملفات).';
+
+  @override
+  String get engLeaderboardSub =>
+      'ترتيب الأعضاء حسب النجوم التي حصلوا عليها من مشاهدة الكورسات.';
+
+  @override
+  String get engLeaderboardEmpty => 'لا توجد نجوم بعد';
+
+  @override
+  String get engYou => 'أنت';
+
+  @override
+  String get engMember => 'عضو';
+
+  @override
+  String get engStarsTab => 'النجوم';
+
+  @override
+  String get engStarsAdminSub =>
+      'نجوم كل عضو في كل كورس — نجمة لكل 20% مشاهدة، وبحد أقصى 5 لكل كورس. اضغط على العضو لعرض كورساته.';
+
+  @override
+  String get engStarsHint => 'نجمة لكل 20% تشاهدها — 5 نجوم لكل كورس';
+
+  @override
+  String engStarsCount(int count) {
+    return '$count نجمة';
+  }
+
+  @override
+  String get engFilesTab => 'الملفات';
+
+  @override
+  String get engNewFolder => 'مجلد جديد';
+
+  @override
+  String get engFolderName => 'اسم المجلد';
+
+  @override
+  String get engFolderCreated => 'تم إنشاء المجلد';
+
+  @override
+  String get engRename => 'إعادة تسمية';
+
+  @override
+  String get engCourseFilesEmpty => 'لا توجد ملفات في هذا الكورس بعد';
+
+  @override
+  String get engCourseFilesEmptyAdmin => 'أنشئ مجلدًا ثم ارفع الملفات بداخله.';
+
+  @override
+  String get engFolderEmpty => 'هذا المجلد فارغ';
+
+  @override
+  String get engAllFolders => 'كل المجلدات';
+
+  @override
+  String engFileCount(int count) {
+    return '$count ملف';
+  }
+
+  @override
+  String get engDeleteFolderBody => 'سيتم حذف المجلد وكل الملفات بداخله.';
+
+  @override
+  String get engDeleteBody => 'لا يمكن التراجع عن هذا.';
+
+  @override
+  String get engFileUploaded => 'تم رفع الملف';
+
+  @override
+  String get engFileOpenFailed => 'تعذر فتح الملف';
+
+  @override
+  String get engFieldRequired => 'مطلوب';
+
+  @override
+  String get engCourseSequential => 'المشاهدة بالترتيب';
+
+  @override
+  String get engCourseSequentialHint =>
+      'لا يفتح الفيديو إلا بعد مشاهدة الذي قبله';
+
+  @override
+  String get engVideoDefault => 'افتراضي';
+
+  @override
+  String get engVideoCustom => 'مخصص';
+
+  @override
+  String get engMakeDefault => 'اجعله افتراضي (لكل الأعضاء)';
+
+  @override
+  String get engMakeCustom => 'اجعله مخصص';
+
+  @override
+  String get engRulesMissing =>
+      'غير مسموح من Firebase. انشر القواعد الجديدة: firebase deploy --only firestore:rules,storage';
+
+  @override
+  String get engChooseFolder => 'الرفع في أي مجلد؟';
+
+  @override
+  String get engChooseFolderSub =>
+      'اختر مجلدًا أو أنشئ مجلدًا جديدًا — ثم اختر الملف.';
+
+  @override
+  String get engNoFoldersYet => 'لا توجد مجلدات بعد — أنشئ أول مجلد:';
+
+  @override
+  String get engOtherFiles => 'ملفات أخرى';
+
+  @override
+  String get engPartners => 'شركاء النجاح';
+
+  @override
+  String get engPartnersSub => 'شركات تعمل مع ASEC';
+
+  @override
+  String get engPartnersAdminSub =>
+      'شعارات الشركاء — تدور في حلقة ثلاثية الأبعاد حول شعار ASEC في الصفحة الرئيسية للأعضاء (وتظهر على الموقع). تظهر المنشورة فقط.';
+
+  @override
+  String get engPartnerAdd => 'إضافة شريك';
+
+  @override
+  String get engPartnerName => 'اسم الشركة';
+
+  @override
+  String get engPartnerAdded => 'تمت إضافة الشريك';
+
+  @override
+  String get engPartnersEmpty => 'لا يوجد شركاء بعد — أضف أول شعار';
+
+  @override
+  String get updCardTitle => 'تحديث التطبيق';
+
+  @override
+  String get updCardHint =>
+      'اطلب من مستخدمي أندرويد تحديث التطبيق. استخدم رقم البناء — الجزء بعد + في pubspec (1.0.1+9 ← 9).';
+
+  @override
+  String get updLatestBuild => 'أحدث بناء — تحديث اختياري';
+
+  @override
+  String get updLatestBuildHint =>
+      'الإصدارات الأقل من هذا الرقم ترى رسالة \"إصدار جديد\" ويمكن إغلاقها.';
+
+  @override
+  String get updMinBuild => 'أقل بناء مسموح — تحديث إجباري';
+
+  @override
+  String get updMinBuildHint =>
+      'الإصدارات الأقل من هذا الرقم يجب أن تُحدَّث، ولا يمكن إغلاق الرسالة.';
+
+  @override
+  String get updNotesEn => 'ما الجديد (إنجليزي)';
+
+  @override
+  String get updNotesAr => 'ما الجديد (عربي)';
+
+  @override
+  String get updWarning =>
+      'ارفع هذه الأرقام فقط بعد نشر الإصدار الجديد على Google Play — وإلا سيُطلب من المستخدمين التحديث لإصدار غير متاح بعد.';
+
+  @override
+  String updStatusForced(String build) {
+    return 'التحديث الإجباري مفعّل: الإصدارات الأقل من $build يجب أن تُحدَّث';
+  }
+
+  @override
+  String get updStatusOff => 'لا يوجد تحديث إجباري';
+
+  @override
+  String updThisApp(String version) {
+    return 'هذا التطبيق: $version';
+  }
+
+  @override
+  String get updStopForcing => 'إيقاف الإجبار';
+
+  @override
+  String get updSaved => 'تم حفظ إعدادات التحديث';
+
+  @override
+  String get updUseThisVersion => 'استخدم هذا الإصدار';
+
+  @override
+  String get updBuildToUse => 'رقم البناء المطلوب التحديث إليه';
+
+  @override
+  String get updBuildToUseHint =>
+      'تمت تعبئته من هذا التطبيق. غيّره إذا كان لإصدار أندرويد الجديد رقم مختلف.';
+
+  @override
+  String get updForceQuestion => 'هل تريد إجبار المستخدمين على التحديث؟';
+
+  @override
+  String get updOptional => 'اختياري';
+
+  @override
+  String get updForced => 'إجباري';
+
+  @override
+  String updOptionalSet(String build) {
+    return 'تم ضبط التحديث الاختياري: الإصدارات الأقل من $build سيُطلب منها التحديث';
+  }
+
+  @override
+  String get updEnterBuild => 'أدخل رقم البناء';
+
+  @override
+  String get permEngagement => 'التفاعل';
+
+  @override
+  String get permViewOnly => 'عرض فقط';
+
+  @override
+  String get permDashboardCharts => 'الرسوم البيانية';
+
+  @override
+  String get permDashboardTable => 'جدول آخر المحاولات';
+
+  @override
+  String get permVideosAdd => 'إضافة / رفع الفيديوهات وملفات الكورس';
+
+  @override
+  String get permVideosEdit => 'تعديل الفيديوهات وملفات الكورس';
+
+  @override
+  String get permVideosDelete => 'حذف الفيديوهات وملفات الكورس';
+
+  @override
+  String get permVideosPublish => 'نشر / إخفاء الفيديوهات';
+
+  @override
+  String get permVideosAccess =>
+      'صلاحية الكورس (افتراضي / مخصص، المشاهدة بالترتيب)';
+
+  @override
+  String get permQuizzesCreate => 'إنشاء اختبارات';
+
+  @override
+  String get permQuizzesEdit => 'تعديل الاختبارات';
+
+  @override
+  String get permQuizzesDelete => 'حذف الاختبارات';
+
+  @override
+  String get permQuizzesOpen => 'فتح / إغلاق الاختبارات';
+
+  @override
+  String get permQuizzesCertificates => 'اختبارات الشهادات';
+
+  @override
+  String get permMembersBlock => 'تفعيل / إيقاف الأعضاء';
+
+  @override
+  String get permMembersAccess =>
+      'تعديل الصلاحية (الكورسات، المدة، الإيقاف المؤقت، الحاسبات)';
+
+  @override
+  String get permMembersDevice => 'إعادة تعيين الجهاز';
+
+  @override
+  String get permCvsReview => 'مراجعة السير الذاتية (الحالة)';
+
+  @override
+  String get permCvsDelete => 'حذف السير الذاتية';
+
+  @override
+  String get permCvsGrant => 'منح صلاحية السيرة الذاتية';
+
+  @override
+  String get permEngNotifications => 'الإشعارات';
+
+  @override
+  String get permEngTips => 'النصائح والحيل';
+
+  @override
+  String get permEngLibrary => 'المكتبة';
+
+  @override
+  String get permEngStars => 'النجوم';
+
+  @override
+  String get permEngPartners => 'الشركاء';
+
+  @override
+  String get permWebContent => 'الصفحات والمقالات والمحتوى';
+
+  @override
+  String get permWebInbox => 'الوارد';
+
+  @override
+  String get permWebSettings => 'إعدادات الموقع ومركز التحكم';
 }

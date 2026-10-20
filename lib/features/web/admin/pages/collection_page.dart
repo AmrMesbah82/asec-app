@@ -13,6 +13,7 @@ import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
 import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key, required this.config});
@@ -65,7 +66,7 @@ class _CollectionPageState extends State<CollectionPage> {
         FilledButton.icon(
           onPressed: () => _edit(null),
           icon: const AppIcon(Icons.add_rounded),
-          label: Text(const L('إضافة', 'Add').t),
+          label: Text(FormatHelper.capitalize(const L('إضافة', 'Add').t)),
         ),
       ],
       child: StreamBuilder<List<Doc>>(
@@ -93,7 +94,7 @@ class _CollectionPageState extends State<CollectionPage> {
                     ),
                   ),
                   const Spacer(),
-                  Text('${items.length} / ${snap.data!.length}', style: TextStyle(color: WebColors.muted)),
+                  Text(FormatHelper.capitalize('${items.length} / ${snap.data!.length}'), style: TextStyle(color: WebColors.muted)),
                 ],
               ),
               const SizedBox(height: 14),
@@ -144,14 +145,14 @@ class _Row extends StatelessWidget {
       leading: cfg.imageKey == null
           ? CircleAvatar(backgroundColor: WebColors.surface, child: AppIcon(cfg.icon, color: WebColors.navy))
           : SizedBox(width: 64, height: 48, child: NetImage(doc.s(cfg.imageKey!), radius: 6)),
-      title: Text(doc.s(cfg.titleKey, '—'), maxLines: 1, overflow: TextOverflow.ellipsis,
+      title: Text(FormatHelper.capitalize(doc.s(cfg.titleKey, '—')), maxLines: 1, overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w700)),
       subtitle: Text(
-        <String>[
+        FormatHelper.capitalize(<String>[
           if (sub.isNotEmpty) sub,
           if (date != null) panelDate(date),
           if (cfg.sort == SortBy.order) '#${doc.i('order')}',
-        ].join('  ·  '),
+        ].join('  ·  ')),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -226,7 +227,7 @@ class _DocEditorPageState extends State<DocEditorPage> {
             onPressed: () => Navigator.of(context).maybePop(),
             icon: const AppIcon(Icons.close_rounded),
           ),
-          title: Text('${isNew ? const L('إضافة', 'New').t : const L('تعديل', 'Edit').t} — ${widget.config.title.t}'),
+          title: Text(FormatHelper.capitalize('${isNew ? const L('إضافة', 'New').t : const L('تعديل', 'Edit').t} — ${widget.config.title.t}')),
           actions: <Widget>[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -235,7 +236,7 @@ class _DocEditorPageState extends State<DocEditorPage> {
                 icon: _saving
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const AppIcon(Icons.save_rounded),
-                label: Text(const L('حفظ', 'Save').t),
+                label: Text(FormatHelper.capitalize(const L('حفظ', 'Save').t)),
               ),
             ),
           ],

@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 
 /// Why a member is kept out. [none] = they may use the app.
-enum AccessBlock { none, paused, notStarted, expired, platform }
+enum AccessBlock { none, paused, notStarted, expired, platform, otherDevice, deviceRemoved }
 
 abstract final class MemberAccess {
   /// Every platform key the admin can choose from, in display order.
@@ -60,8 +60,18 @@ abstract final class MemberAccess {
   }
 
   /// Admins are never blocked; members are checked in this order: paused,
-  /// not started, ended, wrong device.
-  static AccessBlock check(AppUser user, {DateTime? now}) {
+  /// not started, ended, wrong platform, wrong device.
+  ///
+  /// ONE DEVICE: [thisDevice] is this copy's id (DeviceIdentity.id) and
+  /// [boundHereUid] the account this device was last locked to. No device
+  /// on the account yet = allowed (AccessGate locks it to this one); the
+  /// admin removed THIS device = kept out until the member signs in again.
+  static AccessBlock check(
+    AppUser user, {
+    DateTime? now,
+    String? thisDevice,
+    String? boundHereUid,
+  }) {
     if (user.isEmpty || user.isAdmin) return AccessBlock.none;
     final DateTime t = now ?? DateTime.now();
     if (user.isPaused) return AccessBlock.paused;
@@ -72,6 +82,13 @@ abstract final class MemberAccess {
       return AccessBlock.expired;
     }
     if (!user.allowsPlatform(currentPlatform)) return AccessBlock.platform;
+    if (thisDevice != null) {
+      if (!user.hasDevice) {
+        if (boundHereUid == user.uid) return AccessBlock.deviceRemoved;
+      } else if (user.deviceId != thisDevice) {
+        return AccessBlock.otherDevice;
+      }
+    }
     return AccessBlock.none;
   }
 }

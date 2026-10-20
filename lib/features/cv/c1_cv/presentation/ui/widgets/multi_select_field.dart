@@ -21,6 +21,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class MultiSelectField extends StatelessWidget {
   const MultiSelectField({
@@ -76,14 +77,14 @@ class MultiSelectField extends StatelessWidget {
         Row(
           children: <Widget>[
             Text(
-              label,
+              FormatHelper.capitalize(label),
               style: StyleText.fontSize13Weight600
                   .copyWith(color: AppColors.secondaryText),
             ),
             const Spacer(),
             if (!empty)
               Text(
-                s.selectedCount('${selected.length}'),
+                FormatHelper.capitalize(s.selectedCount('${selected.length}')),
                 style: StyleText.fontSize11Weight600
                     .copyWith(color: AppColors.primary),
               ),
@@ -107,9 +108,9 @@ class MultiSelectField extends StatelessWidget {
                   Expanded(
                     child: empty
                         ? Text(
-                            options.isEmpty
+                            FormatHelper.capitalize(options.isEmpty
                                 ? (emptyHint ?? s.noneChosen)
-                                : s.pickSome,
+                                : s.pickSome),
                             style: StyleText.fontSize13Weight400
                                 .copyWith(color: AppColors.secondaryText),
                           )
@@ -165,7 +166,7 @@ class _Chip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
-            label,
+            FormatHelper.capitalize(label),
             style: StyleText.fontSize11Weight600
                 .copyWith(color: AppColors.onChip),
           ),
@@ -220,11 +221,11 @@ class _PickerSheetState extends State<_PickerSheet> {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: Text(widget.label,
+                  child: Text(FormatHelper.capitalize(widget.label),
                       style: StyleText.fontSize16Weight600),
                 ),
                 Text(
-                  s.selectedCount('${_picked.length}'),
+                  FormatHelper.capitalize(s.selectedCount('${_picked.length}')),
                   style: StyleText.fontSize12Weight600
                       .copyWith(color: AppColors.primary),
                 ),
@@ -305,7 +306,7 @@ class _Selectable extends StatelessWidget {
               ),
               SizedBox(width: 7.w),
               Text(
-                label,
+                FormatHelper.capitalize(label),
                 style: (selected
                         ? StyleText.fontSize12Weight600
                         : StyleText.fontSize12Weight400)

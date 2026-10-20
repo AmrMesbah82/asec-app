@@ -14,6 +14,7 @@ import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_radius.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 /// The one placeholder colour every dropdown in the app uses.
 ///
@@ -486,14 +487,14 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
       if (hasError) ...[
         SizedBox(height: 4.sp),
         Text(
-          widget.errorText!,
+          FormatHelper.capitalize(widget.errorText!),
           style: widget.errorStyle ??
               StyleText.fontSize12Weight400.copyWith(color: AppColors.red),
         ),
       ] else if (widget.helperText != null) ...[
         SizedBox(height: 4.sp),
         Text(
-          widget.helperText!,
+          FormatHelper.capitalize(widget.helperText!),
           style: widget.helperStyle ??
               StyleText.fontSize12Weight400
                   .copyWith(color: AppColors.text.withOpacity(0.5)),
@@ -664,7 +665,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
                 ],
                 Expanded(
                   child: Text(
-                    shownItem.label,
+                    FormatHelper.capitalize(shownItem.label),
                     style: widget.valueStyle ??
                         StyleText.fontSize14Weight400.copyWith(
                           color:
@@ -824,7 +825,7 @@ class _DropdownOverlay<T> extends StatelessWidget {
                               child: emptyWidget ??
                                   Center(
                                     child: Text(
-                                      'No options',
+                                      FormatHelper.capitalize('No options'),
                                       style: StyleText.fontSize13Weight400
                                           .copyWith(
                                         color: AppColors.text.withOpacity(0.4),
@@ -924,7 +925,7 @@ class _DropdownItemTileState<T> extends State<_DropdownItemTile<T>> {
               ],
               Expanded(
                 child: Text(
-                  widget.item.label,
+                  FormatHelper.capitalize(widget.item.label),
                   style: (widget.style ??
                           (widget.isSelected
                               ? StyleText.fontSize14Weight500

@@ -29,6 +29,7 @@ import 'package:asec/features/cv/c1_cv/presentation/controller/cv_form_cubit.dar
 import 'package:asec/features/cv/c1_cv/presentation/ui/widgets/multi_select_field.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CvFormPage extends StatelessWidget {
   const CvFormPage({super.key, required this.user});
@@ -71,7 +72,7 @@ class _CvFormView extends StatelessWidget {
       listener: (BuildContext context, CvFormState state) {
         if (state.status == CvFormStatus.saved) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(s.cvSaved)));
+              .showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.cvSaved))));
         }
       },
       builder: (BuildContext context, CvFormState state) {
@@ -125,7 +126,7 @@ class _CvFormView extends StatelessWidget {
                   )
                 : const AppIcon(Icons.check_rounded, color: Colors.white),
             label: Text(
-              s.save,
+              FormatHelper.capitalize(s.save),
               style:
                   StyleText.fontSize14Weight600.copyWith(color: Colors.white),
             ),
@@ -623,18 +624,18 @@ class _CvFileCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        cv.hasCvFile
+                        FormatHelper.capitalize(cv.hasCvFile
                             ? (cv.cvFileName.isEmpty
                                 ? s.driveLabel
                                 : cv.cvFileName)
-                            : s.noCvFile,
+                            : s.noCvFile),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: StyleText.fontSize13Weight600,
                       ),
                       if (cv.hasCvFile && cv.cvFileSizeLabel.isNotEmpty)
                         Text(
-                          cv.cvFileSizeLabel,
+                          FormatHelper.capitalize(cv.cvFileSizeLabel),
                           style: StyleText.fontSize11Weight400
                               .copyWith(color: AppColors.secondaryText),
                         ),

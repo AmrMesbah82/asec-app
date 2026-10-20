@@ -23,7 +23,9 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/controller/video_form_cubit.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class VideoFormPage extends StatelessWidget {
   const VideoFormPage({
@@ -110,7 +112,7 @@ class _VideoFormViewState extends State<_VideoFormView> {
           final ScaffoldMessengerState messenger =
               ScaffoldMessenger.of(context);
           Navigator.of(context).pop(true);
-          messenger.showSnackBar(SnackBar(content: Text(s.videoSaved)));
+          messenger.showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.videoSaved))));
         }
       },
       builder: (BuildContext context, VideoFormState state) {
@@ -120,14 +122,14 @@ class _VideoFormViewState extends State<_VideoFormView> {
           onPopInvokedWithResult: (bool didPop, Object? _) {
             if (!didPop) {
               ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(s.videoStillUploading)));
+                  .showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.videoStillUploading))));
             }
           },
           child: Scaffold(
             backgroundColor: AppColors.background,
             appBar: AppBar(
               title: Text(
-                _cubit.isNew ? s.addVideo : s.editVideo,
+                FormatHelper.capitalize(_cubit.isNew ? s.addVideo : s.editVideo),
                 style: StyleText.fontSize18Weight600,
               ),
               actions: <Widget>[
@@ -223,18 +225,22 @@ class _VideoFormViewState extends State<_VideoFormView> {
                           child: ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: Text(
-                              s.published,
+                              FormatHelper.capitalize(s.published),
                               style: StyleText.fontSize14Weight600,
                             ),
                             subtitle: Text(
-                              s.publishedHint,
+                              FormatHelper.capitalize(s.publishedHint),
                               style: StyleText.fontSize12Weight400
                                   .copyWith(color: AppColors.secondaryText),
                             ),
                             trailing: Switch.adaptive(
                               value: state.video.published,
                               activeTrackColor: AppColors.secondaryPrimary,
-                              onChanged: _cubit.setPublished,
+                              // Videos → Publish / hide.
+                              onChanged: SessionController.to.current
+                                      .canDo(AdminAction.videosPublish)
+                                  ? _cubit.setPublished
+                                  : null,
                             ),
                           ),
                         ),
@@ -285,7 +291,7 @@ class _FileSection extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: Text(
-                  label.isEmpty ? s.noFileChosen : label,
+                  FormatHelper.capitalize(label.isEmpty ? s.noFileChosen : label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: label.isEmpty
@@ -309,7 +315,7 @@ class _FileSection extends StatelessWidget {
         SizedBox(height: 12.h),
         if (uploading) ...<Widget>[
           Text(
-            s.uploadingPercent('${(state.progress * 100).round()}'),
+            FormatHelper.capitalize(s.uploadingPercent('${(state.progress * 100).round()}')),
             style: StyleText.fontSize13Weight600
                 .copyWith(color: AppColors.primary),
           ),

@@ -12,6 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_radius.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
 // REMOVED_MODULE: import 'package:asec/features/external/services_mangment_module/core/new_theme.dart';
 
 class MainCustomButton extends StatelessWidget {
@@ -47,7 +48,7 @@ class MainCustomButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(buttonText== null?"":buttonText!,
+            Text(FormatHelper.capitalize(buttonText== null?"":buttonText!),
                 style: textStyle ??
                     StyleText.fontSize23Weight600
                         .copyWith(color: AppColors.textButton)
