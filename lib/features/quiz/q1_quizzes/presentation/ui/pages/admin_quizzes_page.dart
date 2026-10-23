@@ -29,6 +29,8 @@ import 'package:asec/features/onboarding/o2_authentication/presentation/controll
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/features/quiz/q2_certificates/data/certificate_data.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
 import 'package:asec/core/animation/app_animations.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 
@@ -87,6 +89,18 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
     final bool cert = widget.certificate;
     final String title = cert ? s.certificateQuizzes : s.quizzes;
     final String subtitle = cert ? s.certificateQuizzesAdminSub : s.quizzesAdminSub;
+    // CERTIFICATE QUIZZES: see what the member's certificate looks like.
+    final List<Widget> actions = !cert
+        ? const <Widget>[]
+        : <Widget>[
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => CertificatePage.of(data: CertificateData.sample(), sample: true),
+              )),
+              icon: AppIcon(Icons.visibility_outlined, size: 18, color: AppColors.primary),
+              label: Text(FormatHelper.capitalize(s.certPreview)),
+            ),
+          ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -100,11 +114,11 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
         backgroundColor: AppColors.primary,
         icon: AppIcon(
           cert ? Icons.workspace_premium_rounded : Icons.add_rounded,
-          color: Colors.white,
+          color: AppColors.textButton,
         ),
         label: Text(
           FormatHelper.capitalize(cert ? s.newCertificateQuiz : s.newQuiz),
-          style: StyleText.fontSize14Weight600.copyWith(color: Colors.white),
+          style: StyleText.fontSize14Weight600.copyWith(color: AppColors.textButton),
         ),
       ),
       body: StreamBuilder<List<Quiz>>(
@@ -123,6 +137,7 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
             return ConsolePage(
               title: title,
               subtitle: subtitle,
+              actions: actions,
               child: AppEmptyView(
                 title: cert ? s.noCertificateQuizzesTitle : s.noQuizzesTitle,
                 subtitle: cert ? s.noCertificateQuizzesAdminSub : s.noQuizzesAdminSub,
@@ -133,6 +148,7 @@ class _AdminQuizzesPageState extends State<AdminQuizzesPage> {
           return ConsolePage(
             title: title,
             subtitle: subtitle,
+            actions: actions,
             child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               return GridView.builder(

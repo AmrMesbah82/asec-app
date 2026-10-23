@@ -7,6 +7,8 @@
 ///          access to the main sections and their courses at a glance.
 /// Author: ASEC team
 /// Created: 13/10/2026
+/// Updated: 22/10/2026 - Continue watching is one compact row (small lesson
+///          screen, title + progress, round play) instead of a tall banner.
 ///
 /// READ-ONLY. Everything here comes from what already exists: the published
 /// lessons (the same stream the Videos page reads), the watch progress kept on
@@ -37,6 +39,7 @@ import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/app_shell.dart';
+import 'package:asec/features/cv/c1_cv/presentation/ui/pages/cv_directory_page.dart';
 import 'package:asec/features/engagement/e1_engagement/presentation/controller/course_settings.dart';
 import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
 import 'package:asec/features/engagement/e1_engagement/presentation/ui/pages/library_pages.dart';
@@ -52,6 +55,7 @@ import 'package:asec/features/video/v1_videos/presentation/ui/pages/video_player
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_categories.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_watch_store.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/features/user/u2_home/presentation/ui/widgets/member_projects_section.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 import 'package:asec/features/video/v1_videos/presentation/controller/member_videos.dart';
 
@@ -62,6 +66,7 @@ abstract final class MemberSectionIds {
   static const String converter = 'converter';
   static const String quizzes = 'quizzes';
   static const String cvs = 'cvs';
+  static const String web = 'web';
   static const String settings = 'settings';
 }
 
@@ -236,12 +241,19 @@ class _HomeBody extends StatelessWidget {
         hint: s.engLibraryFilesHint,
         onTap: () => PushedSectionPage.open(context, const LibraryFilesPage()),
       ),
-      _Tile(
-        icon: Icons.emoji_events_rounded,
-        label: s.engLibraryBest,
-        hint: s.engLibraryBestHint,
-        onTap: () => PushedSectionPage.open(context, const LeaderboardPage()),
-      ),
+      // "The Best" = the CVs, same as the admin app's "The Best" tab.
+      // Opens the tab when it is in the bar, else the page on top.
+      if (f.isOn(AppFeature.sectionCvDirectory))
+        _Tile(
+          icon: Icons.emoji_events_rounded,
+          label: s.cvs,
+          hint: s.engLibraryBestHint,
+          onTap: () {
+            if (!AppShell.open(context, MemberSectionIds.cvs)) {
+              PushedSectionPage.open(context, const CvDirectoryPage());
+            }
+          },
+        ),
       if (f.isOn(AppFeature.sectionVideos))
         _Tile(
           icon: Icons.workspace_premium_rounded,
@@ -322,6 +334,12 @@ class _HomeBody extends StatelessWidget {
                   child: tiles,
                 ),
               ],
+              // PROJECTS: the website's projects, a section of their own.
+              SizedBox(height: 24.h),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 170),
+                child: MemberProjectsSection(),
+              ),
               // "Your courses" was here — removed; the courses are in Videos.
               // OUR PARTNERS: their logos turning in a 3D ring around ASEC.
               SizedBox(height: 28.h),
@@ -367,11 +385,11 @@ class _HeroCard extends StatelessWidget {
           padding: EdgeInsets.all(3.r),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.55), width: 2),
+            border: Border.all(color: AppColors.textButton.withOpacity(0.55), width: 2),
           ),
-          child: AppAvatar(name: user.displayName, size: 54),
+          child: AppAvatar(name: user.displayName, size: 40),
         ),
-        SizedBox(width: 14.w),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,15 +397,17 @@ class _HeroCard extends StatelessWidget {
             children: <Widget>[
               Text(
                 FormatHelper.capitalize(s.homeGreeting(user.firstName)),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: StyleText.fontSize22Weight700.copyWith(color: Colors.white),
+                style: StyleText.fontSize18Weight600.copyWith(color: AppColors.textButton),
               ),
-              SizedBox(height: 4.h),
+              SizedBox(height: 2.h),
               Text(
                 FormatHelper.capitalize(s.homeSub),
-                style: StyleText.fontSize14Weight400
-                    .copyWith(color: Colors.white.withOpacity(0.85)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: StyleText.fontSize12Weight400
+                    .copyWith(color: AppColors.textButton.withOpacity(0.85)),
               ),
             ],
           ),
@@ -399,7 +419,7 @@ class _HeroCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _Ring(value: ratio),
-        SizedBox(width: 14.w),
+        SizedBox(width: 12.w),
         Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,22 +428,14 @@ class _HeroCard extends StatelessWidget {
               Text(
                 FormatHelper.capitalize(s.homeProgress),
                 style: StyleText.fontSize12Weight600
-                    .copyWith(color: Colors.white.withOpacity(0.8)),
+                    .copyWith(color: AppColors.textButton.withOpacity(0.8)),
               ),
               SizedBox(height: 2.h),
               Text(
                 FormatHelper.capitalize(s.courseProgress(watched, total)),
-                style: StyleText.fontSize15Weight600.copyWith(color: Colors.white),
+                style: StyleText.fontSize15Weight600.copyWith(color: AppColors.textButton),
               ),
-              if (total > watched) ...<Widget>[
-                SizedBox(height: 2.h),
-                Text(
-                  FormatHelper.capitalize(s.homeLessonsLeft(total - watched)),
-                  style: StyleText.fontSize12Weight500
-                      .copyWith(color: Colors.white.withOpacity(0.8)),
-                ),
-              ],
-              SizedBox(height: 6.h),
+              SizedBox(height: 4.h),
               StarsChip(label: s.engStarsCount(stars), onColor: true),
             ],
           ),
@@ -462,7 +474,7 @@ class _HeroCard extends StatelessWidget {
             child: _Bubble(size: 180, opacity: 0.07),
           ),
           Padding(
-            padding: EdgeInsets.all(22.r),
+            padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 12.r),
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints c) {
                 if (!showProgress) return greeting;
@@ -482,11 +494,11 @@ class _HeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     greeting,
-                    SizedBox(height: 18.h),
+                    SizedBox(height: 10.h),
                     Container(
-                      padding: EdgeInsets.all(12.r),
+                      padding: EdgeInsets.symmetric(horizontal: 10.r, vertical: 8.r),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.textButton.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: progress,
@@ -514,7 +526,7 @@ class _Bubble extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withOpacity(opacity),
+          color: AppColors.textButton.withOpacity(opacity),
         ),
       );
 }
@@ -527,7 +539,7 @@ class _Ring extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double size = 64.r;
+    final double size = 48.r;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
       duration: const Duration(milliseconds: 900),
@@ -542,13 +554,13 @@ class _Ring extends StatelessWidget {
               value: v,
               strokeWidth: 6,
               strokeCap: StrokeCap.round,
-              backgroundColor: Colors.white.withOpacity(0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: AppColors.textButton.withOpacity(0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.textButton),
             ),
             Center(
               child: Text(
                 FormatHelper.capitalize('${(v * 100).round()}%'),
-                style: StyleText.fontSize14Weight700.copyWith(color: Colors.white),
+                style: StyleText.fontSize12Weight600.copyWith(color: AppColors.textButton),
               ),
             ),
           ],
@@ -582,7 +594,7 @@ class _ResumeCard extends StatelessWidget {
 
     Widget content;
     if (loading) {
-      content = SizedBox(height: 140.h, child: const AppLoading());
+      content = SizedBox(height: 72.h, child: const AppLoading());
     } else if (r == null) {
       content = _Message(
         icon: allDone ? Icons.emoji_events_rounded : Icons.play_lesson_rounded,
@@ -601,129 +613,167 @@ class _ResumeCard extends StatelessWidget {
       final String category = r.video.category.trim().isEmpty
           ? s.videoCategoryGeneral
           : r.video.category.trim();
-      content = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          // A "screen" with a big play button — the lesson is one tap away.
-          AspectRatio(
-            aspectRatio: 16 / 7,
-            child: Material(
-              color: AppColors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16.r),
-                onTap: () => onPlay(r.video, r.course),
-                child: Ink(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16.r),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: <Color>[
-                        AppColors.primary.withOpacity(0.92),
-                        AppColors.primary.withOpacity(0.65),
+      // ONE COMPACT ROW (22/10/2026 — was a 16:4.5 banner plus three lines of
+      // text and a button): small "screen" | category, title, progress | play.
+      // The whole row plays the lesson.
+      content = Material(
+        color: AppColors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14.r),
+          onTap: () => onPlay(r.video, r.course),
+          child: Row(
+            children: <Widget>[
+              _ResumeThumb(
+                progress: p,
+                badge: s.homeLessonOf(r.number, r.course.length),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      FormatHelper.capitalize(category),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: StyleText.fontSize11Weight600
+                          .copyWith(color: AppColors.primary),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      r.video.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: StyleText.fontSize14Weight600
+                          .copyWith(color: AppColors.text, height: 1.25),
+                    ),
+                    SizedBox(height: 8.h),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4.r),
+                            child: LinearProgressIndicator(
+                              value: p,
+                              minHeight: 5,
+                              backgroundColor:
+                                  AppColors.primary.withOpacity(0.12),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.primary),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          r.started
+                              ? '${(p * 100).round()}%'
+                              : FormatHelper.capitalize(s.homeStart),
+                          style: StyleText.fontSize11Weight600
+                              .copyWith(color: AppColors.secondaryText),
+                        ),
                       ],
                     ),
-                  ),
-                  child: Stack(
-                    children: <Widget>[
-                      PositionedDirectional(
-                        start: 14.w,
-                        top: 12.h,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.22),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Text(
-                            FormatHelper.capitalize(s.homeLessonOf(r.number, r.course.length)),
-                            style: StyleText.fontSize11Weight600.copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Container(
-                          width: 58.r,
-                          height: 58.r,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 16,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.play_arrow_rounded,
-                            size: 34.r,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      if (p > 0)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: LinearProgressIndicator(
-                            value: p,
-                            minHeight: 4,
-                            backgroundColor: Colors.white.withOpacity(0.25),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Text(
-            FormatHelper.capitalize(category),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: StyleText.fontSize12Weight600.copyWith(color: AppColors.primary),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            FormatHelper.capitalize(r.video.title),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
-          ),
-          SizedBox(height: 14.h),
-          Row(
-            children: <Widget>[
-              if (p > 0)
-                Expanded(
-                  child: Text(
-                    FormatHelper.capitalize('${(p * 100).round()}%'),
-                    style: StyleText.fontSize13Weight500
-                        .copyWith(color: AppColors.secondaryText),
+              SizedBox(width: 12.w),
+              Tooltip(
+                message: r.started ? s.homeResume : s.homeStart,
+                child: Container(
+                  width: 40.r,
+                  height: 40.r,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                )
-              else
-                const Spacer(),
-              AppButton(
-                label: r.started ? s.homeResume : s.homeStart,
-                icon: Icons.play_arrow_rounded,
-                dense: true,
-                onPressed: () => onPlay(r.video, r.course),
+                  child: Icon(Icons.play_arrow_rounded,
+                      size: 24.r, color: AppColors.textButton),
+                ),
               ),
             ],
           ),
-        ],
+        ),
       );
     }
 
     return _Panel(
       title: s.homeContinue,
       child: content,
+    );
+  }
+}
+
+/// The small lesson "screen" of the Continue watching row: primary gradient,
+/// a play glyph, "Lesson 3 of 12" and the watched part along the bottom.
+class _ResumeThumb extends StatelessWidget {
+  const _ResumeThumb({required this.progress, required this.badge});
+
+  final double progress;
+  final String badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        width: 96.w,
+        height: 72.h,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              AppColors.primary.withOpacity(0.95),
+              AppColors.primary.withOpacity(0.6),
+            ],
+          ),
+        ),
+        child: Stack(
+          children: <Widget>[
+            Center(
+              child: Icon(
+                Icons.play_circle_fill_rounded,
+                size: 28.r,
+                color: AppColors.textButton.withOpacity(0.9),
+              ),
+            ),
+            PositionedDirectional(
+              start: 6.w,
+              bottom: 8.h,
+              end: 6.w,
+              child: Text(
+                FormatHelper.capitalize(badge),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: StyleText.fontSize10Weight600
+                    .copyWith(color: AppColors.textButton),
+              ),
+            ),
+            if (progress > 0)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 3,
+                  backgroundColor: AppColors.textButton.withOpacity(0.25),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.textButton),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -744,20 +794,20 @@ class _Message extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 18.h),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
-            width: 64.r,
-            height: 64.r,
+            width: 44.r,
+            height: 44.r,
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 32.r, color: AppColors.primary),
+            child: Icon(icon, size: 22.r, color: AppColors.primary),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           Text(
             FormatHelper.capitalize(title),
             textAlign: TextAlign.center,
@@ -818,6 +868,20 @@ class _TileGrid extends StatelessWidget {
             ? tiles.length
             : math.max(1, math.min(tiles.length, (c.maxWidth + gap) ~/ (230 + gap)));
         final double width = (c.maxWidth - gap * (cols - 1)) / cols;
+        // THE MAIN ROW: every card as tall as the tallest one.
+        if (big) {
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                for (int i = 0; i < tiles.length; i++) ...<Widget>[
+                  if (i > 0) SizedBox(width: gap),
+                  Expanded(child: _TileCard(tile: tiles[i], big: true, index: i)),
+                ],
+              ],
+            ),
+          );
+        }
         return Wrap(
           spacing: gap,
           runSpacing: gap,
@@ -869,7 +933,7 @@ class _TileCardState extends State<_TileCard> {
       children: <Widget>[
         Text(
           FormatHelper.capitalize(t.label),
-          maxLines: widget.big ? 2 : 1,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: StyleText.fontSize15Weight600.copyWith(color: AppColors.text),
         ),
@@ -975,7 +1039,7 @@ class _Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(20.r),
@@ -986,7 +1050,7 @@ class _Panel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           _SectionTitle(title),
-          SizedBox(height: 14.h),
+          SizedBox(height: 8.h),
           child,
         ],
       ),

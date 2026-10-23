@@ -42,7 +42,18 @@ abstract final class MemberVideos {
   /// What decides the queries: rebuilt only when this changes.
   static String _signature(AppUser u) => u.isAdmin || u.allCourses
       ? 'all'
-      : (List<String>.of(u.courses)..sort()).join('\u0001');
+      : (_openCourses(u)..sort()).join('\u0001');
+
+  /// The member's courses whose own dates (Members → Edit access) are open
+  /// now. A course outside its dates is left out of the query: the rules
+  /// refuse its videos, and one refused video fails the whole query.
+  static List<String> _openCourses(AppUser u) {
+    final DateTime now = DateTime.now();
+    return <String>[
+      for (final String c in u.courses.map((String c) => c.trim()).toSet())
+        if (u.courseAccess[c] == null || u.courseAccess[c]!.openAt(now)) c,
+    ];
+  }
 
   static Stream<List<VideoItem>> watch() {
     late StreamController<List<VideoItem>> out;
@@ -69,8 +80,7 @@ abstract final class MemberVideos {
       if (sig == 'all') {
         queries = <Query<Map<String, dynamic>>>[published];
       } else {
-        final List<String> courses =
-            user.courses.map((String c) => c.trim()).toSet().toList();
+        final List<String> courses = _openCourses(user);
         queries = <Query<Map<String, dynamic>>>[
           // Default videos — everybody sees them.
           published.where(FirebaseCollections.freeField, isEqualTo: true),

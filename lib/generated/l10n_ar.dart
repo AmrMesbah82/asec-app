@@ -289,6 +289,9 @@ class SAr extends S {
   String get signOut => 'تسجيل الخروج';
 
   @override
+  String get pressBackAgainToExit => 'اضغط رجوع مرة أخرى للخروج';
+
+  @override
   String get debugPreviewAnyway => 'معاينة على أي حال (نسخة التطوير)';
 
   @override
@@ -2146,6 +2149,17 @@ class SAr extends S {
   String get ctlGroupDashboard => 'لوحة المدير';
 
   @override
+  String get ctlGroupCalculators => 'الحاسبات';
+
+  @override
+  String get ctlCalcHint =>
+      'تشغيل: كل الأعضاء يستطيعون فتحها. إيقاف: مخفية عن كل الأعضاء (المدير ما زال يراها).';
+
+  @override
+  String get ctlCalcEngHint =>
+      'إيقاف (الافتراضي): فقط الأعضاء الذين فتحتها لهم من صفحة الأعضاء. تشغيل: كل الأعضاء.';
+
+  @override
   String get controlCentre => 'مركز التحكم';
 
   @override
@@ -2252,6 +2266,27 @@ class SAr extends S {
   @override
   String get ctlScreenProtectionHint =>
       'تشغيل: لقطات الشاشة وتسجيل الشاشة للتطبيق تظهر سوداء (أندرويد، iOS، ماك، ويندوز). إيقاف: مسموح.';
+
+  @override
+  String get ctlScreenshotException =>
+      'السماح بلقطات الشاشة لـ amrmesbah33@gmail.com';
+
+  @override
+  String get ctlScreenshotExceptionHint =>
+      'تشغيل: هذا الحساب يمكنه أخذ لقطات وتسجيل الشاشة حتى لو كانت ممنوعة على الجميع. إيقاف: ممنوع مثل الجميع.';
+
+  @override
+  String get shotAllowedTitle => 'لقطات الشاشة مسموحة';
+
+  @override
+  String get shotAllowedBody =>
+      'تحذير: خيار \"منع لقطات الشاشة\" مغلق، لذلك كل الأعضاء يستطيعون الآن أخذ لقطات وتسجيل الشاشة. أعد تشغيله عند الانتهاء.';
+
+  @override
+  String get shotAllowedBlock => 'امنع الآن';
+
+  @override
+  String get shotAllowedKeep => 'اتركها مسموحة';
 
   @override
   String get ctlDashboardCharts => 'رسوم لوحة المدير';
@@ -2507,6 +2542,30 @@ class SAr extends S {
       'تكييف، مكافحة حريق، أعمال صحية وغازات طبية — حسابات تصميم سريعة.';
 
   @override
+  String get ductCalc => 'حاسبة مجاري الهواء';
+
+  @override
+  String get ductCalcShort => 'الدكت';
+
+  @override
+  String get pipeCalc => 'حاسبة مقاسات المواسير';
+
+  @override
+  String get pipeCalcShort => 'المواسير';
+
+  @override
+  String get plumbingFireCalc => 'السباكة';
+
+  @override
+  String get plumbingFireCalcShort => 'السباكة';
+
+  @override
+  String get fireCalc => 'مكافحة الحريق';
+
+  @override
+  String get fireCalcShort => 'الحريق';
+
+  @override
   String get calcInputs => 'المدخلات';
 
   @override
@@ -2588,11 +2647,11 @@ class SAr extends S {
       'اختر الكورسات التي يشاهدها هذا العضو. \"كل الكورسات\" تشمل أيضًا أي كورس يُضاف لاحقًا.';
 
   @override
-  String get accessPlatforms => 'الأجهزة';
+  String get accessPlatforms => 'منصات الفيديو';
 
   @override
   String get accessPlatformsCaption =>
-      'يستطيع العضو فتح التطبيق على الأجهزة المحددة فقط.';
+      'يستطيع العضو تسجيل الدخول من أي جهاز. الفيديوهات واختباراتها والشهادات تفتح فقط على المنصات المحددة، وباقي التطبيق يفتح على كل المنصات.';
 
   @override
   String get accessAllPlatforms => 'كل الأجهزة';
@@ -2907,11 +2966,11 @@ class SAr extends S {
 
   @override
   String get accessDeviceCaption =>
-      'كل عضو يستخدم التطبيق على جهاز واحد فقط. لنقله إلى جهاز جديد، أزل هذا الجهاز — وأول جهاز يسجّل الدخول منه بعدها يصبح جهازه.';
+      'يستطيع الأعضاء تسجيل الدخول من أي عدد من الأجهزة. الجهاز أدناه كان مربوطًا بالحساب سابقًا، ويمكنك إزالته أو حظره.';
 
   @override
   String get accessDeviceNone =>
-      'لم يُستخدم على أي جهاز بعد — أول جهاز يسجّل الدخول منه سيُربط بالحساب.';
+      'لا يوجد جهاز مربوط — يستطيع العضو تسجيل الدخول من أي جهاز.';
 
   @override
   String get accessDeviceUnknown => 'جهاز';
@@ -3052,7 +3111,7 @@ class SAr extends S {
   String get engLibraryBest => 'الأفضل';
 
   @override
-  String get engLibraryBestHint => 'أفضل الأعضاء بالنجوم';
+  String get engLibraryBestHint => 'أفضل السير الذاتية في التطبيق';
 
   @override
   String get engLibraryCertificate => 'الشهادة';
@@ -3365,4 +3424,140 @@ class SAr extends S {
 
   @override
   String get permWebSettings => 'إعدادات الموقع ومركز التحكم';
+
+  @override
+  String get blockedTitleDeviceBlocked => 'هذا الجهاز محظور';
+
+  @override
+  String get blockedBodyDeviceBlocked =>
+      'قامت الإدارة بحظر هذا الجهاز، ولا يمكن استخدام التطبيق عليه. تواصل مع الإدارة إذا كنت ترى أن هذا خطأ.';
+
+  @override
+  String get accessDeviceBlock => 'حظر الجهاز';
+
+  @override
+  String get accessDeviceBlockQuestion => 'حظر هذا الجهاز؟';
+
+  @override
+  String accessDeviceBlockBody(String device) {
+    return 'سيتم حظر $device: أي شخص يسجّل الدخول عليه سيرى \"هذا الجهاز محظور\". ويمكن للعضو استخدام التطبيق على جهاز آخر.';
+  }
+
+  @override
+  String get accessDeviceBlocked => 'تم حظر الجهاز.';
+
+  @override
+  String get accessDeviceUnblock => 'إلغاء الحظر';
+
+  @override
+  String get accessDeviceUnblocked => 'تم إلغاء حظر الجهاز.';
+
+  @override
+  String get accessBlockedDevices => 'الأجهزة المحظورة';
+
+  @override
+  String get captureAlertsTitle => 'تنبيهات تصوير الشاشة';
+
+  @override
+  String get captureAlertsCaption =>
+      'الأعضاء الذين التقطوا صورة للشاشة أو سجّلوها داخل التطبيق. يتم الرصد على iPhone / iPad وأندرويد 14 فأحدث.';
+
+  @override
+  String get captureNone => 'لا توجد لقطات أو تسجيلات حتى الآن.';
+
+  @override
+  String get captureClear => 'مسح الكل';
+
+  @override
+  String get captureClearQuestion => 'مسح كل التنبيهات؟';
+
+  @override
+  String get captureClearBody => 'سيتم حذف كل تنبيهات لقطات الشاشة والتسجيل.';
+
+  @override
+  String captureShowAll(int count) {
+    return 'عرض الكل ($count)';
+  }
+
+  @override
+  String get captureShowLess => 'عرض أقل';
+
+  @override
+  String get captureScreenshot => 'لقطة شاشة';
+
+  @override
+  String get captureRecording => 'تسجيل الشاشة';
+
+  @override
+  String get capturePage => 'الصفحة';
+
+  @override
+  String get captureCourse => 'الكورس';
+
+  @override
+  String get captureLesson => 'الدرس / الاختبار';
+
+  @override
+  String get courseLocked => 'مغلق';
+
+  @override
+  String get courseLockedSnack =>
+      'هذا الكورس غير مفتوح لك بعد. اطلب من الإدارة فتحه لك.';
+
+  @override
+  String get courseSubtitleEdit => 'عنوان فرعي';
+
+  @override
+  String get courseSubtitle => 'العنوان الفرعي للكورس';
+
+  @override
+  String get courseSubtitleHint => 'سطر قصير يظهر تحت اسم الكورس';
+
+  @override
+  String accessCoursePickPlatform(String course) {
+    return 'اختر منصة واحدة على الأقل لـ $course';
+  }
+
+  @override
+  String get accessCoursePlatforms => 'يفتح على';
+
+  @override
+  String get certPreview => 'معاينة الشهادة';
+
+  @override
+  String get certPreviewNote => 'نموذج — هكذا تظهر شهادة العضو.';
+
+  @override
+  String get certButtonLocked => 'الشهادة · أكمل الكورس للحصول عليها';
+
+  @override
+  String get certIssued => 'تم منح الشهادة · اعرضها';
+
+  @override
+  String get certIssueTitle => 'الشهادات';
+
+  @override
+  String get certIssueCaption =>
+      'امنح هذا العضو شهادة كورس بدون الاختبار النهائي. تظهر له فوراً.';
+
+  @override
+  String get certIssue => 'منح';
+
+  @override
+  String get certRevoke => 'سحب';
+
+  @override
+  String get certRevoked => 'تم سحب الشهادة';
+
+  @override
+  String get certIssuedToast => 'تم منح الشهادة';
+
+  @override
+  String get libraryProjects => 'المشاريع';
+
+  @override
+  String get libraryProjectsHint => 'مشاريعنا من الموقع';
+
+  @override
+  String get webTab => 'الموقع';
 }

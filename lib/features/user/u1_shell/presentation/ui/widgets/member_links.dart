@@ -75,7 +75,7 @@ abstract final class MemberLinks {
           page: () => const DownloadsPage(),
         ),
       // A paid extra: only once the admin has unlocked it for this member.
-      if (user.mayUseCalcs)
+      if (AppFeatures.to.calcOn(AppFeature.calcEngineering))
         MemberLink(
           id: 'calc',
           icon: Icons.engineering_rounded,

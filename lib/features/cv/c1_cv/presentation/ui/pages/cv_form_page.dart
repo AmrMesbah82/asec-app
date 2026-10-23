@@ -119,16 +119,16 @@ class _CvFormView extends StatelessWidget {
                 ? SizedBox(
                     width: 18.r,
                     height: 18.r,
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.textButton),
                     ),
                   )
-                : const AppIcon(Icons.check_rounded, color: Colors.white),
+                : AppIcon(Icons.check_rounded, color: AppColors.textButton),
             label: Text(
               FormatHelper.capitalize(s.save),
               style:
-                  StyleText.fontSize14Weight600.copyWith(color: Colors.white),
+                  StyleText.fontSize14Weight600.copyWith(color: AppColors.textButton),
             ),
           ),
           body: ListView(

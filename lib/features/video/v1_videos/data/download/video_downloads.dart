@@ -22,7 +22,6 @@
 /// The UI reads [items] and [active] (Rx) — a download started on a card
 /// shows its ring there and in the Downloads section at the same time.
 
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -130,7 +129,6 @@ abstract final class VideoDownloads {
     } catch (e) {
       if (!_cancelled.contains(video.id)) {
         failed.add(video.id);
-        if (kDebugMode) debugPrint('VIDEO DOWNLOAD FAILED ${video.id}: $e');
       }
     } finally {
       active.remove(video.id);

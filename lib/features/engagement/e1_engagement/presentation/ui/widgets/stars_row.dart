@@ -75,7 +75,7 @@ class StarsChip extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: onColor
-            ? Colors.white.withOpacity(0.16)
+            ? AppColors.textButton.withOpacity(0.16)
             : kStarColor.withOpacity(0.14),
         borderRadius: BorderRadius.circular(20.r),
       ),
@@ -87,7 +87,7 @@ class StarsChip extends StatelessWidget {
           Text(
             FormatHelper.capitalize(label),
             style: StyleText.fontSize12Weight700.copyWith(
-              color: onColor ? Colors.white : AppColors.text,
+              color: onColor ? AppColors.textButton : AppColors.text,
             ),
           ),
         ],

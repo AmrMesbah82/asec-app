@@ -15,8 +15,9 @@ import 'package:asec/features/web/core/widgets.dart';
 import 'package:asec/features/web/data/site_repo.dart';
 import 'package:asec/features/web/site/site_shell.dart';
 import 'package:asec/features/web/site/widgets/cards.dart';
-import 'package:asec/features/web/site/widgets/hero_video.dart';
 import 'package:asec/features/web/site/site_nav.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/partners_orbit.dart'
+    show PartnerLogoItem, PartnersOrbit;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -27,12 +28,7 @@ class HomePage extends StatelessWidget {
       builder: (BuildContext context, Doc s) => SitePage(
         cta: false,
         children: <Widget>[
-          HeroVideo(
-            url: s.s('hero_video_url'),
-            poster: s.s('hero_poster_url'),
-            buttonText: s.txt('hero_button_text',
-                const L('ابدا رحلتك نحو الابتكار', 'Start your journey to innovation')),
-          ),
+          // The hero video that opened the page was removed (owner's request).
           if (s.b('show_map') && s.s('map_image_url').isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -45,7 +41,6 @@ class HomePage extends StatelessWidget {
           if (s.b('show_partners')) PartnersSection(settings: s),
           if (s.b('show_blog')) BlogSection(settings: s),
           if (s.b('show_ceo')) CeoSection(settings: s),
-          if (s.b('show_testimonials')) TestimonialsSection(settings: s),
         ],
       ),
     );
@@ -175,14 +170,28 @@ class PartnersSection extends StatelessWidget {
             SectionTitle(settings.txt('partners_title', const L('شركاء النجاح', 'Our Partners')),
                 intro: settings.s('partners_intro')),
             const SizedBox(height: 36),
+            // THE SAME AS THE APP: the logos turning in a 3D ring around ASEC.
             StreamBuilder<List<Doc>>(
               stream: SiteRepo.published(Coll.partners),
               builder: (BuildContext c, AsyncSnapshot<List<Doc>> snap) {
                 if (!snap.hasData) return const Loading(height: 120);
-                return GridOf(
-                  cols: c.cols(desktop: 5, tablet: 3, mobile: 2),
-                  gap: 24,
-                  children: <Widget>[for (final Doc d in snap.data!) PartnerLogo(doc: d)],
+                final List<PartnerLogoItem> items = <PartnerLogoItem>[
+                  for (final Doc d in snap.data!)
+                    if (d.raw('logo_url').trim().isNotEmpty)
+                      PartnerLogoItem(name: d.s('name'), logoUrl: d.raw('logo_url')),
+                ];
+                if (items.isEmpty) return const SizedBox.shrink();
+                return ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: PartnersOrbit(
+                    items: items,
+                    accent: WebColors.red,
+                    centerColor: Colors.white,
+                    center: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Image.asset('assets/web/images/logo.png', fit: BoxFit.contain),
+                    ),
+                  ),
                 );
               },
             ),

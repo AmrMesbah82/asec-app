@@ -58,6 +58,16 @@ abstract final class FirebaseCollections {
   /// `course_settings/{id}` — per-course switches (watch in order or not).
   static const String courseSettings = 'course_settings';
 
+  /// `video_catalog/{videoId}` — every published lesson's title and course,
+  /// WITHOUT its file link. Every member reads it, so courses they were not
+  /// given still show, locked. Kept in line with `videos` by the admin app
+  /// (VideoCatalog.startAdminSync).
+  static const String videoCatalog = 'video_catalog';
+
+  /// `certificates/{course}_{uid}` — a certificate the admin issued to a
+  /// member by hand (Members → Edit access → Certificates), no exam needed.
+  static const String certificates = 'certificates';
+
   /// `progress/{uid}` — each member's watch progress per video (0..1),
   /// the source of the stars the admin and the leaderboard show.
   static const String progress = 'progress';

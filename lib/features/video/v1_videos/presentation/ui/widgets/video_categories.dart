@@ -11,6 +11,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import 'package:asec/features/video/v1_videos/data/seed/drive_lessons.dart';
 import 'package:asec/core/animation/app_animations.dart';
@@ -18,6 +19,7 @@ import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/features/engagement/e1_engagement/presentation/controller/course_settings.dart';
 import 'package:asec/features/engagement/e1_engagement/presentation/controller/watch_sync.dart';
 import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/stars_row.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
@@ -44,6 +46,12 @@ class VideoCategory {
   int get watched =>
       videos.where((VideoItem v) => VideoWatchStore.isWatched(v.id)).length;
 
+  /// The Reels course ("Reals" on Drive) — always shown first.
+  static bool isReels(String name) {
+    final String n = name.trim().toLowerCase();
+    return n == 'reals' || n == 'reels';
+  }
+
   /// Groups [videos] by category — categories in folder order (then name),
   /// each keeping the order the videos came in.
   ///
@@ -68,6 +76,12 @@ class VideoCategory {
       for (final MapEntry<String, List<VideoItem>> e in byName.entries)
         VideoCategory(name: e.key, order: order[e.key]!, videos: e.value),
     ]..sort((VideoCategory a, VideoCategory b) {
+        // REELS FIRST, always, before every other course.
+        if (!bySubcategory) {
+          final bool ra = isReels(a.name);
+          final bool rb = isReels(b.name);
+          if (ra != rb) return ra ? -1 : 1;
+        }
         // Sections by the number in their folder name — "Introduction-01",
         // "Draw and Modify-02", "03-Annotation and Layout" … — whichever end
         // it is on. Videos synced before this still carry the old order.
@@ -96,7 +110,16 @@ class VideoCategoryGrid extends StatelessWidget {
     this.showStars = false,
     this.bottomPadding = 24,
     this.pinned,
+    this.lockedIds = const <String>{},
+    this.showSubtitles = false,
   });
+
+  /// Lessons the member was not given. A course made only of these shows
+  /// a lock; its progress and stars count the other lessons only.
+  final Set<String> lockedIds;
+
+  /// Courses (top level) show the line the admin wrote under the title.
+  final bool showSubtitles;
 
   /// Stays above the grid while it scrolls (the back button).
   final Widget? pinned;
@@ -148,6 +171,8 @@ class VideoCategoryGrid extends StatelessWidget {
                         index: index,
                         showProgress: showProgress,
                         showStars: showStars,
+                        lockedIds: lockedIds,
+                        showSubtitle: showSubtitles,
                         onTap: () => onOpen(category),
                       ),
                     );
@@ -175,12 +200,16 @@ class _CategoryCard extends StatefulWidget {
     required this.showProgress,
     required this.onTap,
     this.showStars = false,
+    this.lockedIds = const <String>{},
+    this.showSubtitle = false,
   });
 
   final VideoCategory category;
   final int index;
   final bool showProgress;
   final bool showStars;
+  final Set<String> lockedIds;
+  final bool showSubtitle;
   final VoidCallback onTap;
 
   @override
@@ -205,8 +234,22 @@ class _CategoryCardState extends State<_CategoryCard> {
     final VideoCategory c = widget.category;
     final List<Color> colors = _palettes[widget.index % _palettes.length];
     final int total = c.videos.length;
-    final int watched = widget.showProgress ? c.watched : 0;
-    final double p = total == 0 ? 0 : watched / total;
+    // Only the lessons this member may play count for progress and stars.
+    final List<VideoItem> open = widget.lockedIds.isEmpty
+        ? c.videos
+        : c.videos.where((VideoItem v) => !widget.lockedIds.contains(v.id)).toList();
+    final bool locked = open.isEmpty && total > 0;
+    final int watched = widget.showProgress
+        ? open.where((VideoItem v) => VideoWatchStore.isWatched(v.id)).length
+        : 0;
+    final double p = open.isEmpty ? 0 : watched / open.length;
+    VideoItem? cover;
+    for (final VideoItem v in c.videos) {
+      if (v.hasFile) {
+        cover = v;
+        break;
+      }
+    }
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -257,9 +300,9 @@ class _CategoryCardState extends State<_CategoryCard> {
                             ),
                             // The first video's cover, darkened so the
                             // category name stays readable on it.
-                            if (c.videos.isNotEmpty)
+                            if (cover != null)
                               VideoCoverImage(
-                                url: c.videos.first.url,
+                                url: cover.url,
                                 placeholder: const SizedBox.shrink(),
                                 shade: false,
                               ),
@@ -288,26 +331,72 @@ class _CategoryCardState extends State<_CategoryCard> {
                                 color: Colors.white.withOpacity(0.14),
                               ),
                             ),
-                            if (widget.showStars)
+                            if (widget.showStars && !locked)
                               PositionedDirectional(
                                 start: 0,
                                 bottom: 0,
                                 child: StarsRow(
-                                  stars: CourseStars.local(c.videos),
+                                  stars: CourseStars.local(open),
                                   size: 17,
                                   emptyColor: Colors.white.withOpacity(0.55),
                                 ),
                               ),
+                            if (locked)
+                              PositionedDirectional(
+                                start: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.45),
+                                    borderRadius: BorderRadius.circular(6.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      const Icon(Icons.lock_rounded, size: 14, color: Colors.white),
+                                      SizedBox(width: 4.w),
+                                      Text(
+                                        FormatHelper.capitalize(s.courseLocked),
+                                        style: StyleText.fontSize12Weight600.copyWith(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             Align(
                               alignment: AlignmentDirectional.centerStart,
-                              child: Text(
-                                FormatHelper.capitalize(c.label(s)),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: StyleText.fontSize22Weight700.copyWith(
-                                  color: Colors.white,
-                                  height: 1.2,
-                                ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    FormatHelper.capitalize(c.label(s)),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: StyleText.fontSize22Weight700.copyWith(
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  // The admin's line, right under the title.
+                                  if (widget.showSubtitle)
+                                    Obx(() {
+                                      final String sub = CourseSettings.to.subtitle(c.name);
+                                      if (sub.isEmpty) return const SizedBox.shrink();
+                                      return Padding(
+                                        padding: EdgeInsets.only(top: 4.h),
+                                        child: Text(
+                                          sub,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: StyleText.fontSize14Weight500.copyWith(
+                                            color: Colors.white.withOpacity(0.9),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                ],
                               ),
                             ),
                             PositionedDirectional(
@@ -349,7 +438,8 @@ class _CategoryCardState extends State<_CategoryCard> {
             SizedBox(height: 12.h),
             Row(
               children: <Widget>[
-                AppIcon(Icons.folder_rounded, size: 20.sp, color: colors.last),
+                AppIcon(locked ? Icons.lock_rounded : Icons.folder_rounded,
+                    size: 20.sp, color: locked ? AppColors.secondaryText : colors.last),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -367,7 +457,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                 ),
               ],
             ),
-            if (widget.showProgress) ...<Widget>[
+            if (widget.showProgress && !locked) ...<Widget>[
               SizedBox(height: 8.h),
               Row(
                 children: <Widget>[

@@ -37,6 +37,7 @@ import UIKit
         }
       }
       screenChannel = channel
+      AsecScreenProtection.channel = channel
     }
   }
 }

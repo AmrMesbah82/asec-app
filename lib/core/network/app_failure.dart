@@ -14,7 +14,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:asec/core/network/app_firebase.dart';
@@ -50,7 +49,6 @@ enum AppFailure {
   /// Maps any error thrown by a Firebase SDK onto this set. Logs the raw error
   /// in debug builds — the mapped one is for users, the raw one is for you.
   static AppFailure from(Object error) {
-    if (kDebugMode) debugPrint('[AppFailure] $error');
     if (AppFirebase.notConfigured) return AppFailure.notConfigured;
 
     if (error is FirebaseAuthException) {

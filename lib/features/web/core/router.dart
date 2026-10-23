@@ -113,9 +113,10 @@ final GoRouter appRouter = GoRouter(
         _page('/articles', (_) => const ArticlesPage()),
         _page('/articles/:id', (GoRouterState s) => ArticleDetailPage(id: s.pathParameters['id'] ?? '')),
         _page('/contact', (_) => const ContactPage()),
-        _page('/requests', (_) => const RequestsPage()),
+        // "Apply" is the service request only; old links land on it too.
+        _page('/requests', (_) => const ServiceRequestPage()),
         _page('/request-service', (_) => const ServiceRequestPage()),
-        _page('/request-job', (_) => const JobRequestPage()),
+        _page('/request-job', (_) => const ServiceRequestPage()),
         _page('/privacy', (_) => const PrivacyPage()),
       ],
     ),

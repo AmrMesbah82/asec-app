@@ -27,6 +27,7 @@ import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/custom/57-custom_dialog_manager.dart';
 import 'package:asec/core/custom/58-default_switch_button.dart';
 import 'package:asec/core/network/app_failure.dart';
+import 'package:asec/features/admin/a2_members/data/device_security.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
 import 'package:asec/core/theme/app_theme.dart';
@@ -35,12 +36,16 @@ import 'package:asec/features/onboarding/o2_authentication/data/repository/auth_
 import 'package:asec/features/onboarding/o2_authentication/domain/base_repository/auth_base_repository.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/course_access.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/widgets/date_time_field.dart';
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/generated/l10n.dart';
+import 'package:asec/features/quiz/q2_certificates/data/certificate_data.dart';
+import 'package:asec/features/quiz/q2_certificates/data/issued_certificates.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class MemberAccessPage extends StatefulWidget {
@@ -56,12 +61,48 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
   final UsersBaseRepository _users = UsersRepository();
   late final Stream<AppUser?> _live = _users.watchUser(widget.member.uid);
   late final Stream<List<VideoItem>> _videos = VideoRepository().watchAll();
+  late final Stream<List<VideoItem>> _certVideos = VideoRepository().watchAll();
+  late final Stream<List<IssuedCertificate>> _issued =
+      IssuedCertificates.watchFor(widget.member.uid);
+  final Set<String> _issuing = <String>{};
+
+  /// Gives (or takes back) [course]'s certificate right away — not on Save.
+  Future<void> _toggleCertificate(String course, bool issued) async {
+    final S s = S.of(context);
+    setState(() => _issuing.add(course));
+    try {
+      if (issued) {
+        await IssuedCertificates.revoke(widget.member.uid, course);
+        if (mounted) _toast(s.certRevoked);
+      } else {
+        await IssuedCertificates.issue(
+          widget.member,
+          course,
+          adminUid: SessionController.to.current.uid,
+        );
+        if (mounted) _toast(s.certIssuedToast);
+      }
+    } catch (e) {
+      if (mounted) _toast(AppFailure.from(e).message(context));
+    }
+    if (mounted) setState(() => _issuing.remove(course));
+  }
 
   late bool _allCourses = widget.member.allCourses;
   late final Set<String> _courses = widget.member.courses.toSet();
+  // DEFAULT: Android and iPhone / iPad only — Mac and Windows only when the
+  // admin ticks them.
   late final Set<String> _platforms = widget.member.platforms.isEmpty
-      ? MemberAccess.allPlatforms.toSet()
+      ? MemberAccess.defaultPlatforms.toSet()
       : widget.member.platforms.toSet();
+
+  /// Per course ticked: from–to and platforms. A course ticked for the first
+  /// time starts open from now on, with no end, on Android and iPhone only.
+  late final Map<String, CourseAccess> _courseAccess =
+      Map<String, CourseAccess>.of(widget.member.courseAccess);
+
+  CourseAccess _accessOf(String course) =>
+      _courseAccess[course] ?? const CourseAccess();
   late bool _permanent = widget.member.isPermanent;
   late DateTime? _from = widget.member.accessFrom;
   late DateTime? _until = widget.member.accessUntil;
@@ -69,6 +110,42 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
   bool _saving = false;
   bool _pausing = false;
   bool _removingDevice = false;
+  late final Stream<List<BlockedDevice>> _blockedDevices =
+      DeviceBlocks.watchForMember(widget.member.uid);
+
+  /// BLOCK, not just remove: the device goes on the blocked list (whoever
+  /// signs in on it sees "This device is blocked") and the member's device
+  /// slot is freed, so they can still use the app on another device.
+  Future<void> _blockDevice(AppUser live) async {
+    final S s = S.of(context);
+    await CustomDialogManager.showConfirm(
+      context: context,
+      title: s.accessDeviceBlockQuestion,
+      subtitle: s.accessDeviceBlockBody(live.deviceName.isEmpty ? '—' : live.deviceName),
+      confirmLabel: s.accessDeviceBlock,
+      cancelLabel: s.cancel,
+      onConfirm: () async {
+        setState(() => _removingDevice = true);
+        try {
+          await DeviceBlocks.block(live);
+          if (mounted) _toast(s.accessDeviceBlocked);
+        } catch (e) {
+          if (mounted) _toast(AppFailure.from(e).message(context));
+        }
+        if (mounted) setState(() => _removingDevice = false);
+      },
+    );
+  }
+
+  Future<void> _unblockDevice(BlockedDevice d) async {
+    final S s = S.of(context);
+    try {
+      await DeviceBlocks.unblock(d.deviceId);
+      if (mounted) _toast(s.accessDeviceUnblocked);
+    } catch (e) {
+      if (mounted) _toast(AppFailure.from(e).message(context));
+    }
+  }
 
   /// ONE DEVICE PER MEMBER. Frees the account's device right away (not on
   /// Save): the old device is shut out at once, and the next device the
@@ -100,6 +177,15 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
     if (!_permanent && _from != null && _until != null && !_until!.isAfter(_from!)) {
       return s.accessDatesInvalid;
     }
+    if (!_allCourses) {
+      for (final String c in _courses) {
+        final CourseAccess a = _accessOf(c);
+        if (a.platforms.isEmpty) return s.accessCoursePickPlatform(c);
+        if (a.from != null && a.until != null && !a.until!.isAfter(a.from!)) {
+          return '${s.accessDatesInvalid} · $c';
+        }
+      }
+    }
     return null;
   }
 
@@ -119,18 +205,19 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
       return;
     }
     setState(() => _saving = true);
-    // Every device checked = no restriction (an empty list), so a platform
-    // added to the app later is allowed too.
-    final bool everyPlatform =
-        MemberAccess.allPlatforms.every(_platforms.contains);
+    // Always the explicit list: an empty one now means "Android and iPhone
+    // only" (the default), not "everywhere".
     final result = await _users.setAccess(
       widget.member.uid,
       UserModel.toAccessMap(
         allCourses: _allCourses,
         courseList: _allCourses ? const <String>[] : _courses.toList(),
-        platformList: everyPlatform ? const <String>[] : _platforms.toList(),
+        platformList: _platforms.toList(),
         from: _permanent ? null : _from,
         until: _permanent ? null : _until,
+        perCourse: _allCourses
+            ? const <String, CourseAccess>{}
+            : <String, CourseAccess>{for (final String c in _courses) c: _accessOf(c)},
       ),
     );
     if (!mounted) return;
@@ -191,7 +278,7 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                         ),
                         if (!_allCourses) ...<Widget>[
                           SizedBox(height: 6.h),
-                          for (final String c in courses)
+                          for (final String c in courses) ...<Widget>[
                             _CheckRow(
                               label: c.isEmpty ? s.videoCategoryGeneral : c,
                               checked: _courses.contains(c),
@@ -199,6 +286,14 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                                 _courses.contains(c) ? _courses.remove(c) : _courses.add(c);
                               }),
                             ),
+                            // TICKED: the course's own dates and platforms.
+                            if (_courses.contains(c))
+                              _CourseAccessBox(
+                                access: _accessOf(c),
+                                onChanged: (CourseAccess a) =>
+                                    setState(() => _courseAccess[c] = a),
+                              ),
+                          ],
                         ],
                       ],
                     );
@@ -310,10 +405,16 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                 stream: _live,
                 builder: (BuildContext context, AsyncSnapshot<AppUser?> snap) {
                   final AppUser live = snap.data ?? widget.member;
+                  final bool canDevice =
+                      SessionController.to.current.canDo(AdminAction.membersDevice);
                   return AppCard(
                     title: s.accessDevice,
                     caption: s.accessDeviceCaption,
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                    Row(
                       children: <Widget>[
                         Icon(
                           live.hasDevice ? Icons.phonelink_lock_rounded : Icons.devices_other_rounded,
@@ -342,22 +443,168 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                             ],
                           ),
                         ),
-                        // Members → Reset device.
-                        if (live.hasDevice &&
-                            SessionController.to.current.canDo(AdminAction.membersDevice))
-                          _removingDevice
-                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4))
-                              : customButton(
+                      ],
+                    ),
+                    // Members → Reset device: remove (they may sign in on a
+                    // new device) or block (this device is shut out for good).
+                    if (live.hasDevice && canDevice) ...<Widget>[
+                      SizedBox(height: 12.h),
+                      _removingDevice
+                          ? const Center(
+                              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4)),
+                            )
+                          : Wrap(
+                              alignment: WrapAlignment.end,
+                              spacing: 10.w,
+                              runSpacing: 8.h,
+                              children: <Widget>[
+                                customButton(
                                   title: s.accessDeviceRemove,
                                   function: () => _removeDevice(live),
                                   wrapContent: true,
+                                  color: AppColors.statusPending,
+                                ),
+                                customButton(
+                                  title: s.accessDeviceBlock,
+                                  function: () => _blockDevice(live),
+                                  wrapContent: true,
                                   color: AppColors.red,
                                 ),
+                              ],
+                            ),
+                    ],
+                    // Devices blocked from this member, each with Unblock.
+                    StreamBuilder<List<BlockedDevice>>(
+                      stream: _blockedDevices,
+                      builder: (BuildContext context, AsyncSnapshot<List<BlockedDevice>> b) {
+                        final List<BlockedDevice> list = b.data ?? const <BlockedDevice>[];
+                        if (list.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            SizedBox(height: 14.h),
+                            Text(
+                              FormatHelper.capitalize(s.accessBlockedDevices),
+                              style: StyleText.fontSize13Weight600.copyWith(color: AppColors.text),
+                            ),
+                            for (final BlockedDevice d in list)
+                              Padding(
+                                padding: EdgeInsets.only(top: 8.h),
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.block_rounded, color: AppColors.red, size: 20),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        FormatHelper.capitalize(
+                                          '${d.deviceName.isEmpty ? s.accessDeviceUnknown : d.deviceName}'
+                                          ' · ${AppDates.day(context, d.blockedAt)}',
+                                        ),
+                                        style: StyleText.fontSize12Weight400.copyWith(color: AppColors.secondaryText),
+                                      ),
+                                    ),
+                                    if (canDevice)
+                                      TextButton(
+                                        onPressed: () => _unblockDevice(d),
+                                        child: Text(FormatHelper.capitalize(s.accessDeviceUnblock)),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                       ],
                     ),
                   );
                 },
               );
+          // CERTIFICATES BY HAND: give the member a course's certificate
+          // without the final exam (Quizzes → Certificate quizzes).
+          final Widget certificatesCard = !SessionController.to.current
+                  .canDo(AdminAction.quizzesCertificates)
+              ? const SizedBox.shrink()
+              : AppCard(
+                  title: s.certIssueTitle,
+                  caption: s.certIssueCaption,
+                  child: StreamBuilder<List<VideoItem>>(
+                    stream: _certVideos,
+                    builder: (BuildContext context, AsyncSnapshot<List<VideoItem>> v) {
+                      final List<String> courses = _courseNames(v.data ?? const <VideoItem>[])
+                          .where((String c) => c.isNotEmpty)
+                          .toList();
+                      return StreamBuilder<List<IssuedCertificate>>(
+                        stream: _issued,
+                        builder: (BuildContext context, AsyncSnapshot<List<IssuedCertificate>> c) {
+                          final Set<String> issued = <String>{
+                            for (final IssuedCertificate x in c.data ?? const <IssuedCertificate>[])
+                              x.course.trim().toLowerCase(),
+                          };
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              for (final String course in courses)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        issued.contains(course.toLowerCase())
+                                            ? Icons.workspace_premium_rounded
+                                            : Icons.school_outlined,
+                                        size: 20,
+                                        color: issued.contains(course.toLowerCase())
+                                            ? AppColors.green
+                                            : AppColors.secondaryText,
+                                      ),
+                                      SizedBox(width: 10.w),
+                                      Expanded(
+                                        child: Text(
+                                          FormatHelper.capitalize(course),
+                                          style: StyleText.fontSize14Weight500.copyWith(color: AppColors.text),
+                                        ),
+                                      ),
+                                      if (_issuing.contains(course))
+                                        const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.2))
+                                      else if (issued.contains(course.toLowerCase())) ...<Widget>[
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                                            builder: (_) => CertificatePage.of(
+                                              data: CertificateData.issued(
+                                                name: widget.member.displayName,
+                                                course: course,
+                                                uid: widget.member.uid,
+                                              ),
+                                            ),
+                                          )),
+                                          child: Text(FormatHelper.capitalize(s.viewCertificate)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => _toggleCertificate(course, true),
+                                          child: Text(
+                                            FormatHelper.capitalize(s.certRevoke),
+                                            style: TextStyle(color: AppColors.red),
+                                          ),
+                                        ),
+                                      ] else
+                                        customButton(
+                                          title: s.certIssue,
+                                          function: () => _toggleCertificate(course, false),
+                                          wrapContent: true,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
           final Widget saveCard = !_canAccess
               ? const SizedBox.shrink()
               : Center(
@@ -382,13 +629,13 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[deviceCard, gap, devicesCard, gap, periodCard, gap, pauseCard],
+                            children: <Widget>[deviceCard, gap, devicesCard, gap, periodCard, gap, pauseCard, gap, certificatesCard],
                           ),
                         ),
                       ],
                     )
                   else ...<Widget>[
-                    deviceCard, gap, coursesCard, gap, devicesCard, gap, periodCard, gap, pauseCard,
+                    deviceCard, gap, coursesCard, gap, devicesCard, gap, periodCard, gap, pauseCard, gap, certificatesCard,
                   ],
                   SizedBox(height: 24.h),
                   Center(
@@ -441,6 +688,72 @@ class _MemberAccessPageState extends State<MemberAccessPage> {
       default:
         return Icons.devices_rounded;
     }
+  }
+}
+
+/// Under a ticked course: From / To and the platforms it opens on.
+class _CourseAccessBox extends StatelessWidget {
+  const _CourseAccessBox({required this.access, required this.onChanged});
+
+  final CourseAccess access;
+  final ValueChanged<CourseAccess> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final S s = S.of(context);
+    return Container(
+      margin: EdgeInsetsDirectional.only(start: 34.w, bottom: 10.h, end: 4.w),
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.secondaryText.withOpacity(0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          DateTimeField(
+            label: s.accessFrom,
+            value: access.from,
+            icon: Icons.play_circle_outline_rounded,
+            onChanged: (DateTime? v) =>
+                onChanged(access.copyWith(from: v, clearFrom: v == null)),
+          ),
+          SizedBox(height: 10.h),
+          DateTimeField(
+            label: s.accessUntil,
+            value: access.until,
+            icon: Icons.event_busy_rounded,
+            onChanged: (DateTime? v) =>
+                onChanged(access.copyWith(until: v, clearUntil: v == null)),
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            FormatHelper.capitalize(s.accessCoursePlatforms),
+            style: StyleText.fontSize12Weight600.copyWith(color: AppColors.secondaryText),
+          ),
+          SizedBox(height: 6.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 6.h,
+            children: <Widget>[
+              for (final String p in MemberAccess.allPlatforms)
+                FilterChip(
+                  label: Text(MemberAccess.platformLabel(p)),
+                  avatar: Icon(_MemberAccessPageState._platformIcon(p), size: 16),
+                  selected: access.platforms.contains(p),
+                  onSelected: (bool on) {
+                    final List<String> next = List<String>.of(access.platforms);
+                    on ? next.add(p) : next.remove(p);
+                    onChanged(access.copyWith(platforms: next));
+                  },
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -7,6 +7,7 @@
 /// Created: 19/9/2026
 
 import 'package:asec/core/constants/app_constants.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/course_access.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 
@@ -48,9 +49,16 @@ class AppUser {
   /// Video categories this member may watch ('' = the "General" category).
   final List<String> courses;
 
-  /// Platform keys the member may open the app on (android, ios, macos,
-  /// windows, web). Empty = every platform.
+  /// Platform keys the member's COURSES open on (android, ios, macos,
+  /// windows, web) — non-free videos, their section quizzes and the
+  /// certificates. Since 23/10/2026 it no longer limits signing in: the
+  /// rest of the app opens on every platform. Empty = the default:
+  /// Android and iPhone/iPad only (CourseAccess.defaultPlatforms).
   final List<String> platforms;
+
+  /// Per course: from–to and platforms (Members → Edit access, under each
+  /// course ticked). A course missing here has no extra limits.
+  final Map<String, CourseAccess> courseAccess;
 
   /// The access window. Both null = permanent.
   final DateTime? accessFrom;
@@ -83,9 +91,10 @@ class AppUser {
     this.createdAt,
     this.permissions = const <AdminPermission>[],
     this.permissionKeys = const <String>{},
-    this.allCourses = true,
-    this.courses = const <String>[],
+    this.allCourses = false,
+    this.courses = const <String>['GENERAL NOTES', 'Reals'],
     this.platforms = const <String>[],
+    this.courseAccess = const <String, CourseAccess>{},
     this.accessFrom,
     this.accessUntil,
     this.pausedAt,
@@ -97,12 +106,33 @@ class AppUser {
   bool get isPaused => pausedAt != null;
   bool get isPermanent => accessFrom == null && accessUntil == null;
 
-  /// Whether this member may see [category]. Admins see everything.
-  bool canSeeCourse(String category) =>
-      isAdmin || allCourses || courses.contains(category.trim());
+  /// Whether this member may see [category] HERE (this platform, now).
+  /// Admins see everything. A course with its own settings follows its own
+  /// dates and platforms; one without follows the member's [platforms].
+  /// This is what keeps videos, video quizzes and certificates to the
+  /// platforms the admin opened — signing in is allowed everywhere.
+  bool canSeeCourse(String category) {
+    if (isAdmin) return true;
+    final String c = category.trim();
+    if (!allCourses && !courses.contains(c)) return false;
+    final CourseAccess? a = courseAccess[c];
+    if (a != null) return a.openHere;
+    return allowsPlatform(CourseAccess.currentPlatform);
+  }
+
+  /// Given the course but outside its dates / platforms right now.
+  bool courseOutsideWindow(String category) {
+    if (isAdmin) return false;
+    final String c = category.trim();
+    if (!allCourses && !courses.contains(c)) return false;
+    final CourseAccess? a = courseAccess[c];
+    if (a != null) return !a.openHere;
+    return !allowsPlatform(CourseAccess.currentPlatform);
+  }
 
   bool allowsPlatform(String platform) =>
-      isAdmin || platforms.isEmpty || platforms.contains(platform);
+      isAdmin ||
+      (platforms.isEmpty ? CourseAccess.defaultPlatforms : platforms).contains(platform);
 
   static const AppUser empty =
       AppUser(uid: '', email: '', role: UserRole.user);
@@ -176,6 +206,7 @@ class AppUser {
       allCourses: allCourses,
       courses: courses,
       platforms: platforms,
+      courseAccess: courseAccess,
       accessFrom: accessFrom,
       accessUntil: accessUntil,
       pausedAt: pausedAt,

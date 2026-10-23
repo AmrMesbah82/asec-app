@@ -613,6 +613,12 @@ abstract class S {
   /// **'Sign out'**
   String get signOut;
 
+  /// No description provided for @pressBackAgainToExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Press back again to exit'**
+  String get pressBackAgainToExit;
+
   /// No description provided for @debugPreviewAnyway.
   ///
   /// In en, this message translates to:
@@ -3968,6 +3974,24 @@ abstract class S {
   /// **'Admin dashboard'**
   String get ctlGroupDashboard;
 
+  /// No description provided for @ctlGroupCalculators.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculators'**
+  String get ctlGroupCalculators;
+
+  /// No description provided for @ctlCalcHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On: every member can open it. Off: hidden from all members (admins still see it).'**
+  String get ctlCalcHint;
+
+  /// No description provided for @ctlCalcEngHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off (default): only the members you unlocked on the Members page can open it. On: every member can.'**
+  String get ctlCalcEngHint;
+
   /// No description provided for @controlCentre.
   ///
   /// In en, this message translates to:
@@ -4177,6 +4201,42 @@ abstract class S {
   /// In en, this message translates to:
   /// **'On: screenshots and screen recordings of the app come out black (Android, iOS, macOS, Windows). Off: allowed.'**
   String get ctlScreenProtectionHint;
+
+  /// No description provided for @ctlScreenshotException.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow screenshots for amrmesbah33@gmail.com'**
+  String get ctlScreenshotException;
+
+  /// No description provided for @ctlScreenshotExceptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On: this account can take screenshots and screen recordings even while they are blocked for everyone else. Off: blocked like everyone.'**
+  String get ctlScreenshotExceptionHint;
+
+  /// No description provided for @shotAllowedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots are allowed'**
+  String get shotAllowedTitle;
+
+  /// No description provided for @shotAllowedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: \"Block screenshots\" is off, so every member can take screenshots and record the screen right now. Turn it back on when you are done.'**
+  String get shotAllowedBody;
+
+  /// No description provided for @shotAllowedBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block now'**
+  String get shotAllowedBlock;
+
+  /// No description provided for @shotAllowedKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep allowed'**
+  String get shotAllowedKeep;
 
   /// No description provided for @ctlDashboardCharts.
   ///
@@ -4640,6 +4700,54 @@ abstract class S {
   /// **'HVAC, fire fighting, plumbing and medical gas — quick design checks.'**
   String get engineeringCalcSub;
 
+  /// No description provided for @ductCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'Duct calculator'**
+  String get ductCalc;
+
+  /// No description provided for @ductCalcShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Ducts'**
+  String get ductCalcShort;
+
+  /// No description provided for @pipeCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pipe sizer'**
+  String get pipeCalc;
+
+  /// No description provided for @pipeCalcShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Pipes'**
+  String get pipeCalcShort;
+
+  /// No description provided for @plumbingFireCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'Plumbing'**
+  String get plumbingFireCalc;
+
+  /// No description provided for @plumbingFireCalcShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Plumbing'**
+  String get plumbingFireCalcShort;
+
+  /// No description provided for @fireCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fire fighting'**
+  String get fireCalc;
+
+  /// No description provided for @fireCalcShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Fire'**
+  String get fireCalcShort;
+
   /// No description provided for @calcInputs.
   ///
   /// In en, this message translates to:
@@ -4793,13 +4901,13 @@ abstract class S {
   /// No description provided for @accessPlatforms.
   ///
   /// In en, this message translates to:
-  /// **'Devices'**
+  /// **'Video platforms'**
   String get accessPlatforms;
 
   /// No description provided for @accessPlatformsCaption.
   ///
   /// In en, this message translates to:
-  /// **'The member can open the app only on the checked devices.'**
+  /// **'The member can sign in on any device. Videos, video quizzes and certificates open only on the checked platforms; everything else opens everywhere.'**
   String get accessPlatformsCaption;
 
   /// No description provided for @accessAllPlatforms.
@@ -5357,13 +5465,13 @@ abstract class S {
   /// No description provided for @accessDeviceCaption.
   ///
   /// In en, this message translates to:
-  /// **'Each member can use the app on one device only. To move them to a new device, remove this one — the next device they sign in on takes its place.'**
+  /// **'Members can sign in on any number of devices. The device below was locked to the account before; you can remove it or block it.'**
   String get accessDeviceCaption;
 
   /// No description provided for @accessDeviceNone.
   ///
   /// In en, this message translates to:
-  /// **'Not used on any device yet — the first device they sign in on will be locked to the account.'**
+  /// **'No device locked — the member can sign in on any device.'**
   String get accessDeviceNone;
 
   /// No description provided for @accessDeviceUnknown.
@@ -5621,7 +5729,7 @@ abstract class S {
   /// No description provided for @engLibraryBestHint.
   ///
   /// In en, this message translates to:
-  /// **'Top members by stars'**
+  /// **'The best CVs in the app'**
   String get engLibraryBestHint;
 
   /// No description provided for @engLibraryCertificate.
@@ -6199,6 +6307,258 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Site settings and control centre'**
   String get permWebSettings;
+
+  /// No description provided for @blockedTitleDeviceBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This device is blocked'**
+  String get blockedTitleDeviceBlocked;
+
+  /// No description provided for @blockedBodyDeviceBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The admin blocked this device. The app can\'t be used on it. Contact the admin if you think this is a mistake.'**
+  String get blockedBodyDeviceBlocked;
+
+  /// No description provided for @accessDeviceBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block device'**
+  String get accessDeviceBlock;
+
+  /// No description provided for @accessDeviceBlockQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this device?'**
+  String get accessDeviceBlockQuestion;
+
+  /// No description provided for @accessDeviceBlockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{device} will be blocked: anyone who signs in on it will see \"This device is blocked\". The member can still use the app on another device.'**
+  String accessDeviceBlockBody(String device);
+
+  /// No description provided for @accessDeviceBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Device blocked.'**
+  String get accessDeviceBlocked;
+
+  /// No description provided for @accessDeviceUnblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get accessDeviceUnblock;
+
+  /// No description provided for @accessDeviceUnblocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Device unblocked.'**
+  String get accessDeviceUnblocked;
+
+  /// No description provided for @accessBlockedDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked devices'**
+  String get accessBlockedDevices;
+
+  /// No description provided for @captureAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen capture alerts'**
+  String get captureAlertsTitle;
+
+  /// No description provided for @captureAlertsCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Members who took a screenshot or recorded the screen inside the app. Detected on iPhone / iPad and Android 14+.'**
+  String get captureAlertsCaption;
+
+  /// No description provided for @captureNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No screenshots or recordings so far.'**
+  String get captureNone;
+
+  /// No description provided for @captureClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get captureClear;
+
+  /// No description provided for @captureClearQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all alerts?'**
+  String get captureClearQuestion;
+
+  /// No description provided for @captureClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every screenshot and recording alert will be deleted.'**
+  String get captureClearBody;
+
+  /// No description provided for @captureShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String captureShowAll(int count);
+
+  /// No description provided for @captureShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get captureShowLess;
+
+  /// No description provided for @captureScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshot'**
+  String get captureScreenshot;
+
+  /// No description provided for @captureRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen recording'**
+  String get captureRecording;
+
+  /// No description provided for @capturePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page'**
+  String get capturePage;
+
+  /// No description provided for @captureCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get captureCourse;
+
+  /// No description provided for @captureLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson / quiz'**
+  String get captureLesson;
+
+  /// No description provided for @courseLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get courseLocked;
+
+  /// No description provided for @courseLockedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'This course isn\'t open for you yet. Ask the admin to give it to you.'**
+  String get courseLockedSnack;
+
+  /// No description provided for @courseSubtitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle'**
+  String get courseSubtitleEdit;
+
+  /// No description provided for @courseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course subtitle'**
+  String get courseSubtitle;
+
+  /// No description provided for @courseSubtitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A short line shown under the course title'**
+  String get courseSubtitleHint;
+
+  /// No description provided for @accessCoursePickPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one platform for {course}'**
+  String accessCoursePickPlatform(String course);
+
+  /// No description provided for @accessCoursePlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens on'**
+  String get accessCoursePlatforms;
+
+  /// No description provided for @certPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview certificate'**
+  String get certPreview;
+
+  /// No description provided for @certPreviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A sample — this is how a member\'s certificate looks.'**
+  String get certPreviewNote;
+
+  /// No description provided for @certButtonLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate · finish the course to earn it'**
+  String get certButtonLocked;
+
+  /// No description provided for @certIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate issued · view it'**
+  String get certIssued;
+
+  /// No description provided for @certIssueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get certIssueTitle;
+
+  /// No description provided for @certIssueCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Give this member a course\'s certificate without the final exam. It shows up for them at once.'**
+  String get certIssueCaption;
+
+  /// No description provided for @certIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue'**
+  String get certIssue;
+
+  /// No description provided for @certRevoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Take back'**
+  String get certRevoke;
+
+  /// No description provided for @certRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate taken back'**
+  String get certRevoked;
+
+  /// No description provided for @certIssuedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate issued'**
+  String get certIssuedToast;
+
+  /// No description provided for @libraryProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get libraryProjects;
+
+  /// No description provided for @libraryProjectsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Our projects from the website'**
+  String get libraryProjectsHint;
+
+  /// No description provided for @webTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get webTab;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -8,9 +8,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
 import 'package:asec/core/constants/firebase_collections.dart';
 import 'package:asec/core/helper/main_helper/firestore_mapper.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/course_access.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/user_role.dart';
 
@@ -29,6 +31,7 @@ abstract final class UserModel {
   static const String coursesAll = 'courses_all';
   static const String courses = 'courses';
   static const String platforms = 'platforms';
+  static const String courseAccess = 'course_access';
   static const String accessFrom = 'access_from';
   static const String accessUntil = 'access_until';
   static const String pausedAt = 'paused_at';
@@ -53,9 +56,17 @@ abstract final class UserModel {
       canCreateCv: data.boolean(FirebaseCollections.canCreateCvField),
       canUseCalcs: data.boolean(FirebaseCollections.canUseCalcsField),
       createdAt: data.date(FirebaseCollections.createdAtField),
-      allCourses: data.boolean(coursesAll, true),
-      courses: data.stringList(courses),
+      // Default for a member the admin has not set up: NOT every course —
+      // only MemberAccess.defaultCourses.
+      allCourses: data.boolean(coursesAll, false),
+      courses: data.stringList(courses).isEmpty
+          ? MemberAccess.defaultCourses
+          : data.stringList(courses),
       platforms: data.stringList(platforms),
+      courseAccess: <String, CourseAccess>{
+        for (final MapEntry<String, dynamic> e in data.nested(courseAccess).entries)
+          e.key.trim(): CourseAccess.fromMap(e.value),
+      },
       accessFrom: data.date(accessFrom),
       accessUntil: data.date(accessUntil),
       pausedAt: data.date(pausedAt),
@@ -107,11 +118,16 @@ abstract final class UserModel {
     required List<String> platformList,
     required DateTime? from,
     required DateTime? until,
+    Map<String, CourseAccess> perCourse = const <String, CourseAccess>{},
   }) =>
       <String, dynamic>{
         coursesAll: allCourses,
         courses: courseList,
         platforms: platformList,
+        courseAccess: <String, dynamic>{
+          for (final MapEntry<String, CourseAccess> e in perCourse.entries)
+            e.key: e.value.toMap(),
+        },
         accessFrom: from == null ? null : Timestamp.fromDate(from),
         accessUntil: until == null ? null : Timestamp.fromDate(until),
         FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),

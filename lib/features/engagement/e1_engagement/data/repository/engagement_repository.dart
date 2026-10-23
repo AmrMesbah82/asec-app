@@ -401,6 +401,22 @@ class EngagementRepository {
                 d.data().str('name'): d.data()['sequential'] as bool,
           });
 
+  /// course name → the line the admin wrote under its title ('' = none).
+  Stream<Map<String, String>> watchCourseSubtitles() => _courseSettings
+      .snapshots()
+      .map((QuerySnapshot<Map<String, dynamic>> s) => <String, String>{
+            for (final QueryDocumentSnapshot<Map<String, dynamic>> d in s.docs)
+              if (d.data().str('subtitle').trim().isNotEmpty)
+                d.data().str('name'): d.data().str('subtitle').trim(),
+          });
+
+  Future<void> setCourseSubtitle(String course, String subtitle) =>
+      _courseSettings.doc(courseDocId(course)).set(<String, dynamic>{
+        'name': course.trim(),
+        'subtitle': subtitle.trim(),
+        FirebaseCollections.updatedAtField: FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
   Future<void> setCourseSequential(String course, bool value) =>
       _courseSettings.doc(courseDocId(course)).set(<String, dynamic>{
         'name': course.trim(),

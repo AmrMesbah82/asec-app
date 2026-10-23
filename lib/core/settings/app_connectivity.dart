@@ -39,6 +39,11 @@ import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
 import 'package:asec/features/tools/t2_engineering_calc/data/calc_access.dart';
 import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/engineering_calc_page.dart';
+import 'package:asec/features/tools/t3_duct_calc/presentation/ui/pages/duct_calc_page.dart';
+import 'package:asec/features/tools/t4_pipe_calc/presentation/ui/pages/pipe_calc_page.dart';
+import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/features/tools/t5_plumbing_fire/presentation/ui/pages/plumbing_fire_page.dart';
+import 'package:asec/features/tools/t5_plumbing_fire/presentation/ui/pages/fire_calc_page.dart';
 import 'package:asec/features/video/v1_videos/data/download/video_downloads.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/pages/downloads_page.dart';
 import 'package:asec/generated/l10n.dart';
@@ -148,8 +153,8 @@ class OfflineConverterView extends StatelessWidget {
 }
 
 /// Offline, what works without internet: downloaded lessons (if any), the
-/// unit converter, and the engineering calculators for whoever has them
-/// (admins, and members the admin unlocked — CalcAccess). One tool alone is
+/// unit converter, and the engineering and duct calculators for whoever has
+/// them (admins, and members the admin unlocked — CalcAccess). One tool alone is
 /// shown without the switcher.
 class _OfflineScreen extends StatefulWidget {
   const _OfflineScreen();
@@ -158,7 +163,7 @@ class _OfflineScreen extends StatefulWidget {
   State<_OfflineScreen> createState() => _OfflineScreenState();
 }
 
-enum _OfflineTool { downloads, converter, calculators }
+enum _OfflineTool { downloads, converter, calculators, ducts, pipes, plumbingFire, fire }
 
 class _OfflineScreenState extends State<_OfflineScreen> {
   _OfflineTool? _picked;
@@ -231,13 +236,32 @@ class _OfflineScreenState extends State<_OfflineScreen> {
             ),
             Expanded(
               child: Obx(() {
+                // Each calculator also follows its Control centre switch
+                // (AppFeature.calc*, read from the cached settings).
+                final AppFeatures feats = AppFeatures.to;
+                feats.values.length; // tracked by Obx
+                // Engineering offline: its switch, or this account's own
+                // unlock remembered on the device (CalcAccess).
+                final bool engUnlocked = CalcAccess.allowed;
                 final List<(_OfflineTool, String)> tools = <(_OfflineTool, String)>[
                   if (VideoDownloads.items.isNotEmpty)
                     (_OfflineTool.downloads, s.downloads),
-                  (_OfflineTool.converter, s.unitConverter),
-                  if (CalcAccess.allowed)
+                  if (feats.calcOn(AppFeature.calcConverter))
+                    (_OfflineTool.converter, s.unitConverter),
+                  if (feats.calcOn(AppFeature.calcEngineering) || engUnlocked)
                     (_OfflineTool.calculators, s.engineeringCalc),
+                  if (feats.calcOn(AppFeature.calcDuct))
+                    (_OfflineTool.ducts, s.ductCalc),
+                  if (feats.calcOn(AppFeature.calcPipe))
+                    (_OfflineTool.pipes, s.pipeCalc),
+                  if (feats.calcOn(AppFeature.calcPlumbing))
+                    (_OfflineTool.plumbingFire, s.plumbingFireCalc),
+                  if (feats.calcOn(AppFeature.calcFire))
+                    (_OfflineTool.fire, s.fireCalc),
                 ];
+                // Everything switched off: the offline screen still needs
+                // something to show, so the converter stays as the fallback.
+                if (tools.isEmpty) tools.add((_OfflineTool.converter, s.unitConverter));
                 final _OfflineTool shown = tools.any(
                   ((_OfflineTool, String) t) => t.$1 == _picked,
                 )
@@ -247,6 +271,10 @@ class _OfflineScreenState extends State<_OfflineScreen> {
                   _OfflineTool.downloads => const DownloadsPage(),
                   _OfflineTool.converter => const UnitConverterPage(),
                   _OfflineTool.calculators => const EngineeringCalcPage(),
+                  _OfflineTool.ducts => const DuctCalcPage(),
+                  _OfflineTool.pipes => const PipeCalcPage(),
+                  _OfflineTool.plumbingFire => const PlumbingFirePage(),
+                  _OfflineTool.fire => const FireCalcPage(),
                 };
                 if (tools.length == 1) return page;
                 return Column(
@@ -267,7 +295,7 @@ class _OfflineScreenState extends State<_OfflineScreen> {
                                   ? AppColors.primary
                                   : AppColors.card,
                               textColor: shown == tool
-                                  ? Colors.white
+                                  ? AppColors.textButton
                                   : AppColors.text,
                             ),
                         ],
@@ -285,6 +313,10 @@ class _OfflineScreenState extends State<_OfflineScreen> {
                               _OfflineTool.downloads => const DownloadsPage(),
                               _OfflineTool.converter => const UnitConverterPage(),
                               _OfflineTool.calculators => const EngineeringCalcPage(),
+                              _OfflineTool.ducts => const DuctCalcPage(),
+                              _OfflineTool.pipes => const PipeCalcPage(),
+                              _OfflineTool.plumbingFire => const PlumbingFirePage(),
+                              _OfflineTool.fire => const FireCalcPage(),
                             },
                         ],
                       ),

@@ -319,13 +319,16 @@ class _PermissionPicker extends StatelessWidget {
             onChanged: (bool? v) => _toggleTab(p, v == true),
           ),
           if (selected.contains(p.key) && p.actions.isNotEmpty)
-            Container(
-              margin: EdgeInsetsDirectional.only(start: 28.w, bottom: 6.h),
+            // A Material (not a coloured Container) so the checkbox rows'
+            // ink paints on this box instead of behind it.
+            Padding(
+              padding: EdgeInsetsDirectional.only(start: 28.w, bottom: 6.h),
+              child: Material(
+              color: AppColors.chip,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AppColors.chip,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -344,6 +347,8 @@ class _PermissionPicker extends StatelessWidget {
                       onChanged: (bool? v) => _toggleAction(a, v == true),
                     ),
                 ],
+              ),
+              ),
               ),
             ),
         ],

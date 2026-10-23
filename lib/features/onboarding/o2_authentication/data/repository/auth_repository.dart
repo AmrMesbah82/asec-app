@@ -11,7 +11,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:asec/core/network/app_failure.dart';
 import 'package:asec/core/network/app_firebase.dart';
@@ -21,9 +20,7 @@ import 'package:asec/features/onboarding/o2_authentication/domain/base_repositor
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/auth_failure_type.dart';
 
-void _log(String message) {
-  if (kDebugMode) debugPrint('[auth] $message');
-}
+void _log(String message) {}
 
 class AuthRepository implements AuthBaseRepository {
   AuthRepository({UsersRemoteDataSource? remote})

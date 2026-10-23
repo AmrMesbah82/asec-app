@@ -1,0 +1,216 @@
+/// Module: tools / t3_duct_calc
+///
+///*************************** FILE INFO ****************************///
+/// File Name: duct_fields.dart
+/// Purpose: Shared pieces for the duct tabs, built on the app's own
+///          controls — a numeric CustomTextField, a responsive field row,
+///          a full-width card for AppDataTable on phones, a two-column
+///          result table, and number helpers.
+/// Author: ASEC team
+/// Created: 21/10/2026
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'package:asec/core/custom/100-custom_data_table.dart';
+import 'package:asec/core/custom/2-custom_textfield.dart';
+import 'package:asec/core/helper/main_helper/format_helper.dart';
+import 'package:asec/core/theme/app_colors.dart';
+import 'package:asec/core/theme/app_padding.dart';
+import 'package:asec/core/theme/app_radius.dart';
+import 'package:asec/core/theme/app_theme.dart';
+
+/// Below this width the inputs stack one per line, each full width.
+const double kDuctNarrowWidth = 600;
+
+/// Parses a user-typed number ("1,5" is accepted as 1.5). Null if invalid.
+double? parseNumber(String text) {
+  final String t = text.trim().replaceAll(',', '.');
+  if (t.isEmpty) return null;
+  return double.tryParse(t);
+}
+
+/// Fixed decimals, or "-" for NaN / infinity / null.
+String fmt(double? value, int decimals) {
+  if (value == null || !value.isFinite) return '-';
+  return value.toStringAsFixed(decimals);
+}
+
+/// Whole number with thousands separators (Reynolds number).
+String fmtGrouped(double? value) {
+  if (value == null || !value.isFinite) return '-';
+  final String digits = value.round().abs().toString();
+  final StringBuffer out = StringBuffer(value < 0 ? '-' : '');
+  for (int i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) out.write(',');
+    out.write(digits[i]);
+  }
+  return out.toString();
+}
+
+/// A numeric [CustomTextField]; the unit goes in the label: "Flow (l/s)".
+/// [width] is used on wide screens; inside [ResponsiveFields] on a phone
+/// the field is stretched to the full width.
+class NumberField extends StatelessWidget {
+  const NumberField({
+    super.key,
+    required this.controller,
+    required this.label,
+    this.unit,
+    this.onChanged,
+    this.readOnly = false,
+    this.width = 200,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String? unit;
+  final ValueChanged<String>? onChanged;
+  final bool readOnly;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: CustomTextField(
+        controller: controller,
+        fillColor: AppColors.card,
+        label: (unit == null || unit!.isEmpty) ? label : '$label ($unit)',
+        readOnly: readOnly,
+        onChanged: onChanged,
+        textDirection: TextDirection.ltr,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+        ],
+      ),
+    );
+  }
+}
+
+/// Inputs side by side on a wide screen; on a phone one per line, each
+/// stretched to the full width (a tight width overrides the child's own).
+class ResponsiveFields extends StatelessWidget {
+  const ResponsiveFields({super.key, required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) {
+        if (c.maxWidth >= kDuctNarrowWidth) {
+          return Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            children: children,
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (int i = 0; i < children.length; i++) ...<Widget>[
+              if (i > 0) const SizedBox(height: 12),
+              SizedBox(width: c.maxWidth, child: children[i]),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// The card AppDataTable draws on a phone / tablet, full width: the first
+/// column is the heading, every other column is a line with its label on
+/// the left and its value on the right edge.
+///
+/// Heights match AppDataTable's own card measure (12 + 46 + 26 per line +
+/// 12) so the grid cell always fits.
+Widget ductCard<T>(
+  BuildContext context,
+  T row,
+  List<AppTableColumn<T>> columns,
+) {
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: AppPadding.h, vertical: 12),
+    decoration: BoxDecoration(
+      color: AppColors.background,
+      borderRadius: AppRadius.containerR,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        SizedBox(
+          height: 46,
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: columns.first.cell(context, row),
+          ),
+        ),
+        for (final AppTableColumn<T> column in columns.skip(1))
+          SizedBox(
+            height: 26,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    FormatHelper.capitalize(column.label),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: StyleText.fontSize12Weight500
+                        .copyWith(color: AppColors.secondaryText),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                column.cell(context, row),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+/// One line of a [ResultTable].
+class ResultItem {
+  const ResultItem(this.label, this.value, [this.unit = '']);
+
+  final String label;
+  final String value;
+  final String unit;
+}
+
+/// Results as a two-column [AppDataTable] (Item | Value). Two columns fit
+/// a phone, so it stays a full-width table there instead of cards.
+class ResultTable extends StatelessWidget {
+  const ResultTable({super.key, required this.items});
+
+  final List<ResultItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDataTable<ResultItem>(
+      shrinkWrap: true,
+      cardsOnTablet: false,
+      rows: items,
+      columns: <AppTableColumn<ResultItem>>[
+        AppTableColumn<ResultItem>(
+          label: 'Item',
+          flex: 3,
+          cell: (BuildContext context, ResultItem r) =>
+              AppTableCellText(r.label, emphasis: true),
+        ),
+        AppTableColumn<ResultItem>(
+          label: 'Value',
+          flex: 2,
+          cell: (BuildContext context, ResultItem r) => AppTableCellText(
+            r.unit.isEmpty ? r.value : '${r.value} ${r.unit}',
+          ),
+        ),
+      ],
+    );
+  }
+}

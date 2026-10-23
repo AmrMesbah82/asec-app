@@ -51,19 +51,13 @@ abstract final class SuperAdminBootstrap {
       result.fold(
         (AuthFailureType failure) {
           if (failure == AuthFailureType.emailInUse) {
-            debugPrint('SUPER ADMIN: ${AppConstants.adminEmail} already exists.');
             box.write(_doneKey, true);
-          } else {
-            debugPrint('SUPER ADMIN: could not create the account — $failure');
           }
         },
         (_) {
-          debugPrint('SUPER ADMIN: created ${AppConstants.adminEmail} and signed in.');
           box.write(_doneKey, true);
         },
       );
-    } catch (e) {
-      debugPrint('SUPER ADMIN: failed — $e');
-    }
+    } catch (_) {}
   }
 }

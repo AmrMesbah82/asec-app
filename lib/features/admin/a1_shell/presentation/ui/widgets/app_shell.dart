@@ -7,13 +7,27 @@
 ///          bottom bar on a phone.
 /// Author: ASEC team
 /// Created: 19/9/2026
+/// Updated: 22/10/2026 - Phone "More" opens a full page (`_MorePage`)
+///          instead of a bottom sheet, styled like the services_module
+///          More list (`_MoreTile`). `ShellSection.phoneCenter`
+///          makes a section the phone bar's raised centre button (its
+///          tools open as a vertical speed dial above it); `phoneMore` sends one to More.
+///          The rail is unchanged.
+/// Updated: 23/10/2026 - On a phone every group tab (bar or "More") opens
+///          the vertical list, so the member's Calculators match the admin's.
+/// Updated: 22/10/2026 - Selected rail / bar / More items use
+///          `AppTheme.accentOn(card)`, so a brand colour close to the card
+///          (grey, dark purple in dark mode) still reads.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:asec/core/settings/capture_context.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/custom/57-custom_dialog_manager.dart';
+import 'package:asec/core/custom/113-custom_circular_menu.dart';
 import 'package:asec/core/helper/main_helper/platform_helper.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_padding.dart';
@@ -36,7 +50,36 @@ class ShellSection {
     required this.page,
     this.shortLabel,
     this.id,
-  });
+    this.phoneMore = false,
+    this.phoneCenter = false,
+  }) : children = const <ShellSection>[];
+
+  /// ONE TAB, SEVERAL TOOLS. Tapping it (bar, rail or "More") opens a
+  /// CustomCircularMenu with [children]; the one picked fills the page.
+  /// [AppShell.open] also finds a child by its id.
+  const ShellSection.group({
+    required this.icon,
+    required this.label,
+    required this.children,
+    this.shortLabel,
+    this.id,
+    this.phoneMore = false,
+    this.phoneCenter = false,
+  }) : page = const SizedBox.shrink();
+
+  /// The tools of a group tab; empty for an ordinary section.
+  final List<ShellSection> children;
+
+  bool get isGroup => children.isNotEmpty;
+
+  /// PHONE ONLY: never takes a bottom-bar tab — always listed under "More".
+  /// The desktop / tablet rail keeps it in its place.
+  final bool phoneMore;
+
+  /// PHONE ONLY: the raised round button docked in the middle of the bottom
+  /// bar (one section at most — the first marked wins). The desktop / tablet
+  /// rail keeps it in its place.
+  final bool phoneCenter;
 
   /// A name other pages can jump to with [AppShell.open] ("videos").
   final String? id;
@@ -83,6 +126,33 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
+  /// When the system back button was last pressed on the first tab — a
+  /// second press within [_exitWindow] closes the app.
+  DateTime? _lastBack;
+  static const Duration _exitWindow = Duration(seconds: 2);
+
+  /// System back on the shell (Android): another tab → back to the first
+  /// tab; first tab → "press again" notice; again within 2 s → exit.
+  /// Pages pushed on top of the shell are not affected — they pop normally.
+  void _onBack() {
+    if (_index != 0) {
+      _select(0);
+      return;
+    }
+    final DateTime now = DateTime.now();
+    if (_lastBack != null && now.difference(_lastBack!) < _exitWindow) {
+      SystemNavigator.pop();
+      return;
+    }
+    _lastBack = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(FormatHelper.capitalize(S.of(context).pressBackAgainToExit)),
+        duration: _exitWindow,
+      ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,11 +187,60 @@ class _AppShellState extends State<AppShell> {
 
   void _select(int index) => setState(() => _index = index);
 
+  /// The tool picked inside each group tab, keyed by the group's id/label.
+  final Map<String, int> _picks = <String, int>{};
+
+  String _groupKey(ShellSection s) => s.id ?? s.label;
+
+  int _pickOf(ShellSection s) =>
+      (_picks[_groupKey(s)] ?? 0).clamp(0, s.children.length - 1);
+
+  /// A tap on section [i] from the bar, the rail or "More". A group opens
+  /// the circular menu around the tapped control ([itemContext]).
+  Future<void> _tap(int i, BuildContext itemContext, {bool vertical = false}) async {
+    final ShellSection section = widget.sections[i];
+    if (!section.isGroup) {
+      _select(i);
+      return;
+    }
+    final Rect anchor = CustomCircularMenu.rectOf(itemContext);
+    final int? picked = await CustomCircularMenu.show(
+      context: context,
+      anchor: anchor,
+      items: <CircularMenuItem>[
+        for (final ShellSection c in section.children)
+          // Full names: a child's short label can repeat the tab's own.
+          CircularMenuItem(icon: c.icon, label: c.label),
+      ],
+      selected: _index == i ? _pickOf(section) : null,
+      vertical: vertical,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _picks[_groupKey(section)] = picked;
+      _index = i;
+    });
+  }
+
   bool _openById(String id) {
     final int i = widget.sections.indexWhere((ShellSection s) => s.id == id);
-    if (i < 0) return false;
-    _select(i);
-    return true;
+    if (i >= 0) {
+      _select(i);
+      return true;
+    }
+    // A tool inside a group tab.
+    for (int g = 0; g < widget.sections.length; g++) {
+      final ShellSection group = widget.sections[g];
+      final int c = group.children.indexWhere((ShellSection s) => s.id == id);
+      if (c >= 0) {
+        setState(() {
+          _picks[_groupKey(group)] = c;
+          _index = g;
+        });
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -134,6 +253,12 @@ class _AppShellState extends State<AppShell> {
     // and disappears with the admin's switch, live — and an index left
     // pointing past the end would take an IndexedStack down with it.
     final int index = _index.clamp(0, widget.sections.length - 1);
+    // For screen capture alerts: the tab on screen.
+    final ShellSection current = widget.sections[index];
+    final ShellSection shown =
+        current.isGroup ? current.children[_pickOf(current)] : current;
+    CaptureContext.tabId = shown.id ?? current.id ?? '';
+    CaptureContext.tabLabel = shown.label;
 
     final Widget body = _ShellScope(
       open: _openById,
@@ -142,13 +267,28 @@ class _AppShellState extends State<AppShell> {
         child: IndexedStack(
           index: index,
           children: <Widget>[
-            for (final ShellSection s in widget.sections) s.page,
+            for (final ShellSection s in widget.sections)
+              if (s.isGroup)
+                // Each tool keeps what was typed while switching.
+                IndexedStack(
+                  index: _pickOf(s),
+                  children: <Widget>[
+                    for (final ShellSection c in s.children) c.page,
+                  ],
+                )
+              else
+                s.page,
           ],
         ),
       ),
     );
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (!didPop) _onBack();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -186,111 +326,276 @@ class _AppShellState extends State<AppShell> {
                   sections: widget.sections,
                   index: index,
                   showLabels: showLabels,
-                  onSelected: _select,
+                  onSelected: _tap,
                 ),
                 Expanded(child: body),
               ],
             )
           : body,
       bottomNavigationBar: hasRail ? null : _bottomBar(context, index),
+      // Phone: the centre section (Calculators) is a raised round button
+      // docked in the middle of the bar; its tools stack up above it.
+      floatingActionButton: hasRail || _centerIndex < 0
+          ? null
+          : _CenterButton(
+              icon: widget.sections[_centerIndex].icon,
+              tooltip: widget.sections[_centerIndex].label,
+              onTap: (BuildContext c) =>
+                  _tap(_centerIndex, c, vertical: true),
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    ),
     );
   }
 
-  /// THE PHONE BAR HOLDS FIVE AT MOST. With more sections than that, the
-  /// first four get their own tab and the fifth is "More", which opens a
-  /// sheet with the rest. A section picked from the sheet keeps "More"
-  /// highlighted, so the bar always says where you are.
+  /// THE PHONE BAR: up to four tabs, two each side of the raised centre
+  /// button ([ShellSection.phoneCenter]). With more sections than fit, the
+  /// last slot is "More", which opens a full page with the rest. A section
+  /// picked there keeps "More" highlighted, so the bar says where you are.
+  /// Without a centre section the bar holds five.
   static const int _maxTabs = 5;
+
+  /// The section drawn as the centre button, or -1.
+  int get _centerIndex =>
+      widget.sections.indexWhere((ShellSection s) => s.phoneCenter);
 
   Widget _bottomBar(BuildContext context, int index) {
     final List<ShellSection> sections = widget.sections;
-    final bool overflow = sections.length > _maxTabs;
-    final int direct = overflow ? _maxTabs - 1 : sections.length;
-    final bool inMore = overflow && index >= direct;
+    final int center = _centerIndex;
+    // Who gets a tab: rail order, [ShellSection.phoneMore] last.
+    final List<int> regular = <int>[
+      for (int i = 0; i < sections.length; i++)
+        if (i != center && !sections[i].phoneMore) i,
+      for (int i = 0; i < sections.length; i++)
+        if (i != center && sections[i].phoneMore) i,
+    ];
+    final int maxTabs = center < 0 ? _maxTabs : _maxTabs - 1;
+    final bool overflow = regular.length > maxTabs;
+    final int directCount = overflow ? maxTabs - 1 : regular.length;
+    final List<int> direct = regular.take(directCount).toList()..sort();
+    // The More page keeps the rail's order.
+    final List<int> more = <int>[
+      for (int i = 0; i < sections.length; i++)
+        if (i != center && !direct.contains(i)) i,
+    ];
+    final bool inMore = overflow && more.contains(index);
 
-    final int selected = inMore ? direct : index;
+    final List<Widget> tabs = <Widget>[
+      for (final int i in direct)
+        Expanded(
+          child: _BarItem(
+            icon: sections[i].icon,
+            label: sections[i].barLabel,
+            selected: !inMore && index == i,
+            // Phone: a group tab (the member's Calculators) opens the same
+            // vertical list as the admin's centre button, not the half circle.
+            onTap: (BuildContext c) => _tap(i, c, vertical: true),
+          ),
+        ),
+      if (overflow)
+        Expanded(
+          child: _BarItem(
+            icon: inMore ? sections[index].icon : Icons.more_horiz_rounded,
+            label: inMore ? sections[index].barLabel : S.of(context).moreTab,
+            selected: inMore,
+            onTap: (BuildContext c) => _openMore(c, more, index),
+          ),
+        ),
+    ];
+    // The gap the docked centre button sits in.
+    if (center >= 0) {
+      tabs.insert((tabs.length / 2).ceil(), SizedBox(width: 72.w));
+    }
+
     return Material(
       color: AppColors.card,
       elevation: 0,
       child: SafeArea(
         top: false,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: AppColors.secondaryText.withOpacity(0.12)),
-            ),
-          ),
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
-          child: Row(
-            children: <Widget>[
-              for (int i = 0; i < direct; i++)
-                Expanded(
-                  child: _BarItem(
-                    icon: sections[i].icon,
-                    label: sections[i].barLabel,
-                    selected: selected == i,
-                    onTap: () => _select(i),
-                  ),
-                ),
-              if (overflow)
-                Expanded(
-                  child: _BarItem(
-                    icon: inMore ? sections[index].icon : Icons.more_horiz_rounded,
-                    label: inMore ? sections[index].barLabel : S.of(context).moreTab,
-                    selected: inMore,
-                    onTap: () => _openMore(context, direct, index),
-                  ),
-                ),
-            ],
-          ),
+          child: Row(children: tabs),
         ),
       ),
     );
   }
 
-  Future<void> _openMore(BuildContext context, int first, int current) async {
-    final List<ShellSection> sections = widget.sections;
-    final int? picked = await showModalBottomSheet<int>(
-      context: context,
-      backgroundColor: AppColors.card,
-      showDragHandle: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+  /// "More" opens a FULL PAGE (not a bottom sheet) with the sections that
+  /// did not fit in the bar. Picking one closes the page and opens it in the
+  /// shell; a group opens its circular menu over the "More" tab.
+  Future<void> _openMore(
+      BuildContext context, List<int> more, int current) async {
+    final int? picked = await Navigator.of(context).push<int>(
+      MaterialPageRoute<int>(
+        builder: (_) => _MorePage(
+          sections: widget.sections,
+          more: more,
+          current: current,
+        ),
       ),
-      builder: (BuildContext sheetContext) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
-                child: Text(
-                  FormatHelper.capitalize(S.of(sheetContext).moreTab),
-                  style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
+    );
+    if (picked != null && context.mounted) {
+      await _tap(picked, context, vertical: true);
+    }
+  }
+}
+
+/// The phone's "More" page: the sections at [more], as cards.
+/// Pops with the picked section's index.
+class _MorePage extends StatelessWidget {
+  const _MorePage({
+    required this.sections,
+    required this.more,
+    required this.current,
+  });
+
+  final List<ShellSection> sections;
+
+  /// Indexes into [sections], in rail order.
+  final List<int> more;
+  final int current;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.card,
+        surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: AppColors.text),
+        title: Text(
+          FormatHelper.capitalize(S.of(context).moreTab),
+          style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: EdgeInsets.only(top: 16.h, bottom: 12.h),
+          children: <Widget>[
+            for (final int i in more)
+              _MoreTile(
+                section: sections[i],
+                selected: i == current,
+                onTap: () => Navigator.of(context).pop(i),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One row of the More page — the same card as the services_module More
+/// list: card background, 8 radius, tinted icon box, name, chevron.
+class _MoreTile extends StatelessWidget {
+  const _MoreTile({
+    required this.section,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ShellSection section;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 5.w),
+      margin: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.r),
+        color: AppColors.card,
+      ),
+      child: InkWell(
+        splashColor: AppColors.transparent,
+        highlightColor: AppColors.transparent,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Row(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+              child: AppIcon(section.icon, size: 20.sp, color: AppColors.primary),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Text(
+                FormatHelper.capitalize(section.label),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: StyleText.fontSize16Weight400.copyWith(
+                  color: selected ? AppTheme.accentOn(AppColors.card) : AppColors.text,
                 ),
               ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: <Widget>[
-                    for (int i = first; i < sections.length; i++)
-                      _RailItem(
-                        section: sections[i],
-                        selected: i == current,
-                        showLabel: true,
-                        onTap: () => Navigator.of(sheetContext).pop(i),
-                      ),
-                  ],
-                ),
+            ),
+            // Mirrors itself in Arabic (matchTextDirection).
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16.sp,
+              color: AppColors.text,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The phone bar's raised round centre button. Gets its own context, so the
+/// circular menu opens around it.
+class _CenterButton extends StatelessWidget {
+  const _CenterButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final ValueChanged<BuildContext> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final double size = 58.r;
+    return Tooltip(
+      message: tooltip,
+      child: Padding(
+        padding: EdgeInsets.only(top: 12.h),
+        // The circle's own context: the menu's ✕ is drawn exactly on it.
+        child: Builder(
+          builder: (BuildContext circleContext) => GestureDetector(
+            onTapDown: (_) => HapticFeedback.lightImpact(),
+            onTap: () => onTap(circleContext),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.35),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
+              child: Icon(icon, size: 26.sp, color: AppColors.textButton),
+            ),
           ),
         ),
       ),
     );
-    if (picked != null) _select(picked);
   }
 }
 
@@ -317,24 +622,30 @@ class _BarItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Gets this item's own context, so a group can anchor its menu here.
+  final ValueChanged<BuildContext> onTap;
 
   @override
   Widget build(BuildContext context) {
-    final Color color = selected ? AppColors.primary : AppColors.secondaryText;
+    // Selected ink: primary, unless the chosen primary is too close to the
+    // card to read (22/10/2026 — a grey brand colour vanished on dark mode).
+    final Color color = selected
+        ? AppTheme.accentOn(AppColors.card)
+        : AppColors.secondaryText;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 3.w),
       child: Material(
         color: AppColors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(14.r),
-          onTap: onTap,
+          onTap: () => onTap(context),
           child: AnimatedContainer(
             duration: AppMotion.fast,
             curve: AppMotion.curve,
             padding: EdgeInsets.symmetric(vertical: 7.h, horizontal: 4.w),
             decoration: BoxDecoration(
-              color: selected ? AppColors.primary.withOpacity(0.12) : AppColors.transparent,
+              color: selected ? AppColors.primary.withOpacity(0.22) : AppColors.transparent,
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Column(
@@ -372,7 +683,7 @@ class _Rail extends StatelessWidget {
   final List<ShellSection> sections;
   final int index;
   final bool showLabels;
-  final ValueChanged<int> onSelected;
+  final void Function(int index, BuildContext itemContext) onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +710,7 @@ class _Rail extends StatelessWidget {
                 section: sections[i],
                 selected: i == index,
                 showLabel: showLabels,
-                onTap: () => onSelected(i),
+                onTap: (BuildContext c) => onSelected(i, c),
               ),
             ),
           ),
@@ -420,11 +731,17 @@ class _RailItem extends StatelessWidget {
   final ShellSection section;
   final bool selected;
   final bool showLabel;
-  final VoidCallback onTap;
+
+  /// Gets this item's own context, so a group can anchor its menu here.
+  final ValueChanged<BuildContext> onTap;
 
   @override
   Widget build(BuildContext context) {
-    final Color color = selected ? AppColors.primary : AppColors.secondaryText;
+    // Selected ink: primary, unless the chosen primary is too close to the
+    // card to read (22/10/2026 — a grey brand colour vanished on dark mode).
+    final Color color = selected
+        ? AppTheme.accentOn(AppColors.card)
+        : AppColors.secondaryText;
 
     final Widget content = AnimatedContainer(
       duration: AppMotion.fast,
@@ -433,7 +750,7 @@ class _RailItem extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: selected
-            ? AppColors.primary.withOpacity(0.1)
+            ? AppColors.primary.withOpacity(0.22)
             : AppColors.transparent,
         borderRadius: AppRadius.containerR,
       ),
@@ -464,7 +781,7 @@ class _RailItem extends StatelessWidget {
       color: AppColors.transparent,
       child: InkWell(
         borderRadius: AppRadius.containerR,
-        onTap: onTap,
+        onTap: () => onTap(context),
         child: showLabel
             ? content
             : Tooltip(message: section.label, child: content),

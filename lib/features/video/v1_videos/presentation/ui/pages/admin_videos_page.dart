@@ -29,6 +29,7 @@ import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/c
 import 'package:asec/features/admin/a1_shell/presentation/ui/widgets/console_page.dart';
 import 'package:asec/core/theme/app_theme.dart';
 import 'package:asec/features/video/v1_videos/data/repository/video_repository.dart';
+import 'package:asec/features/video/v1_videos/data/catalog/video_catalog.dart';
 import 'package:asec/features/video/v1_videos/data/seed/drive_lessons.dart';
 import 'package:asec/features/video/v1_videos/domain/base_repository/video_base_repository.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
@@ -113,6 +114,9 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
   void initState() {
     super.initState();
     _sync();
+    // Members see every course (the ones they were not given locked) from
+    // the link-free catalog — kept in line with the videos from here.
+    VideoCatalog.startAdminSync();
     _resync = Timer.periodic(const Duration(minutes: 3), (_) => _sync());
     _lifecycle = AppLifecycleListener(onResume: _sync);
   }
@@ -140,7 +144,6 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
     DriveVideoSync.run(adminUid: widget.adminUid).then((String? problem) {
       if (problem == null || problem == _lastShown) return;
       _lastShown = problem;
-      debugPrint('DRIVE SYNC: $problem');
     });
   }
 
@@ -178,10 +181,10 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
         heroTag: 'asec_fab_videos',
         onPressed: _openForm,
         backgroundColor: AppColors.primary,
-        icon: const AppIcon(Icons.cloud_upload_outlined, color: Colors.white),
+        icon: AppIcon(Icons.cloud_upload_outlined, color: AppColors.textButton),
         label: Text(
           FormatHelper.capitalize(s.addVideo),
-          style: StyleText.fontSize14Weight600.copyWith(color: Colors.white),
+          style: StyleText.fontSize14Weight600.copyWith(color: AppColors.textButton),
         ),
       ),
       body: StreamBuilder<List<VideoItem>>(
@@ -226,6 +229,7 @@ class _AdminVideosPageState extends State<AdminVideosPage> {
               child: VideoCategoryGrid(
                 categories: categories,
                 showProgress: false,
+                showSubtitles: true,
                 bottomPadding: 96,
                 onOpen: (VideoCategory c) => setState(() {
                   _category = c.name;
@@ -462,8 +466,9 @@ class _CourseBar extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       alignment: WrapAlignment.spaceBetween,
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
+        Wrap(
+          runSpacing: 8.h,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             _BarChip(
               label: s.typeVideos,
@@ -478,6 +483,16 @@ class _CourseBar extends StatelessWidget {
               selected: showFiles,
               onTap: () => onShowFiles(true),
             ),
+            // The line under the course's title on the course cards.
+            if (SessionController.to.current.canDo(AdminAction.videosEdit)) ...<Widget>[
+              SizedBox(width: 8.w),
+              _BarChip(
+                label: s.courseSubtitleEdit,
+                icon: Icons.short_text_rounded,
+                selected: false,
+                onTap: () => _editSubtitle(context, course),
+              ),
+            ],
           ],
         ),
         Obx(() {
@@ -529,6 +544,55 @@ class _CourseBar extends StatelessWidget {
         }),
       ],
     );
+  }
+}
+
+/// Asks for the line shown under [course]'s title ('' removes it).
+Future<void> _editSubtitle(BuildContext context, String course) async {
+  final S s = S.of(context);
+  final TextEditingController text =
+      TextEditingController(text: CourseSettings.to.subtitle(course));
+  final String? value = await showDialog<String>(
+    context: context,
+    builder: (BuildContext ctx) => AlertDialog(
+      backgroundColor: AppColors.card,
+      title: Text(
+        FormatHelper.capitalize('${s.courseSubtitle} · $course'),
+        style: StyleText.fontSize16Weight600.copyWith(color: AppColors.text),
+      ),
+      content: SizedBox(
+        width: 420,
+        child: TextField(
+          controller: text,
+          autofocus: true,
+          maxLength: 80,
+          style: StyleText.fontSize14Weight400.copyWith(color: AppColors.text),
+          decoration: InputDecoration(hintText: s.courseSubtitleHint),
+          onSubmitted: (String v) => Navigator.of(ctx).pop(v),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(FormatHelper.capitalize(s.cancel)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(text.text),
+          child: Text(FormatHelper.capitalize(s.save)),
+        ),
+      ],
+    ),
+  );
+  text.dispose();
+  if (value == null) return;
+  try {
+    await CourseSettings.to.setSubtitle(course, value);
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(FormatHelper.capitalize(s.errUnknown))),
+      );
+    }
   }
 }
 

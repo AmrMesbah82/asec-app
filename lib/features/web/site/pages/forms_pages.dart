@@ -11,6 +11,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/features/web/core/builtin_en.dart';
 import 'package:asec/features/web/core/doc.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
@@ -408,7 +409,7 @@ class _ContactPageState extends State<ContactPage> {
           _info(Icons.email_rounded, const L('ارسل لنا عبر البريد الإلكتروني', 'E-mail us').t, s.l('emails'),
               link: (String e) => 'mailto:$e'),
           const SizedBox(height: 12),
-          _info(Icons.phone_rounded, const L('تحدث معانا', 'Call us').t, <String>[s.s('phone')], link: telLink),
+          _info(Icons.phone_rounded, const L('تحدث معانا', 'Call us').t, sitePhones(s.raw('phone')), link: telLink),
           const SizedBox(height: 16),
           SocialIcons(settings: s),
         ],
@@ -544,11 +545,18 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
         if (_services.isEmpty) {
           throw FormMessage(const L('اختر نوع الخدمة المطلوبة', 'Choose the service you need').t);
         }
-        await SiteRepo.submit(Coll.serviceRequests, <String, dynamic>{
+        final Map<String, dynamic> data = <String, dynamic>{
           for (final MapEntry<String, TextEditingController> e in _c.entries) e.key: e.value.text.trim(),
           'project_type': _type ?? '',
           'services': _services.toList(),
-        });
+        };
+        await SiteRepo.submit(Coll.serviceRequests, data);
+        // AND BY E-MAIL to info@: a `mail` document, sent by the Firebase
+        // "Trigger Email" extension. A failure here never fails the form —
+        // the request is already saved in the inbox.
+        try {
+          await SiteRepo.mailServiceRequest(data);
+        } catch (_) {}
       },
     );
   }

@@ -233,10 +233,14 @@ class VideoThumbnail extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                      if (!compact && lockedBehind != null) ...<Widget>[
+                      if (!compact && (lockedBehind != null || !video.hasFile)) ...<Widget>[
                         const SizedBox(height: 8),
                         Text(
-                          FormatHelper.capitalize(s.finishLessonFirst(lockedBehind!)),
+                          // No file link = a lesson of a course this member
+                          // was not given (VideoCatalog), not an order lock.
+                          FormatHelper.capitalize(!video.hasFile
+                              ? s.courseLocked
+                              : s.finishLessonFirst(lockedBehind!)),
                           textAlign: TextAlign.center,
                           style: StyleText.fontSize12Weight600
                               .copyWith(color: Colors.white),

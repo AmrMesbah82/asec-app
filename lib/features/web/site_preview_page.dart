@@ -28,9 +28,21 @@ import 'package:asec/features/web/site/site_nav.dart';
 import 'package:asec/features/web/site/site_shell.dart';
 
 class SitePreviewPage extends StatefulWidget {
-  const SitePreviewPage({super.key, this.initialPath = '/'});
+  const SitePreviewPage({
+    super.key,
+    this.initialPath = '/',
+    this.title,
+    this.closable = true,
+  });
 
   final String initialPath;
+
+  /// For MEMBERS (the "Web" tab, Library → Projects): what the bar says
+  /// instead of "Site preview · /path".
+  final String? title;
+
+  /// False inside the member's "Web" tab: a tab has nothing to close.
+  final bool closable;
 
   @override
   State<SitePreviewPage> createState() => _SitePreviewPageState();
@@ -59,7 +71,7 @@ class _SitePreviewPageState extends State<SitePreviewPage> {
   void _back() {
     if (_history.length > 1) {
       setState(_history.removeLast);
-    } else {
+    } else if (widget.closable) {
       Navigator.of(context).maybePop();
     }
   }
@@ -73,7 +85,10 @@ class _SitePreviewPageState extends State<SitePreviewPage> {
     return PopScope(
       canPop: _history.length <= 1,
       onPopInvokedWithResult: (bool didPop, _) {
-        if (!didPop) _back();
+        // Only go back inside the site. Never ask to pop again from here:
+        // inside the member's Website tab (kept alive by the shell) that
+        // looped forever with the shell's own back handling — a freeze.
+        if (!didPop && _history.length > 1) _back();
       },
       child: Theme(
         data: theme,
@@ -89,11 +104,20 @@ class _SitePreviewPageState extends State<SitePreviewPage> {
                 foregroundColor: WebColors.white,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
-                leading: IconButton(
-                  tooltip: const L('إغلاق المعاينة', 'Close preview').t,
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const AppIcon(Icons.close_rounded, color: WebColors.white),
-                ),
+                leading: !widget.closable
+                    ? null
+                    : IconButton(
+                        tooltip: widget.title != null
+                            ? const L('رجوع', 'Back').t
+                            : const L('إغلاق المعاينة', 'Close preview').t,
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: AppIcon(
+                          widget.title != null
+                              ? (AppLang.isAr ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded)
+                              : Icons.close_rounded,
+                          color: WebColors.white,
+                        ),
+                      ),
                 title: Row(
                   children: <Widget>[
                     if (_history.length > 1)
@@ -105,11 +129,16 @@ class _SitePreviewPageState extends State<SitePreviewPage> {
                           color: WebColors.white,
                         ),
                       ),
-                    const AppIcon(Icons.visibility_outlined, size: 18, color: WebColors.white),
+                    if (!widget.closable && _history.length <= 1) const SizedBox(width: 16),
+                    AppIcon(
+                      widget.title != null ? Icons.language_rounded : Icons.visibility_outlined,
+                      size: 18,
+                      color: WebColors.white,
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        '${const L('معاينة الموقع', 'Site preview').t}  ·  ${_uri.path}',
+                        widget.title ?? '${const L('معاينة الموقع', 'Site preview').t}  ·  ${_uri.path}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: WebColors.white),
@@ -122,7 +151,9 @@ class _SitePreviewPageState extends State<SitePreviewPage> {
                     style: TextButton.styleFrom(foregroundColor: WebColors.white),
                     onPressed: () => openLink('$kWebsiteUrl${_uri.path}'),
                     icon: const AppIcon(Icons.open_in_new_rounded, size: 18, color: WebColors.white),
-                    label: Text(const L('فتح الرابط المنشور', 'Open live link').t),
+                    label: Text(widget.title != null
+                        ? const L('فتح في المتصفح', 'Open in browser').t
+                        : const L('فتح الرابط المنشور', 'Open live link').t),
                   ),
                   const SizedBox(width: 8),
                 ],

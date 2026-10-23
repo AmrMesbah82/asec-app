@@ -100,8 +100,10 @@ abstract final class CertificatePdf {
                   line('قد أتمّ بنجاح كورس', 10, color: _muted),
                   line(d.course, 18, color: _red, isBold: true),
                   pw.SizedBox(height: 6),
-                  line('and passed the final exam with a score of ${d.percent}%', 11, color: _ink),
-                  line('واجتاز الاختبار النهائي بنسبة ${d.percent}%', 11, color: _ink),
+                  if (d.percent != null) ...<pw.Widget>[
+                    line('and passed the final exam with a score of ${d.percent}%', 11, color: _ink),
+                    line('واجتاز الاختبار النهائي بنسبة ${d.percent}%', 11, color: _ink),
+                  ],
                   pw.Spacer(),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,

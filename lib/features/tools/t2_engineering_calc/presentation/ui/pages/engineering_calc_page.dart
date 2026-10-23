@@ -132,8 +132,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(FormatHelper.capitalize(s.calcSaved(saved)))));
       }
-    } catch (e, st) {
-      debugPrint('Engineering calc export failed: $e\n$st');
+    } catch (e) {
       messenger.showSnackBar(SnackBar(
         content: Text(FormatHelper.capitalize(kDebugMode ? '${s.errUnknown}\n$e' : s.errUnknown)),
         duration: const Duration(seconds: 6),
@@ -264,7 +263,7 @@ class _EngineeringCalcPageState extends State<EngineeringCalcPage> {
       function: onTap,
       wrapContent: true,
       color: selected ? AppColors.primary : AppColors.card,
-      textColor: selected ? Colors.white : AppColors.text,
+      textColor: selected ? AppColors.textButton : AppColors.text,
     );
   }
 

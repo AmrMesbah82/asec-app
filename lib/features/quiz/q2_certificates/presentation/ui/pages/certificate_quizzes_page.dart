@@ -32,6 +32,7 @@ import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz.dart';
 import 'package:asec/features/quiz/q1_quizzes/domain/entities/quiz_attempt.dart';
 import 'package:asec/features/quiz/q1_quizzes/presentation/ui/pages/quiz_attempt_page.dart';
 import 'package:asec/features/quiz/q2_certificates/presentation/ui/pages/certificate_page.dart';
+import 'package:asec/features/quiz/q2_certificates/data/issued_certificates.dart';
 import 'package:asec/features/video/v1_videos/domain/entities/video_item.dart';
 import 'package:asec/features/video/v1_videos/presentation/ui/widgets/video_categories.dart';
 import 'package:asec/generated/l10n.dart';
@@ -41,11 +42,14 @@ import 'package:asec/features/video/v1_videos/presentation/controller/member_vid
 enum _ExamStatus { noExam, locked, ready, failed, passed }
 
 class _Feed {
-  const _Feed(this.videos, this.quizzes, this.attempts);
+  const _Feed(this.videos, this.quizzes, this.attempts, this.issued);
 
   final List<VideoItem> videos;
   final List<Quiz> quizzes;
   final Map<String, QuizAttempt> attempts;
+
+  /// lower-cased course → the certificate the admin issued by hand.
+  final Map<String, IssuedCertificate> issued;
 }
 
 class CertificateQuizzesPage extends StatefulWidget {
@@ -65,12 +69,17 @@ class _CertificateQuizzesPageState extends State<CertificateQuizzesPage> {
       MemberVideos.watch(),
       _quizzes.watchPublished(),
       _quizzes.watchMyAttempts(widget.user.uid),
+      IssuedCertificates.watchFor(widget.user.uid),
     ],
     (List<Object> v) => _Feed(
       v[0] as List<VideoItem>,
       v[1] as List<Quiz>,
       <String, QuizAttempt>{
         for (final QuizAttempt a in v[2] as List<QuizAttempt>) a.quizId: a,
+      },
+      <String, IssuedCertificate>{
+        for (final IssuedCertificate c in v[3] as List<IssuedCertificate>)
+          c.course.trim().toLowerCase(): c,
       },
     ),
   );
@@ -110,8 +119,12 @@ class _CertificateQuizzesPageState extends State<CertificateQuizzesPage> {
           builder: (_) => QuizAttemptPage(quiz: exam.quiz!, user: widget.user),
         ));
       case _ExamStatus.passed:
+        final bool byExam =
+            exam.quiz != null && exam.attempt != null && exam.attempt!.passed;
         await Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => CertificatePage(quiz: exam.quiz!, attempt: exam.attempt!),
+          builder: (_) => byExam
+              ? CertificatePage(quiz: exam.quiz!, attempt: exam.attempt!)
+              : CertificatePage.of(data: exam.issued!.data),
         ));
     }
     if (mounted) setState(() {});
@@ -146,6 +159,7 @@ class _CertificateQuizzesPageState extends State<CertificateQuizzesPage> {
                   c,
                   _examFor(exams, c.name),
                   feed.attempts,
+                  feed.issued[c.name.trim().toLowerCase()],
                 ),
           ];
 
@@ -202,17 +216,22 @@ class _CourseExam {
     required this.attempt,
     required this.watched,
     required this.status,
+    this.issued,
   });
 
   factory _CourseExam.of(
     VideoCategory category,
     Quiz? quiz,
-    Map<String, QuizAttempt> attempts,
-  ) {
+    Map<String, QuizAttempt> attempts, [
+    IssuedCertificate? issued,
+  ]) {
     final int watched = category.watched;
     final QuizAttempt? attempt = quiz == null ? null : attempts[quiz.id];
     final _ExamStatus status;
-    if (quiz == null) {
+    if (issued != null && !(attempt?.passed ?? false)) {
+      // Issued by the admin by hand: a certificate without the exam.
+      status = _ExamStatus.passed;
+    } else if (quiz == null) {
       status = _ExamStatus.noExam;
     } else if (attempt != null && attempt.passed) {
       // A pass stays a pass, even on a device that has not watched the
@@ -231,6 +250,7 @@ class _CourseExam {
       attempt: attempt,
       watched: watched,
       status: status,
+      issued: issued,
     );
   }
 
@@ -239,6 +259,7 @@ class _CourseExam {
   final QuizAttempt? attempt;
   final int watched;
   final _ExamStatus status;
+  final IssuedCertificate? issued;
 
   int get total => category.videos.length;
 }
@@ -259,7 +280,11 @@ class _ExamCard extends StatelessWidget {
       _ExamStatus.locked => (Icons.lock_rounded, AppColors.secondaryText, s.certLocked(exam.watched, exam.total)),
       _ExamStatus.ready => (Icons.play_circle_fill_rounded, AppColors.primary, s.certReady),
       _ExamStatus.failed => (Icons.refresh_rounded, AppColors.red, s.certFailed(percent)),
-      _ExamStatus.passed => (Icons.workspace_premium_rounded, AppColors.green, s.certPassed(percent)),
+      _ExamStatus.passed => (
+          Icons.workspace_premium_rounded,
+          AppColors.green,
+          percent.isEmpty || !(exam.attempt?.passed ?? false) ? s.certIssued : s.certPassed(percent),
+        ),
     };
     final double progress = exam.total == 0 ? 0 : exam.watched / exam.total;
 

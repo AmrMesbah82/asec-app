@@ -4,7 +4,8 @@
 /// File Name: course_settings.dart
 /// Purpose: Declares `CourseSettings` — the admin's per-course switches read
 ///          live from `course_settings`: must a member finish each video
-///          before the next one opens (sequential), course by course.
+///          before the next one opens (sequential), and the line shown under
+///          the course's title (subtitle), course by course.
 /// Author: ASEC team
 /// Created: 15/10/2026
 ///
@@ -29,7 +30,11 @@ class CourseSettings extends GetxController {
   /// course name → sequential, only for the courses the admin set.
   final RxMap<String, bool> sequential = <String, bool>{}.obs;
 
+  /// course name → the line under its title, only for courses that have one.
+  final RxMap<String, String> subtitles = <String, String>{}.obs;
+
   StreamSubscription<Map<String, bool>>? _sub;
+  StreamSubscription<Map<String, String>>? _subtitleSub;
 
   @override
   void onInit() {
@@ -40,9 +45,14 @@ class CourseSettings extends GetxController {
   /// (Re)subscribes — safe to call again after sign-in.
   void listen() {
     _sub?.cancel();
+    _subtitleSub?.cancel();
     try {
       _sub = _repository.watchCourseSequential().listen(
             sequential.assignAll,
+            onError: (Object _) {},
+          );
+      _subtitleSub = _repository.watchCourseSubtitles().listen(
+            subtitles.assignAll,
             onError: (Object _) {},
           );
     } catch (_) {
@@ -54,6 +64,19 @@ class CourseSettings extends GetxController {
   bool isSequential(String course) =>
       sequential[course.trim()] ?? AppFeatures.to.isOn(AppFeature.videoSequential);
 
+  /// Reactive inside `Obx`. '' = no subtitle.
+  String subtitle(String course) => subtitles[course.trim()] ?? '';
+
+  Future<void> setSubtitle(String course, String value) async {
+    final String key = course.trim();
+    if (value.trim().isEmpty) {
+      subtitles.remove(key);
+    } else {
+      subtitles[key] = value.trim(); // optimistic
+    }
+    await _repository.setCourseSubtitle(course, value);
+  }
+
   Future<void> setSequential(String course, bool value) async {
     sequential[course.trim()] = value; // optimistic
     await _repository.setCourseSequential(course, value);
@@ -62,6 +85,7 @@ class CourseSettings extends GetxController {
   @override
   void onClose() {
     _sub?.cancel();
+    _subtitleSub?.cancel();
     super.onClose();
   }
 }

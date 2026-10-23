@@ -107,7 +107,7 @@ class _VideoCardState extends State<VideoCard> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        FormatHelper.capitalize(video.title),
+                        video.title, // exactly as named in Drive
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: StyleText.fontSize15Weight600.copyWith(
@@ -200,7 +200,7 @@ class _VideoListTileState extends State<VideoListTile> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      FormatHelper.capitalize(video.title),
+                      video.title, // exactly as named in Drive
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: StyleText.fontSize13Weight600.copyWith(

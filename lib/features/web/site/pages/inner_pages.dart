@@ -72,7 +72,6 @@ class AboutPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Contained(maxWidth: 1100, child: NetImage(s.s('map_image_url'), fit: BoxFit.contain)),
               ),
-            if (s.b('show_testimonials')) TestimonialsSection(settings: s),
           ],
         ),
       );
@@ -217,7 +216,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 ),
               ),
             ),
-            if (s.b('show_testimonials')) TestimonialsSection(settings: s),
           ],
         ),
       );

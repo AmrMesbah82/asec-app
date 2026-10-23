@@ -57,12 +57,11 @@ Widget sitePageFor(Uri uri) {
       return id.isEmpty ? const ArticlesPage() : ArticleDetailPage(key: ValueKey<String>(id), id: id);
     case 'contact':
       return const ContactPage();
+    // "Apply" is the service request only; old links land on it too.
     case 'requests':
-      return const RequestsPage();
     case 'request-service':
-      return const ServiceRequestPage();
     case 'request-job':
-      return const JobRequestPage();
+      return const ServiceRequestPage();
     case 'privacy':
       return const PrivacyPage();
     default:

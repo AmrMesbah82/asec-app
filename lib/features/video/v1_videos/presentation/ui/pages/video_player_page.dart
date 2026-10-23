@@ -25,6 +25,7 @@ import 'package:get/get.dart' show RxInterface, Worker, everAll;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:asec/core/settings/capture_context.dart';
 import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
@@ -196,13 +197,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
         _chewie = chewie;
       });
       _focus.requestFocus();
-    } catch (error, stack) {
-      // debugPrint is NOT removed from release builds — never log the link
-      // there.
-      if (kDebugMode) {
-        debugPrint('VIDEO PLAYER FAILED\n  url: ${widget.video.url}\n  error: $error');
-        debugPrintStack(stackTrace: stack, maxFrames: 8);
-      }
+    } catch (error) {
       if (mounted) {
         setState(() {
           _failed = true;
@@ -387,7 +382,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
   Widget build(BuildContext context) {
     final S s = S.of(context);
 
-    return CallbackShortcuts(
+    return CaptureTag(
+      page: 'Video player',
+      course: <String>[
+        if (widget.video.category.isNotEmpty) widget.video.category,
+        if (widget.video.subcategory.isNotEmpty) widget.video.subcategory,
+      ].join(' › '),
+      detail: widget.video.title,
+      child: CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.space): _togglePlay,
         const SingleActivator(LogicalKeyboardKey.keyK): _togglePlay,
@@ -529,6 +531,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage>
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -884,7 +887,7 @@ class _RoundButton extends StatelessWidget {
               child: AppIcon(
                 icon,
                 size: big ? 26.sp : 20.sp,
-                color: filled ? Colors.white : AppColors.primary,
+                color: filled ? AppColors.textButton : AppColors.primary,
               ),
             ),
           ),
@@ -954,7 +957,7 @@ class _SpeedChip extends StatelessWidget {
           child: Text(
             FormatHelper.capitalize(label),
             style: StyleText.fontSize12Weight600.copyWith(
-              color: selected ? Colors.white : AppColors.text,
+              color: selected ? AppColors.textButton : AppColors.text,
             ),
           ),
         ),

@@ -18,7 +18,7 @@ class CertificateData {
     required this.name,
     required this.course,
     required this.examTitle,
-    required this.percent,
+    this.percent,
     required this.date,
     required this.number,
   });
@@ -38,10 +38,37 @@ class CertificateData {
     );
   }
 
+  /// A certificate the admin issued to a member by hand — no exam.
+  factory CertificateData.issued({
+    required String name,
+    required String course,
+    required String uid,
+    DateTime? date,
+  }) =>
+      CertificateData(
+        name: name.trim(),
+        course: course.trim(),
+        examTitle: course.trim(),
+        date: date ?? DateTime.now(),
+        number: numberFor('issued_${course.trim().toLowerCase()}_$uid'),
+      );
+
+  /// What the admin's "Preview certificate" shows.
+  factory CertificateData.sample({String course = 'AutoCAD'}) => CertificateData(
+        name: 'Ahmed Mohamed',
+        course: course,
+        examTitle: course,
+        percent: 92,
+        date: DateTime.now(),
+        number: numberFor('sample_$course'),
+      );
+
   final String name;
   final String course;
   final String examTitle;
-  final int percent;
+
+  /// The exam score; null for a certificate the admin issued by hand.
+  final int? percent;
   final DateTime date;
 
   /// "ASEC-7K2Q9XA" — stable for one member and one exam.

@@ -300,12 +300,14 @@ class _RankTile extends StatelessWidget {
       ],
     );
 
-    return Container(
+    // A Material (not a coloured Container) so the ExpansionTile's ink
+    // splash and background paint on this card instead of behind it.
+    return Material(
+      color: isMe ? AppColors.primary.withOpacity(0.08) : AppColors.card,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
       padding: EdgeInsets.all(12.r),
-      decoration: BoxDecoration(
-        color: isMe ? AppColors.primary.withOpacity(0.08) : AppColors.card,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
       child: !showCourses
           ? head
           : Theme(
@@ -336,6 +338,7 @@ class _RankTile extends StatelessWidget {
                 ],
               ),
             ),
+      ),
     );
   }
 }

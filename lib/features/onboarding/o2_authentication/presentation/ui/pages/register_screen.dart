@@ -40,6 +40,8 @@ class RegisterScreen extends StatelessWidget {
         },
         child: const AuthLayout(
           illustration: AppAssets.illustrationLearning,
+          // Same size as sign-in: fits the screen, no scrolling.
+          fitToScreen: true,
           form: _RegisterForm(),
         ),
       ),

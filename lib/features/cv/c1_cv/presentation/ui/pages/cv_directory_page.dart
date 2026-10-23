@@ -246,7 +246,7 @@ class _RoleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color fg = selected ? Colors.white : AppColors.text;
+    final Color fg = selected ? AppColors.textButton : AppColors.text;
     return Padding(
       padding: EdgeInsetsDirectional.only(end: 8.w),
       child: Material(
@@ -278,14 +278,14 @@ class _RoleChip extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
                   decoration: BoxDecoration(
                     color: selected
-                        ? Colors.white.withOpacity(0.22)
+                        ? AppColors.textButton.withOpacity(0.22)
                         : AppColors.chip,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
                     FormatHelper.capitalize('$count'),
                     style: StyleText.fontSize10Weight600.copyWith(
-                      color: selected ? Colors.white : AppColors.onChip,
+                      color: selected ? AppColors.textButton : AppColors.onChip,
                     ),
                   ),
                 ),

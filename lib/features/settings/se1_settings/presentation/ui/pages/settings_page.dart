@@ -34,6 +34,8 @@ import 'package:asec/generated/l10n.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/admins_card.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/control_centre_card.dart';
 import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/app_update_card.dart';
+import 'package:asec/features/settings/se1_settings/presentation/ui/widgets/capture_alerts_card.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 
@@ -327,6 +329,11 @@ class SettingsPage extends StatelessWidget {
           ];
 
           final List<Widget> right = <Widget>[
+            // Screenshots / recordings members took — any admin with Members.
+            if (user.can(AdminPermission.members)) ...<Widget>[
+              const CaptureAlertsCard(),
+              SizedBox(height: 16.h),
+            ],
             if (user.isSuperAdmin) ...<Widget>[
               const AdminsCard(),
               SizedBox(height: 16.h),

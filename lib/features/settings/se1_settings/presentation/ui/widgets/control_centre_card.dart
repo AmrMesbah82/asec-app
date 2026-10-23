@@ -7,6 +7,9 @@
 ///          Firestore `settings/app` so every open app follows at once.
 /// Author: ASEC team
 /// Created: 25/9/2026
+/// Updated: 23/10/2026 - Calculators group (a switch per calculator).
+/// Updated: 23/10/2026 - Screenshot exception switch, indented under
+///          "Block screenshots".
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,6 +33,8 @@ class ControlCentreCard extends StatelessWidget {
         return s.ctlGroupSections;
       case AppFeatureGroup.videos:
         return s.ctlGroupVideos;
+      case AppFeatureGroup.calculators:
+        return s.ctlGroupCalculators;
       case AppFeatureGroup.general:
         return s.ctlGroupGeneral;
       case AppFeatureGroup.dashboard:
@@ -65,12 +70,26 @@ class ControlCentreCard extends StatelessWidget {
         return (s.ctlVideoSearch, s.ctlVideoSearchHint);
       case AppFeature.videoCourseProgress:
         return (s.ctlVideoCourseProgress, s.ctlVideoCourseProgressHint);
+      case AppFeature.calcConverter:
+        return (s.unitConverter, s.ctlCalcHint);
+      case AppFeature.calcEngineering:
+        return (s.engineeringCalc, s.ctlCalcEngHint);
+      case AppFeature.calcDuct:
+        return (s.ductCalc, s.ctlCalcHint);
+      case AppFeature.calcPipe:
+        return (s.pipeCalc, s.ctlCalcHint);
+      case AppFeature.calcPlumbing:
+        return (s.plumbingFireCalc, s.ctlCalcHint);
+      case AppFeature.calcFire:
+        return (s.fireCalc, s.ctlCalcHint);
       case AppFeature.animations:
         return (s.ctlAnimations, s.ctlAnimationsHint);
       case AppFeature.registration:
         return (s.ctlRegistration, s.ctlRegistrationHint);
       case AppFeature.screenProtection:
         return (s.ctlScreenProtection, s.ctlScreenProtectionHint);
+      case AppFeature.screenshotException:
+        return (s.ctlScreenshotException, s.ctlScreenshotExceptionHint);
       case AppFeature.dashboardCharts:
         return (s.ctlDashboardCharts, s.ctlDashboardChartsHint);
       case AppFeature.dashboardTable:
@@ -124,6 +143,8 @@ class ControlCentreCard extends StatelessWidget {
                         .where((AppFeature f) => f.group == g)) ...<Widget>[
                       _FeatureRow(
                         feature: f,
+                        // The exception sits indented under "Block screenshots".
+                        indent: f == AppFeature.screenshotException,
                         title: texts(s, f).$1,
                         hint: texts(s, f).$2,
                         value: features.isOn(f),
@@ -158,9 +179,11 @@ class _FeatureRow extends StatelessWidget {
     required this.hint,
     required this.value,
     required this.onChanged,
+    this.indent = false,
   });
 
   final AppFeature feature;
+  final bool indent;
   final String title;
   final String hint;
   final bool value;
@@ -174,7 +197,12 @@ class _FeatureRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         onTap: () => onChanged(!value),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          padding: EdgeInsetsDirectional.only(
+            start: indent ? 36.w : 12.w,
+            end: 12.w,
+            top: 10.h,
+            bottom: 10.h,
+          ),
           child: Row(
             children: <Widget>[
               AnimatedContainer(

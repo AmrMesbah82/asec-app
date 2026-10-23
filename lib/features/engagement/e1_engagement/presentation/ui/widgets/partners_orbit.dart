@@ -75,9 +75,21 @@ class PartnersOrbit extends StatefulWidget {
     super.key,
     required this.items,
     this.period = const Duration(seconds: 26),
+    this.accent,
+    this.centerColor,
+    this.center,
   });
 
   final List<PartnerLogoItem> items;
+
+  /// FOR THE WEBSITE, which has its own colours and no app theme: the gear
+  /// and glow colour, the middle disc's colour and what sits on it. Left
+  /// null, the app's theme and the ASEC mark are used.
+  final Color? accent;
+  final Color? centerColor;
+  final Widget? center;
+
+  bool get _site => accent != null;
 
   /// One full turn of the ring.
   final Duration period;
@@ -106,7 +118,7 @@ class _PartnersOrbitState extends State<PartnersOrbit>
       builder: (BuildContext context, BoxConstraints c) {
         final double width = c.maxWidth;
         final double height = (width * 0.55).clamp(240.0, 380.0);
-        final double rx = math.max(60.0, width / 2 - 56.r); // ring radius, sideways
+        final double rx = math.max(60.0, width / 2 - (widget._site ? 56.0 : 56.r)); // ring radius, sideways
         final double ry = height * 0.22; // the tilt: a flat ellipse
         final double logo = (height * 0.26).clamp(58.0, 92.0);
 
@@ -139,7 +151,12 @@ class _PartnersOrbitState extends State<PartnersOrbit>
                     top: y,
                     child: Opacity(
                       opacity: 0.4 + 0.6 * k,
-                      child: _LogoChip(item: widget.items[p.$1], size: size, depth: k),
+                      child: _LogoChip(
+                        item: widget.items[p.$1],
+                        size: size,
+                        depth: k,
+                        accent: widget.accent,
+                      ),
                     ),
                   );
                 }
@@ -152,7 +169,7 @@ class _PartnersOrbitState extends State<PartnersOrbit>
                       child: CustomPaint(
                         painter: _GearPainter(
                           angle: -turn * 0.6,
-                          color: AppColors.primary,
+                          color: widget.accent ?? AppColors.primary,
                           rx: rx,
                           ry: ry,
                         ),
@@ -167,18 +184,18 @@ class _PartnersOrbitState extends State<PartnersOrbit>
                         width: logo * 1.25,
                         height: logo * 1.25,
                         decoration: BoxDecoration(
-                          color: AppColors.card,
+                          color: widget.centerColor ?? AppColors.card,
                           shape: BoxShape.circle,
                           boxShadow: <BoxShadow>[
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.35),
+                              color: (widget.accent ?? AppColors.primary).withOpacity(0.35),
                               blurRadius: 30,
                               spreadRadius: 2,
                             ),
                           ],
                         ),
                         alignment: Alignment.center,
-                        child: BrandMark(size: logo * 0.7, showName: false),
+                        child: widget.center ?? BrandMark(size: logo * 0.7, showName: false),
                       ),
                     ),
                     // …and the ones in front pass over it.
@@ -196,10 +213,13 @@ class _PartnersOrbitState extends State<PartnersOrbit>
 }
 
 class _LogoChip extends StatelessWidget {
-  const _LogoChip({required this.item, required this.size, required this.depth});
+  const _LogoChip({required this.item, required this.size, required this.depth, this.accent});
 
   final PartnerLogoItem item;
   final double size;
+
+  /// Set on the website: no app theme there.
+  final Color? accent;
 
   /// 0 (back) … 1 (front) — the shadow grows as it comes forward.
   final double depth;
@@ -230,8 +250,9 @@ class _LogoChip extends StatelessWidget {
               child: Text(
                 FormatHelper.capitalize(
                     item.name.isEmpty ? '?' : item.name.characters.first),
-                style: StyleText.fontSize18Weight700
-                    .copyWith(color: AppColors.primary),
+                style: accent != null
+                    ? TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: accent)
+                    : StyleText.fontSize18Weight700.copyWith(color: AppColors.primary),
               ),
             ),
           ),

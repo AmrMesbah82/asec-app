@@ -32,7 +32,6 @@ import 'package:asec/core/helper/main_helper/format_helper.dart';
 /// deployed yet.
 String engErrorText(BuildContext context, Object? error) {
   final S s = S.of(context);
-  debugPrint('🔴 engagement: $error');
   if (error is FirebaseException) {
     if (error.code == 'permission-denied' || error.code == 'unauthorized') {
       return s.engRulesMissing;

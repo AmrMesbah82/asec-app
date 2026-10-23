@@ -59,7 +59,6 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:asec/core/constants/firebase_collections.dart';
@@ -296,10 +295,6 @@ abstract final class DriveVideoSync {
       if (problem == null && listed != null) {
         problem = _report();
         lastReport = problem;
-        debugPrint('DRIVE SYNC: ${listed.length} videos listed'
-            '${problem == null ? ', every folder shown' : '\n$problem'}');
-      } else if (problem != null) {
-        debugPrint('DRIVE SYNC: $problem');
       }
       final bool fromDrive = listed != null && listed.isNotEmpty;
       // Already in order: categories in folder order, lessons in each.
@@ -354,12 +349,23 @@ abstract final class DriveVideoSync {
           );
           batch.set(col.doc(docId), <String, dynamic>{
             ...VideoModel.toMap(video),
+            _driveNameField: f.name,
             FirebaseCollections.createdAtField: order,
           });
           pending++;
         } else {
           final Map<String, dynamic> d = existing.data() ?? <String, dynamic>{};
-          final bool changed = d[VideoModel.url] != url ||
+          // THE TITLE FOLLOWS THE DRIVE NAME. A file renamed in Drive is
+          // renamed in the app — unless an admin edited the title in the app
+          // since (it no longer matches the old Drive name). Videos synced
+          // before the name was kept take the Drive name once.
+          final String? oldName = d[_driveNameField] as String?;
+          final String title = '${d[VideoModel.title] ?? ''}';
+          final bool renamed = fromDrive &&
+              oldName != f.name &&
+              (oldName == null || title == _titleFromName(oldName));
+          final bool changed = renamed ||
+              d[VideoModel.url] != url ||
               (f.size > 0 && d[VideoModel.sizeBytes] != f.size) ||
               d[FirebaseCollections.createdAtField] != order ||
               // The folder decides the category — moving a file to another
@@ -370,6 +376,8 @@ abstract final class DriveVideoSync {
               (d[VideoModel.subcategoryOrder] ?? 0) != f.subcategoryOrder;
           if (changed) {
             batch.update(col.doc(docId), <String, dynamic>{
+              if (renamed) VideoModel.title: _titleFromName(f.name),
+              if (fromDrive) _driveNameField: f.name,
               VideoModel.url: url,
               VideoModel.category: f.category,
               VideoModel.categoryOrder: f.categoryOrder,
@@ -413,7 +421,6 @@ abstract final class DriveVideoSync {
         } catch (_) {/* already gone */}
       }
     } catch (e) {
-      debugPrint('DRIVE SYNC failed: $e');
       problem ??= 'Drive sync failed: $e';
     } finally {
       _running = false;
@@ -581,6 +588,22 @@ abstract final class DriveVideoSync {
   /// "CAD v.s BIM.mp4-01" → 1 — which is the lesson's place in its folder.
   static final RegExp _trailingNumber = RegExp(r'[-_ ]\s*(\d+)\s*$');
 
+  /// The lesson number a file name ends with, dots allowed:
+  /// "Out Interface.mp4-1.1" → [1, 1], "Reset Setting to-1.10" → [1, 10].
+  static final RegExp _trailingLesson = RegExp(r'[-_ ]\s*(\d+(?:\.\d+)*)\s*$');
+
+  /// The original Drive file name, kept on the video document so a rename in
+  /// Drive can be told apart from a title the admin edited in the app.
+  static const String _driveNameField = 'drive_name';
+
+  static List<int>? _lessonNumber(String name) {
+    final Match? m = _trailingLesson.firstMatch(name.trim());
+    if (m == null) return null;
+    return m[1]!.split('.').map(int.parse).toList();
+  }
+
+  /// 1.2 before 1.10, 1.9 before 2.
+
   /// A folder's place: the number it STARTS with ("03-Annotation and
   /// Layout" → 3) or ENDS with ("Introduction-01" → 1). Both styles are
   /// used in Drive, so both must count, or "03-…" sorts after "Draw…-02".
@@ -604,9 +627,14 @@ abstract final class DriveVideoSync {
     final bool fa = a.name.toLowerCase().contains('final');
     final bool fb = b.name.toLowerCase().contains('final');
     if (fa != fb) return fa ? 1 : -1;
-    final int? sa = _sequence(a.name);
-    final int? sb = _sequence(b.name);
-    if (sa != null && sb != null && sa != sb) return sa.compareTo(sb);
+    final List<int>? sa = _lessonNumber(a.name);
+    final List<int>? sb = _lessonNumber(b.name);
+    if (sa != null && sb != null) {
+      for (int i = 0; i < sa.length && i < sb.length; i++) {
+        if (sa[i] != sb[i]) return sa[i].compareTo(sb[i]);
+      }
+      if (sa.length != sb.length) return sa.length.compareTo(sb.length);
+    }
     return _natural(a.name.toLowerCase(), b.name.toLowerCase());
   }
 
@@ -623,15 +651,19 @@ abstract final class DriveVideoSync {
     return pa.length.compareTo(pb.length);
   }
 
-  /// "T10.mp4" → "T10", "fire_pump-basics.mp4" → "fire pump basics",
-  /// "CAD v.s BIM.mp4-01" → "CAD v.s BIM".
+  /// AS IN DRIVE: the file name without its extension, its lesson number
+  /// moved to the front — "AutoCAD … Out Interface.mp4-1.1" →
+  /// "1.1 AutoCAD … Out Interface". "T10.mp4" → "T10",
+  /// "fire_pump-basics.mp4" → "fire pump basics".
   static String _titleFromName(String name) {
+    final Match? number = _trailingLesson.firstMatch(name.trim());
     final String base = name
         .trim()
-        .replaceFirst(_trailingNumber, '')
+        .replaceFirst(_trailingLesson, '')
         .replaceAll(RegExp(r'\.(mp4|mov|m4v|mkv|webm|avi)\b', caseSensitive: false), '')
         .replaceFirst(RegExp(r'\.[A-Za-z0-9]{2,4}$'), '');
     final String clean = base.replaceAll(RegExp(r'[_\-]+'), ' ').trim();
-    return clean.isEmpty ? name : clean;
+    if (clean.isEmpty) return name;
+    return number == null ? clean : '${number[1]} $clean';
   }
 }

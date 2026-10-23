@@ -23,17 +23,29 @@ import 'package:asec/generated/l10n.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 
 class CertificatePage extends StatefulWidget {
-  const CertificatePage({super.key, required this.quiz, required this.attempt});
+  const CertificatePage({super.key, required Quiz this.quiz, required QuizAttempt this.attempt})
+      : data = null,
+        sample = false;
 
-  final Quiz quiz;
-  final QuizAttempt attempt;
+  /// A certificate the admin issued by hand, or the admin's preview.
+  const CertificatePage.of({super.key, required CertificateData this.data, this.sample = false})
+      : quiz = null,
+        attempt = null;
+
+  final Quiz? quiz;
+  final QuizAttempt? attempt;
+  final CertificateData? data;
+
+  /// The admin's preview: says so above the certificate.
+  final bool sample;
 
   @override
   State<CertificatePage> createState() => _CertificatePageState();
 }
 
 class _CertificatePageState extends State<CertificatePage> {
-  late final CertificateData _data = CertificateData.from(widget.quiz, widget.attempt);
+  late final CertificateData _data =
+      widget.data ?? CertificateData.from(widget.quiz!, widget.attempt!);
   bool _busy = false;
 
   Future<void> _download() async {
@@ -56,7 +68,10 @@ class _CertificatePageState extends State<CertificatePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(FormatHelper.capitalize(s.certificateTitle), style: StyleText.fontSize18Weight600),
+        title: Text(
+          FormatHelper.capitalize(widget.sample ? s.certPreview : s.certificateTitle),
+          style: StyleText.fontSize18Weight600,
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -66,6 +81,14 @@ class _CertificatePageState extends State<CertificatePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                if (widget.sample) ...<Widget>[
+                  Text(
+                    FormatHelper.capitalize(s.certPreviewNote),
+                    textAlign: TextAlign.center,
+                    style: StyleText.fontSize13Weight500.copyWith(color: AppColors.secondaryText),
+                  ),
+                  SizedBox(height: 12.h),
+                ],
                 DecoratedBox(
                   decoration: BoxDecoration(
                     boxShadow: <BoxShadow>[

@@ -87,8 +87,11 @@ class CertificateView extends StatelessWidget {
                     _line('قد أتمّ بنجاح كورس', 11, color: _muted),
                     _line(data.course, 19, color: _red, bold: true),
                     const SizedBox(height: 2),
-                    _line('and passed the final exam with a score of ${data.percent}%', 12),
-                    _line('واجتاز الاختبار النهائي بنسبة ${data.percent}%', 12),
+                    // Issued by the admin (no exam) → no score line.
+                    if (data.percent != null) ...<Widget>[
+                      _line('and passed the final exam with a score of ${data.percent}%', 12),
+                      _line('واجتاز الاختبار النهائي بنسبة ${data.percent}%', 12),
+                    ],
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

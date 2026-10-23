@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'package:asec/core/settings/capture_context.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
 import 'package:asec/core/theme/app_colors.dart';
@@ -43,6 +44,9 @@ import 'package:asec/features/engagement/e1_engagement/presentation/ui/widgets/s
 import 'package:asec/features/user/u1_shell/presentation/ui/widgets/member_links.dart';
 import 'package:asec/core/helper/main_helper/format_helper.dart';
 import 'package:asec/features/video/v1_videos/presentation/controller/member_videos.dart';
+import 'package:asec/features/video/v1_videos/data/catalog/video_catalog.dart';
+import 'package:asec/core/helper/main_helper/stream_combine.dart';
+import 'package:asec/features/quiz/q2_certificates/presentation/ui/widgets/course_certificate_button.dart';
 
 /// The chips above a course's lessons. FILES comes first: the folders and
 /// files the admin put in this course.
@@ -56,8 +60,13 @@ class UserVideosPage extends StatefulWidget {
 }
 
 class _UserVideosPageState extends State<UserVideosPage> {
-  // Only what this member may read (firestore.rules checks it too).
-  late final Stream<List<VideoItem>> _videos = MemberVideos.watch();
+  // What this member may play (firestore.rules checks it too), and the
+  // link-free catalog of EVERY lesson — the courses they were not given
+  // show too, locked.
+  late final Stream<_Feed> _videos = combineLatest<List<VideoItem>, _Feed>(
+    <Stream<List<VideoItem>>>[MemberVideos.watch(), VideoCatalog.watch()],
+    (List<List<VideoItem>> v) => _Feed(v[0], v[1]),
+  );
   final TextEditingController _search = TextEditingController();
 
   _VideoFilter _filter = _VideoFilter.all;
@@ -73,12 +82,22 @@ class _UserVideosPageState extends State<UserVideosPage> {
         _category = name;
         _subcategory = null;
         _resetSearch();
+        _reportCourse();
       });
 
   void _openSubcategory(String? name) => setState(() {
         _subcategory = name;
         _resetSearch();
+        _reportCourse();
       });
+
+  /// For screen capture alerts: the course / sub-folder open in this tab.
+  void _reportCourse() {
+    CaptureContext.browsingCourse = <String>[
+      if ((_category ?? '').isNotEmpty) _category!,
+      if ((_subcategory ?? '').isNotEmpty) _subcategory!,
+    ].join(' › ');
+  }
 
   void _resetSearch() {
     _filter = _VideoFilter.all;
@@ -148,11 +167,11 @@ class _UserVideosPageState extends State<UserVideosPage> {
     SessionController.to.user.value; // and when the admin changes my courses
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: StreamBuilder<List<VideoItem>>(
+      body: StreamBuilder<_Feed>(
         stream: _videos,
         builder: (
           BuildContext context,
-          AsyncSnapshot<List<VideoItem>> snapshot,
+          AsyncSnapshot<_Feed> snapshot,
         ) {
           if (snapshot.hasError) return AppErrorView(message: s.errUnknown);
           if (!snapshot.hasData) return const AppLoading();
@@ -160,10 +179,18 @@ class _UserVideosPageState extends State<UserVideosPage> {
           // The courses the admin opened for this member, plus every
           // "default" video, which everybody sees.
           final AppUser me = SessionController.to.current;
-          final List<VideoItem> all = snapshot.data!
+          final List<VideoItem> mine = snapshot.data!.mine
               .where((VideoItem v) =>
                   v.hasFile && (v.free || me.canSeeCourse(v.category)))
-              .toList()
+              .toList();
+          // EVERY OTHER LESSON, LOCKED: listed with its course so the member
+          // sees what exists, but it cannot be played or downloaded.
+          final Set<String> mineIds = <String>{for (final VideoItem v in mine) v.id};
+          final List<VideoItem> notGiven = snapshot.data!.catalog
+              .where((VideoItem v) => !mineIds.contains(v.id))
+              .toList();
+          final Set<String> notGivenIds = <String>{for (final VideoItem v in notGiven) v.id};
+          final List<VideoItem> all = <VideoItem>[...mine, ...notGiven]
             // COURSE ORDER (reversed): the latest upload is lesson 1, since the
             // lessons were uploaded from last to first.
             ..sort((VideoItem a, VideoItem b) => (b.createdAt ?? DateTime(0))
@@ -196,11 +223,11 @@ class _UserVideosPageState extends State<UserVideosPage> {
           }
 
           if (current == null) {
-            final int watchedAll = all
+            final int watchedAll = mine
                 .where((VideoItem v) => VideoWatchStore.isWatched(v.id))
                 .length;
-            // Every course's stars added up.
-            final int starsAll = categories.fold<int>(
+            // Every course's stars added up (the lessons they may play).
+            final int starsAll = VideoCategory.group(mine).fold<int>(
               0,
               (int sum, VideoCategory c) => sum + CourseStars.local(c.videos),
             );
@@ -210,14 +237,16 @@ class _UserVideosPageState extends State<UserVideosPage> {
               child: VideoCategoryGrid(
                 categories: categories,
                 showStars: true,
+                showSubtitles: true,
+                lockedIds: notGivenIds,
                 onOpen: (VideoCategory c) => _openCategory(c.name),
                 header: features.isOn(AppFeature.videoCourseProgress)
                     ? Padding(
                         padding: EdgeInsets.only(bottom: 18.h),
                         child: _CourseProgress(
                           watched: watchedAll,
-                          total: all.length,
-                          ratio: CourseStars.localRatio(all),
+                          total: mine.length,
+                          ratio: CourseStars.localRatio(mine),
                           starsTotal: starsAll,
                         ),
                       )
@@ -243,6 +272,7 @@ class _UserVideosPageState extends State<UserVideosPage> {
                 subtitle: s.videosUserSub,
                 child: VideoCategoryGrid(
                   categories: subs,
+                  lockedIds: notGivenIds,
                   onOpen: (VideoCategory c) => _openSubcategory(c.name),
                   // PINNED: the back button never scrolls away.
                   pinned: grouped
@@ -268,6 +298,10 @@ class _UserVideosPageState extends State<UserVideosPage> {
 
           // From here on "the course" is the folder that is open.
           final List<VideoItem> course = current.videos;
+          // The lessons of it this member may play.
+          final List<VideoItem> playable = course
+              .where((VideoItem v) => !notGivenIds.contains(v.id))
+              .toList();
           final List<VideoItem> shown = _apply(course);
           final bool filesMode = _filter == _VideoFilter.files;
 
@@ -278,12 +312,14 @@ class _UserVideosPageState extends State<UserVideosPage> {
           };
           // THE ADMIN DECIDES PER COURSE whether lessons open in order.
           final bool sequential = CourseSettings.to.isSequential(category.name);
-          final Set<String> locked = sequential
-              ? VideoWatchStore.lockedIds(
-                  <String>[for (final VideoItem v in course) v.id],
-                )
-              : const <String>{};
-          final int watched = course
+          final Set<String> locked = <String>{
+            if (sequential)
+              ...VideoWatchStore.lockedIds(
+                <String>[for (final VideoItem v in playable) v.id],
+              ),
+            ...notGivenIds,
+          };
+          final int watched = playable
               .where((VideoItem v) => VideoWatchStore.isWatched(v.id))
               .length;
 
@@ -309,18 +345,29 @@ class _UserVideosPageState extends State<UserVideosPage> {
                 if (features.isOn(AppFeature.videoCourseProgress)) ...<Widget>[
                   _CourseProgress(
                     watched: watched,
-                    total: course.length,
-                    ratio: CourseStars.localRatio(course),
+                    total: playable.length,
+                    ratio: CourseStars.localRatio(playable),
                   ),
                   SizedBox(height: 16.h),
                 ],
+                // ALWAYS THERE: the course's certificate — open once earned,
+                // otherwise it says what is left to do.
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: CourseCertificateButton(
+                    key: ValueKey<String>('cert_${category.name}'),
+                    user: me,
+                    course: category.name,
+                  ),
+                ),
+                SizedBox(height: 16.h),
                 // The quiz at the end of this section — opens once every
                 // lesson of it is watched.
                 SectionQuizzes.member(
                   course: category.name,
                   sections: _sectionsShown(sub, subs),
                   user: me,
-                  unlocked: course.isNotEmpty && watched >= course.length,
+                  unlocked: playable.isNotEmpty && watched >= playable.length,
                 ),
                 if (features.isOn(AppFeature.videoSearch) && !filesMode) ...<Widget>[
                   _SearchBox(
@@ -386,6 +433,20 @@ class _UserVideosPageState extends State<UserVideosPage> {
                       : VideoDownloadButton(video: v)
                   : null,
               onOpen: (VideoItem v) {
+                if (notGivenIds.contains(v.id)) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(
+                      content: Row(
+                        children: <Widget>[
+                          const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(FormatHelper.capitalize(s.courseLockedSnack))),
+                        ],
+                      ),
+                    ));
+                  return;
+                }
                 if (locked.contains(v.id)) {
                   final int n = numbers[v.id]!;
                   ScaffoldMessenger.of(context)
@@ -401,7 +462,7 @@ class _UserVideosPageState extends State<UserVideosPage> {
                     ));
                   return;
                 }
-                _open(v, course, sequential);
+                _open(v, playable, sequential);
               },
             ),
           );
@@ -410,6 +471,16 @@ class _UserVideosPageState extends State<UserVideosPage> {
     );
     });
   }
+}
+
+class _Feed {
+  const _Feed(this.mine, this.catalog);
+
+  /// What this member may play.
+  final List<VideoItem> mine;
+
+  /// Every published lesson, without file links.
+  final List<VideoItem> catalog;
 }
 
 /// On a course's section list: the way in to the course's "Files".

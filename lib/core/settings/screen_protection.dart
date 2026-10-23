@@ -17,23 +17,121 @@
 /// Every platform STARTS protected, so nothing is captured before the
 /// setting has loaded; a switch left off in Firestore lifts it a moment
 /// later. The web cannot block screenshots, so there it does nothing.
+///
+/// EXCEPTION (23/10/2026): with `AppFeature.screenshotException` on, the
+/// account [kScreenshotExceptionEmail] is not blocked even while the block
+/// is on for everybody else. Re-applied whenever the switches or the
+/// signed-in user change.
+///
+/// ADMIN REMINDER (23/10/2026): while `screenProtection` is OFF (every
+/// member may take screenshots), an admin gets a warning in the centre of
+/// the screen every minute. The super admin can block again from it.
+///
+/// SCREEN CAPTURE ALERTS: the native side calls back on the same channel,
+/// `captured("screenshot" | "recording")` — iOS (screenshot + recording /
+/// mirroring), Android 14+ (screenshot) and 15+ (recording). Each is saved
+/// for the admin (CaptureEvents). Mac and Windows cannot detect them.
+
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import 'package:asec/core/custom/11-custom_confirm_dialog.dart';
+import 'package:asec/generated/l10n.dart';
+
 import 'package:asec/core/settings/app_features.dart';
+import 'package:asec/features/admin/a2_members/data/device_security.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 
 abstract final class ScreenProtection {
   static const MethodChannel _channel = MethodChannel('asec/screen_protection');
 
   static bool? _applied;
 
+  /// Admin reminder: fires every minute while screenshots are allowed.
+  static Timer? _reminder;
+  static bool _reminderShowing = false;
+
+  /// The last alert of each type, so one capture is not saved twice.
+  static final Map<String, DateTime> _lastAlert = <String, DateTime>{};
+
   /// Applies the switch now and every time `settings/app` changes.
   static void start() {
+    if (!kIsWeb) _channel.setMethodCallHandler(_onNative);
     final AppFeatures features = AppFeatures.to;
-    apply(features.isOn(AppFeature.screenProtection));
-    ever(features.values, (_) => apply(features.isOn(AppFeature.screenProtection)));
+    apply(_shouldBlock());
+    ever(features.values, (_) => apply(_shouldBlock()));
+    if (Get.isRegistered<SessionController>()) {
+      ever(SessionController.to.user, (_) => apply(_shouldBlock()));
+    }
+    _reminder?.cancel();
+    _reminder = Timer.periodic(const Duration(minutes: 1), (_) => _remindAdmin());
+  }
+
+  /// Every minute: an admin is signed in and Block screenshots is OFF →
+  /// a warning in the middle of the screen. One at a time, never stacked.
+  static Future<void> _remindAdmin() async {
+    if (_reminderShowing) return;
+    if (AppFeatures.to.isOn(AppFeature.screenProtection)) return;
+    if (!Get.isRegistered<SessionController>()) return;
+    final AppUser user = SessionController.to.current;
+    if (user.isEmpty || !user.isAdmin) return;
+    final BuildContext? context = Get.overlayContext ?? Get.context;
+    if (context == null || !context.mounted) return;
+    final S s = S.of(context);
+    _reminderShowing = true;
+    try {
+      if (user.isSuperAdmin) {
+        // The super admin owns the switch: offer to block right here.
+        await showConfirmDialog(
+          context: context,
+          title: s.shotAllowedTitle,
+          subtitle: s.shotAllowedBody,
+          confirmLabel: s.shotAllowedBlock,
+          cancelLabel: s.shotAllowedKeep,
+          onConfirm: () {
+            AppFeatures.to.set(AppFeature.screenProtection, true).catchError((Object _) {});
+          },
+        );
+      } else {
+        await showWarningDialog(
+          context: context,
+          title: s.shotAllowedTitle,
+          subtitle: s.shotAllowedBody,
+          closeLabel: s.close,
+        );
+      }
+    } catch (_) {
+      // No navigator yet (splash) — try again next minute.
+    } finally {
+      _reminderShowing = false;
+    }
+  }
+
+  /// The global block, unless the signed-in account is the allowed one and
+  /// its exception switch is on.
+  static bool _shouldBlock() {
+    final AppFeatures features = AppFeatures.to;
+    if (!features.isOn(AppFeature.screenProtection)) return false;
+    if (!features.isOn(AppFeature.screenshotException)) return true;
+    if (!Get.isRegistered<SessionController>()) return true;
+    final String email = SessionController.to.current.email.trim().toLowerCase();
+    return email != kScreenshotExceptionEmail;
+  }
+
+  static Future<void> _onNative(MethodCall call) async {
+    if (call.method != 'captured') return;
+    final String type = '${call.arguments}';
+    final DateTime now = DateTime.now();
+    final DateTime? last = _lastAlert[type];
+    if (last != null && now.difference(last) < const Duration(seconds: 5)) return;
+    _lastAlert[type] = now;
+    if (!Get.isRegistered<SessionController>()) return;
+    await CaptureEvents.record(type, SessionController.to.current);
   }
 
   static Future<void> apply(bool on) async {
@@ -43,8 +141,6 @@ abstract final class ScreenProtection {
       await _channel.invokeMethod<void>('setEnabled', on);
     } on MissingPluginException {
       // Linux, or a platform without the native side — nothing to do.
-    } catch (e) {
-      debugPrint('ScreenProtection.apply($on) failed: $e');
-    }
+    } catch (_) {}
   }
 }

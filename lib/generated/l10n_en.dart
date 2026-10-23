@@ -292,6 +292,9 @@ class SEn extends S {
   String get signOut => 'Sign out';
 
   @override
+  String get pressBackAgainToExit => 'Press back again to exit';
+
+  @override
   String get debugPreviewAnyway => 'Preview anyway (debug build)';
 
   @override
@@ -2188,6 +2191,17 @@ class SEn extends S {
   String get ctlGroupDashboard => 'Admin dashboard';
 
   @override
+  String get ctlGroupCalculators => 'Calculators';
+
+  @override
+  String get ctlCalcHint =>
+      'On: every member can open it. Off: hidden from all members (admins still see it).';
+
+  @override
+  String get ctlCalcEngHint =>
+      'Off (default): only the members you unlocked on the Members page can open it. On: every member can.';
+
+  @override
   String get controlCentre => 'Control centre';
 
   @override
@@ -2299,6 +2313,27 @@ class SEn extends S {
   @override
   String get ctlScreenProtectionHint =>
       'On: screenshots and screen recordings of the app come out black (Android, iOS, macOS, Windows). Off: allowed.';
+
+  @override
+  String get ctlScreenshotException =>
+      'Allow screenshots for amrmesbah33@gmail.com';
+
+  @override
+  String get ctlScreenshotExceptionHint =>
+      'On: this account can take screenshots and screen recordings even while they are blocked for everyone else. Off: blocked like everyone.';
+
+  @override
+  String get shotAllowedTitle => 'Screenshots are allowed';
+
+  @override
+  String get shotAllowedBody =>
+      'Warning: \"Block screenshots\" is off, so every member can take screenshots and record the screen right now. Turn it back on when you are done.';
+
+  @override
+  String get shotAllowedBlock => 'Block now';
+
+  @override
+  String get shotAllowedKeep => 'Keep allowed';
 
   @override
   String get ctlDashboardCharts => 'Dashboard charts';
@@ -2559,6 +2594,30 @@ class SEn extends S {
       'HVAC, fire fighting, plumbing and medical gas — quick design checks.';
 
   @override
+  String get ductCalc => 'Duct calculator';
+
+  @override
+  String get ductCalcShort => 'Ducts';
+
+  @override
+  String get pipeCalc => 'Pipe sizer';
+
+  @override
+  String get pipeCalcShort => 'Pipes';
+
+  @override
+  String get plumbingFireCalc => 'Plumbing';
+
+  @override
+  String get plumbingFireCalcShort => 'Plumbing';
+
+  @override
+  String get fireCalc => 'Fire fighting';
+
+  @override
+  String get fireCalcShort => 'Fire';
+
+  @override
   String get calcInputs => 'Inputs';
 
   @override
@@ -2640,11 +2699,11 @@ class SEn extends S {
       'Choose the courses this member can watch. \"All courses\" also includes any course added later.';
 
   @override
-  String get accessPlatforms => 'Devices';
+  String get accessPlatforms => 'Video platforms';
 
   @override
   String get accessPlatformsCaption =>
-      'The member can open the app only on the checked devices.';
+      'The member can sign in on any device. Videos, video quizzes and certificates open only on the checked platforms; everything else opens everywhere.';
 
   @override
   String get accessAllPlatforms => 'All devices';
@@ -2959,11 +3018,11 @@ class SEn extends S {
 
   @override
   String get accessDeviceCaption =>
-      'Each member can use the app on one device only. To move them to a new device, remove this one — the next device they sign in on takes its place.';
+      'Members can sign in on any number of devices. The device below was locked to the account before; you can remove it or block it.';
 
   @override
   String get accessDeviceNone =>
-      'Not used on any device yet — the first device they sign in on will be locked to the account.';
+      'No device locked — the member can sign in on any device.';
 
   @override
   String get accessDeviceUnknown => 'A device';
@@ -3107,7 +3166,7 @@ class SEn extends S {
   String get engLibraryBest => 'The best';
 
   @override
-  String get engLibraryBestHint => 'Top members by stars';
+  String get engLibraryBestHint => 'The best CVs in the app';
 
   @override
   String get engLibraryCertificate => 'Certificate';
@@ -3423,4 +3482,142 @@ class SEn extends S {
 
   @override
   String get permWebSettings => 'Site settings and control centre';
+
+  @override
+  String get blockedTitleDeviceBlocked => 'This device is blocked';
+
+  @override
+  String get blockedBodyDeviceBlocked =>
+      'The admin blocked this device. The app can\'t be used on it. Contact the admin if you think this is a mistake.';
+
+  @override
+  String get accessDeviceBlock => 'Block device';
+
+  @override
+  String get accessDeviceBlockQuestion => 'Block this device?';
+
+  @override
+  String accessDeviceBlockBody(String device) {
+    return '$device will be blocked: anyone who signs in on it will see \"This device is blocked\". The member can still use the app on another device.';
+  }
+
+  @override
+  String get accessDeviceBlocked => 'Device blocked.';
+
+  @override
+  String get accessDeviceUnblock => 'Unblock';
+
+  @override
+  String get accessDeviceUnblocked => 'Device unblocked.';
+
+  @override
+  String get accessBlockedDevices => 'Blocked devices';
+
+  @override
+  String get captureAlertsTitle => 'Screen capture alerts';
+
+  @override
+  String get captureAlertsCaption =>
+      'Members who took a screenshot or recorded the screen inside the app. Detected on iPhone / iPad and Android 14+.';
+
+  @override
+  String get captureNone => 'No screenshots or recordings so far.';
+
+  @override
+  String get captureClear => 'Clear all';
+
+  @override
+  String get captureClearQuestion => 'Clear all alerts?';
+
+  @override
+  String get captureClearBody =>
+      'Every screenshot and recording alert will be deleted.';
+
+  @override
+  String captureShowAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
+  String get captureShowLess => 'Show less';
+
+  @override
+  String get captureScreenshot => 'Screenshot';
+
+  @override
+  String get captureRecording => 'Screen recording';
+
+  @override
+  String get capturePage => 'Page';
+
+  @override
+  String get captureCourse => 'Course';
+
+  @override
+  String get captureLesson => 'Lesson / quiz';
+
+  @override
+  String get courseLocked => 'Locked';
+
+  @override
+  String get courseLockedSnack =>
+      'This course isn\'t open for you yet. Ask the admin to give it to you.';
+
+  @override
+  String get courseSubtitleEdit => 'Subtitle';
+
+  @override
+  String get courseSubtitle => 'Course subtitle';
+
+  @override
+  String get courseSubtitleHint => 'A short line shown under the course title';
+
+  @override
+  String accessCoursePickPlatform(String course) {
+    return 'Pick at least one platform for $course';
+  }
+
+  @override
+  String get accessCoursePlatforms => 'Opens on';
+
+  @override
+  String get certPreview => 'Preview certificate';
+
+  @override
+  String get certPreviewNote =>
+      'A sample — this is how a member\'s certificate looks.';
+
+  @override
+  String get certButtonLocked => 'Certificate · finish the course to earn it';
+
+  @override
+  String get certIssued => 'Certificate issued · view it';
+
+  @override
+  String get certIssueTitle => 'Certificates';
+
+  @override
+  String get certIssueCaption =>
+      'Give this member a course\'s certificate without the final exam. It shows up for them at once.';
+
+  @override
+  String get certIssue => 'Issue';
+
+  @override
+  String get certRevoke => 'Take back';
+
+  @override
+  String get certRevoked => 'Certificate taken back';
+
+  @override
+  String get certIssuedToast => 'Certificate issued';
+
+  @override
+  String get libraryProjects => 'Projects';
+
+  @override
+  String get libraryProjectsHint => 'Our projects from the website';
+
+  @override
+  String get webTab => 'Website';
 }

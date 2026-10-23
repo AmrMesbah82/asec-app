@@ -61,10 +61,9 @@ abstract final class AppFirebase {
       );
 
       _ready = true;
-    } catch (error, stack) {
+    } catch (error) {
       notConfigured = true;
       startupError = error.toString();
-      debugPrint('[AppFirebase] initialize failed: $error\n$stack');
     }
   }
 

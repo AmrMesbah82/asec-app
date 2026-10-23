@@ -11,6 +11,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:asec/core/custom/111-app_svg_icon.dart';
+import 'package:asec/features/web/core/builtin_en.dart';
 import 'package:asec/features/web/core/doc.dart';
 import 'package:asec/features/web/core/i18n.dart';
 import 'package:asec/features/web/core/theme.dart';
@@ -38,10 +39,8 @@ const List<NavItem> kNav = <NavItem>[
   NavItem(L('المقالات', 'Articles'), '/articles'),
   NavItem(L('أعمالنا', 'Projects'), '/projects'),
   NavItem(L('تواصل معنا', 'Contact'), '/contact'),
-  NavItem(L('تقديم طلب', 'Apply'), '/requests', <NavItem>[
-    NavItem(L('طلب خدمة', 'Request a Service'), '/request-service'),
-    NavItem(L('طلب وظيفة', 'Apply for a Job'), '/request-job'),
-  ]),
+  // APPLY = the service request form, nothing else.
+  NavItem(L('تقديم طلب', 'Apply'), '/request-service'),
 ];
 
 /// "عربي | English" — the language as a two-option tab, floating at the
@@ -219,13 +218,22 @@ class _Header extends StatelessWidget {
 }
 
 class _Logo extends StatelessWidget {
-  const _Logo({required this.size});
+  const _Logo({required this.size, this.white = false});
 
   final double size;
 
+  /// All white — for the black footer, whatever the site's theme.
+  final bool white;
+
   @override
-  Widget build(BuildContext context) =>
-      Image.asset('assets/web/images/logo.png', height: size, fit: BoxFit.contain);
+  Widget build(BuildContext context) {
+    final Widget logo = Image.asset('assets/web/images/logo.png', height: size, fit: BoxFit.contain);
+    if (!white) return logo;
+    return ColorFiltered(
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      child: logo,
+    );
+  }
 }
 
 class _NavLink extends StatefulWidget {
@@ -828,9 +836,8 @@ class SiteFooter extends StatelessWidget {
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
         Text(const L('تواصل معانا', 'Get in touch').t, style: head),
         const SizedBox(height: 12),
-        link(const L('تقديم طلب', 'Apply'), '/requests'),
         link(const L('طلب خدمة', 'Request a Service'), '/request-service'),
-        link(const L('طلب وظيفة', 'Apply for a Job'), '/request-job'),
+        link(const L('تواصل معنا', 'Contact'), '/contact'),
       ]),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
         Text(const L('بيانات التواصل', 'Contact details').t, style: head),
@@ -842,12 +849,12 @@ class SiteFooter extends StatelessWidget {
             onTap: () => openLink('mailto:$e'),
             child: Text(e, style: const TextStyle(color: Colors.white70)),
           ),
-        if (s.s('phone').isNotEmpty)
+        for (final String phone in sitePhones(s.raw('phone')))
           InkWell(
-            onTap: () => openLink(telLink(s.s('phone'))),
+            onTap: () => openLink(telLink(phone)),
             child: Directionality(
               textDirection: TextDirection.ltr,
-              child: Text(s.s('phone'), style: const TextStyle(color: Colors.white70)),
+              child: Text(phone, style: const TextStyle(color: Colors.white70)),
             ),
           ),
       ]),
@@ -862,7 +869,7 @@ class SiteFooter extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const Center(child: _Logo(size: 90)),
+                  const Center(child: _Logo(size: 90, white: true)),
                   const SizedBox(height: 24),
                   for (final Widget c in columns) Padding(padding: const EdgeInsets.only(bottom: 22), child: c),
                 ],
@@ -872,7 +879,7 @@ class SiteFooter extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   for (final Widget c in columns) Expanded(child: c),
-                  const _Logo(size: 110),
+                  const _Logo(size: 110, white: true),
                 ],
               ),
             const SizedBox(height: 28),

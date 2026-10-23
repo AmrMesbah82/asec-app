@@ -24,12 +24,21 @@ enum AsecScreenProtection {
     enabled = on
     NotificationCenter.default.post(name: changed, object: nil)
   }
+
+  /// Set by AppDelegate. Screen capture alerts go back to Dart as
+  /// `captured("screenshot" | "recording")`, which saves them for the admin.
+  static var channel: FlutterMethodChannel?
+
+  static func report(_ type: String) {
+    DispatchQueue.main.async { channel?.invokeMethod("captured", arguments: type) }
+  }
 }
 
 class SceneDelegate: FlutterSceneDelegate {
   private var didSecure = false
   private var captureCover: UIView?
   private var secureField: UITextField?
+  private var wasCaptured = false
 
   override func sceneDidBecomeActive(_ scene: UIScene) {
     super.sceneDidBecomeActive(scene)
@@ -47,6 +56,12 @@ class SceneDelegate: FlutterSceneDelegate {
         self,
         selector: #selector(protectionChanged),
         name: AsecScreenProtection.changed,
+        object: nil
+      )
+      NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(screenshotTaken),
+        name: UIApplication.userDidTakeScreenshotNotification,
         object: nil
       )
     }
@@ -93,9 +108,16 @@ class SceneDelegate: FlutterSceneDelegate {
     captureChanged()
   }
 
+  @objc private func screenshotTaken() {
+    AsecScreenProtection.report("screenshot")
+  }
+
   @objc private func captureChanged() {
     guard let window = self.window else { return }
     let captured = window.windowScene?.screen.isCaptured ?? UIScreen.main.isCaptured
+    // Recording (or mirroring) just started → tell the admin, once.
+    if captured && !wasCaptured { AsecScreenProtection.report("recording") }
+    wasCaptured = captured
     if captured && AsecScreenProtection.enabled {
       if captureCover == nil {
         let cover = UIView(frame: window.bounds)

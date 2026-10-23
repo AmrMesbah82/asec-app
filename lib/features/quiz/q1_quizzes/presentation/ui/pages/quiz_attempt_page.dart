@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:asec/core/settings/capture_context.dart';
 import 'package:asec/core/custom/101-custom_surface.dart';
 import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/111-app_svg_icon.dart';
@@ -38,7 +39,14 @@ class QuizAttemptPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<QuizAttemptCubit>(
+    return CaptureTag(
+      page: 'Quiz',
+      course: <String>[
+        if (quiz.course.isNotEmpty) quiz.course,
+        if (quiz.section.isNotEmpty) quiz.section,
+      ].join(' › '),
+      detail: quiz.title,
+      child: BlocProvider<QuizAttemptCubit>(
       create: (_) => QuizAttemptCubit(
         quiz: quiz,
         userId: user.uid,
@@ -46,6 +54,7 @@ class QuizAttemptPage extends StatelessWidget {
         userEmail: user.email,
       )..load(),
       child: const _AttemptView(),
+    ),
     );
   }
 }

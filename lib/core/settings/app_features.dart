@@ -13,6 +13,16 @@
 /// a second — no restart. A missing field means ON (the default below), so an
 /// empty or unreadable document leaves the app exactly as it was.
 ///
+/// Updated: 23/10/2026 - `screenshotException`: one account
+///          ([kScreenshotExceptionEmail]) may be let through the screenshot
+///          block. Features can now default to OFF ([AppFeature.defaultOn]).
+///
+/// Updated: 23/10/2026 - Calculators group: one switch per calculator
+///          (converter, engineering, ducts, pipes, plumbing, fire). Off =
+///          hidden from every member; admins still see it ([calcOn]).
+///          All ON by default except the Engineering calculator (OFF: only
+///          members unlocked on the Members page get it).
+///
 /// Rules: everybody may READ `settings/app` (the sign-in screen needs the
 /// registration switch before anybody is signed in); only the super admin
 /// may write it.
@@ -24,8 +34,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:asec/core/network/app_firebase.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/presentation/controller/session_controller.dart';
 
-enum AppFeatureGroup { sections, videos, general, dashboard }
+/// The one account the `screenshotException` switch applies to.
+const String kScreenshotExceptionEmail = 'amrmesbah33@gmail.com';
+
+enum AppFeatureGroup { sections, videos, calculators, general, dashboard }
 
 enum AppFeature {
   // ── What members see in the side menu ──
@@ -45,22 +60,48 @@ enum AppFeature {
   videoSearch('video_search', AppFeatureGroup.videos, Icons.search_rounded),
   videoCourseProgress('video_course_progress', AppFeatureGroup.videos, Icons.stacked_line_chart_rounded),
 
+  // ── Calculators: ON = every member (with the calculators) can open it ──
+  calcConverter('calc_converter', AppFeatureGroup.calculators, Icons.swap_horiz_rounded),
+  /// OFF by default: then only members the admin unlocked (can_use_calcs)
+  /// get it. ON = every member.
+  calcEngineering(
+    'calc_engineering',
+    AppFeatureGroup.calculators,
+    Icons.engineering_rounded,
+    defaultOn: false,
+  ),
+  calcDuct('calc_duct', AppFeatureGroup.calculators, Icons.air_rounded),
+  calcPipe('calc_pipe', AppFeatureGroup.calculators, Icons.plumbing_rounded),
+  calcPlumbing('calc_plumbing', AppFeatureGroup.calculators, Icons.water_drop_rounded),
+  calcFire('calc_fire', AppFeatureGroup.calculators, Icons.local_fire_department_rounded),
+
   // ── Whole app ──
   animations('animations', AppFeatureGroup.general, Icons.animation_rounded),
   registration('registration', AppFeatureGroup.general, Icons.person_add_alt_1_rounded),
   /// ON = screenshots and screen recordings of the app are blocked
   /// (core/settings/screen_protection.dart → native code on each platform).
   screenProtection('screen_protection', AppFeatureGroup.general, Icons.lock_outline_rounded),
+  /// ON = [kScreenshotExceptionEmail] may take screenshots / recordings even
+  /// while [screenProtection] blocks everybody else. OFF by default.
+  screenshotException(
+    'screenshot_exception',
+    AppFeatureGroup.general,
+    Icons.screenshot_monitor_rounded,
+    defaultOn: false,
+  ),
 
   // ── Admin dashboard ──
   dashboardCharts('dashboard_charts', AppFeatureGroup.dashboard, Icons.bar_chart_rounded),
   dashboardTable('dashboard_table', AppFeatureGroup.dashboard, Icons.table_rows_rounded);
 
-  const AppFeature(this.key, this.group, this.icon);
+  const AppFeature(this.key, this.group, this.icon, {this.defaultOn = true});
 
   final String key;
   final AppFeatureGroup group;
   final IconData icon;
+
+  /// Value used while the document has no field for this switch.
+  final bool defaultOn;
 }
 
 class AppFeatures extends GetxController {
@@ -71,7 +112,8 @@ class AppFeatures extends GetxController {
   static DocumentReference<Map<String, dynamic>> get _doc =>
       AppFirebase.db.collection('settings').doc('app');
 
-  /// key → on/off, straight from the document. Missing = on.
+  /// key → on/off, straight from the document. Missing = the feature's
+  /// [AppFeature.defaultOn] (on for all but a few).
   final RxMap<String, bool> values = <String, bool>{}.obs;
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _sub;
@@ -102,7 +144,19 @@ class AppFeatures extends GetxController {
     }
   }
 
-  bool isOn(AppFeature f) => values[f.key] ?? true;
+  bool isOn(AppFeature f) => values[f.key] ?? f.defaultOn;
+
+  /// A calculator switch for the signed-in account: admins always see every
+  /// calculator; members only the ones switched on.
+  bool calcOn(AppFeature f) {
+    final AppUser? me =
+        Get.isRegistered<SessionController>() ? SessionController.to.current : null;
+    if (me != null && me.isAdmin) return true;
+    if (isOn(f)) return true;
+    // Engineering switched off for everybody: still open to the members the
+    // admin unlocked one by one (Members → can use calculators).
+    return f == AppFeature.calcEngineering && me != null && me.canUseCalcs;
+  }
 
   /// Reactive read for use inside `Obx`.
   static bool on(AppFeature f) => to.isOn(f);
@@ -115,7 +169,9 @@ class AppFeatures extends GetxController {
   Future<void> resetAll() async {
     values.clear();
     await _doc.set(<String, dynamic>{
-      for (final AppFeature f in AppFeature.values) f.key: true,
+      // Back to the defaults: everything on except the off-by-default
+      // switches (the screenshot exception).
+      for (final AppFeature f in AppFeature.values) f.key: f.defaultOn,
     });
   }
 

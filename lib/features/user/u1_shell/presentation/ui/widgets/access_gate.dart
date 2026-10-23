@@ -9,6 +9,9 @@
 ///          closes it, and live, so the admin's Pause takes effect at once.
 /// Author: ASEC team
 /// Created: 1/10/2026
+/// Updated: 23/10/2026 - No more one-device lock and no platform screen:
+///          members sign in on any device / platform. Paused, dates and
+///          a device the admin blocked still apply.
 
 import 'dart:async';
 
@@ -19,8 +22,8 @@ import 'package:asec/core/custom/110-app_widgets.dart';
 import 'package:asec/core/custom/5-custom_button.dart';
 import 'package:asec/core/theme/app_colors.dart';
 import 'package:asec/core/theme/app_theme.dart';
+import 'package:asec/features/admin/a2_members/data/device_security.dart';
 import 'package:asec/features/onboarding/o1_splash/presentation/ui/pages/splash_screen.dart';
-import 'package:asec/features/onboarding/o2_authentication/data/data_source/remote_data_source/users_remote_data_source.dart';
 import 'package:asec/features/onboarding/o2_authentication/data/device/device_identity.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/member_access.dart';
@@ -40,11 +43,11 @@ class AccessGate extends StatefulWidget {
 
 class _AccessGateState extends State<AccessGate> {
   Timer? _tick;
-  bool _binding = false;
 
-  /// The account a lock was refused for (e.g. rules not deployed yet), so
-  /// the gate does not retry on every rebuild. Never blocks the member.
-  String? _refusedFor;
+  /// The admin blocked THIS device (`blocked_devices/{DeviceIdentity.id}`).
+  /// Null until the first answer.
+  bool? _blocked;
+  StreamSubscription<bool>? _blockSub;
 
   @override
   void initState() {
@@ -52,39 +55,23 @@ class _AccessGateState extends State<AccessGate> {
     _tick = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) setState(() {});
     });
-    _claimDevice();
-  }
-
-  @override
-  void didUpdateWidget(covariant AccessGate old) {
-    super.didUpdateWidget(old);
-    _claimDevice();
-  }
-
-  /// ONE DEVICE PER MEMBER. An account with no device yet is locked to this
-  /// one — unless the admin just removed THIS device (then it waits for the
-  /// member to sign in again). Firestore rules allow the write only while
-  /// the slot is empty, so if two devices race, one wins and the other is
-  /// shown "used on another device".
-  void _claimDevice() {
-    final AppUser u = widget.user;
-    if (u.isEmpty || u.isAdmin) return;
-    // Only a write the SERVER accepted marks this device (bindDevice does
-    // that after the await). A device id seen here may still be the local,
-    // unconfirmed copy of our own write — marking from it would turn a
-    // refused write into "This device was removed".
-    if (u.hasDevice) return;
-    if (_binding || _refusedFor == u.uid || DeviceIdentity.boundUid == u.uid) return;
-    _binding = true;
-    UsersRemoteDataSource().bindDevice(u.uid).catchError((Object e) {
-      _refusedFor = u.uid;
-      debugPrint('Device lock refused (are the Firestore rules deployed?): $e');
-    }).whenComplete(() => _binding = false);
+    if (widget.user.isAdmin) {
+      _blocked = false;
+    } else {
+      _blockSub = DeviceBlocks.watchThisDevice().listen((bool b) {
+        if (!mounted) return;
+        setState(() => _blocked = b);
+      }, onError: (Object _) {
+        if (!mounted || _blocked != null) return;
+        setState(() => _blocked = false);
+      });
+    }
   }
 
   @override
   void dispose() {
     _tick?.cancel();
+    _blockSub?.cancel();
     super.dispose();
   }
 
@@ -95,6 +82,9 @@ class _AccessGateState extends State<AccessGate> {
       thisDevice: DeviceIdentity.id,
       boundHereUid: DeviceIdentity.boundUid,
     );
+    if (_blocked == true && !widget.user.isAdmin) {
+      return _BlockedView(user: widget.user, block: AccessBlock.deviceBlocked);
+    }
     if (block == AccessBlock.none) return widget.child;
     return _BlockedView(user: widget.user, block: block);
   }
@@ -165,6 +155,12 @@ class _BlockedView extends StatelessWidget {
           s.blockedTitleDeviceRemoved,
           s.blockedBodyDeviceRemoved,
         ),
+      AccessBlock.deviceBlocked => (
+          Icons.block_rounded,
+          AppColors.red,
+          s.blockedTitleDeviceBlocked,
+          s.blockedBodyDeviceBlocked,
+        ),
       AccessBlock.none => (Icons.check_rounded, AppColors.green, '', ''),
     };
 
@@ -180,7 +176,9 @@ class _BlockedView extends StatelessWidget {
         _Fact(
           Icons.verified_user_rounded,
           s.tbAllowedOn,
-          user.platforms.map(MemberAccess.platformLabel).join('، '),
+          (user.platforms.isEmpty ? MemberAccess.defaultPlatforms : user.platforms)
+              .map(MemberAccess.platformLabel)
+              .join('، '),
         ),
       ],
       if (block == AccessBlock.otherDevice)

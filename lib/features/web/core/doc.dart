@@ -18,6 +18,7 @@ library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart' show TextDirection;
 
+import 'package:asec/features/web/core/builtin_en.dart';
 import 'package:asec/features/web/core/i18n.dart';
 
 class Doc {
@@ -33,10 +34,22 @@ class Doc {
 
   bool get exists => id.isNotEmpty;
 
+  /// The built-in English of a starter document (builtin_en.dart), found by
+  /// its id, its slug or its Arabic title.
+  Map<String, Object>? get _builtInEnglish {
+    final Map<String, Object>? byId = kBuiltInEnglish[id] ?? kBuiltInEnglish[raw('slug')];
+    if (byId != null) return byId;
+    final String title = raw('title').trim();
+    return kBuiltInEnglish[kBuiltInEnglishByArabicTitle[title] ?? ''];
+  }
+
   String s(String key, [String fallback = '']) {
     if (!AppLang.isAr) {
       final String en = raw('${key}_en');
       if (en.trim().isNotEmpty) return en;
+      // Starter content the admin has not translated yet.
+      final Object? built = _builtInEnglish?[key];
+      if (built is String) return built;
     }
     final String out = raw(key);
     return out.isEmpty ? fallback : out;
@@ -88,6 +101,8 @@ class Doc {
     if (!AppLang.isAr) {
       final List<String> en = _list('${key}_en');
       if (en.isNotEmpty) return en;
+      final Object? built = _builtInEnglish?[key];
+      if (built is List<String>) return built;
     }
     return _list(key);
   }

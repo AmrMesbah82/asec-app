@@ -125,12 +125,26 @@ service cloud.firestore {
                 || me().access_until > request.time));
     }
 
-    // May this member open [course]? "Every course" (the default), or the
-    // course is in the list the admin ticked on the Members page.
+    // May this member open [course]? "Every course" if the admin turned it
+    // on, or the course is in the list the admin ticked on the Members page.
+    // Until the admin sets a list, only the default courses are open —
+    // keep this list the same as MemberAccess.defaultCourses in the app.
     function hasCourse(course) {
       return isStaff()
-        || me().get('courses_all', true) == true
-        || course in me().get('courses', []);
+        || ((me().get('courses_all', false) == true
+              || course in me().get('courses', [])
+              || (me().get('courses', []).size() == 0
+                  && course in ['GENERAL NOTES', 'Reals']))
+            && courseWindowOpen(course));
+    }
+
+    // The course's own dates (Members → Edit access, under each course
+    // ticked). No dates = no extra limit. The platforms there are checked
+    // by the app — a request does not say which device it came from.
+    function courseWindowOpen(course) {
+      let a = me().get('course_access', {}).get(course, {});
+      return (a.get('from', null) == null || a.get('from', null) <= request.time)
+        && (a.get('until', null) == null || a.get('until', null) > request.time);
     }
 
     // ── The demo-data button ────────────────────────────────────────────────
@@ -201,14 +215,14 @@ service cloud.firestore {
         && resource.data.role == 'user'
         && onlyChanged([
                'active', 'can_create_cv', 'can_use_calcs', 'updated_at',
-               'courses_all', 'courses', 'platforms',
+               'courses_all', 'courses', 'platforms', 'course_access',
                'access_from', 'access_until', 'paused_at',
                'device_id', 'device_name', 'device_bound_at'
              ])
         && (!changed('active') || canDo('members', 'block'))
         && (!changed('can_create_cv') || canDo('cvs', 'grant'))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
-               'can_use_calcs', 'courses_all', 'courses', 'platforms',
+               'can_use_calcs', 'courses_all', 'courses', 'platforms', 'course_access',
                'access_from', 'access_until', 'paused_at'])
             || canDo('members', 'access'))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
@@ -238,6 +252,34 @@ service cloud.firestore {
       // delete anybody's.
       allow delete: if isSelf(uid) || isSuper()
         || (can('members') && resource.data.role == 'user');
+    }
+
+    // ── blocked_devices ─────────────────────────────────────────────────────
+    //
+    // Doc id = a device id the admin blocked (Members → Edit access → Block
+    // device). Each app reads ITS OWN id only (get), so it can show "This
+    // device is blocked"; ids are random, so a member cannot list or guess
+    // others. Admins with Members → Reset device manage the list.
+    match /blocked_devices/{deviceId} {
+      allow get: if signedIn();
+      allow list: if can('members');
+      allow create, update, delete: if canDo('members', 'device');
+    }
+
+    // ── security_events (screen capture alerts) ─────────────────────────────
+    //
+    // The app adds one when a member takes a screenshot or records the
+    // screen. A member may only add an event about themself and never read
+    // one back; admins with Members read and clear them.
+    match /security_events/{id} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.type in ['screenshot', 'recording']
+        && request.resource.data.keys().hasOnly([
+             'type', 'uid', 'member_name', 'email', 'platform',
+             'device_name', 'device_id', 'page', 'course', 'detail', 'at'
+           ]);
+      allow read, delete: if can('members');
     }
 
     // ── admin_config (admins only) ──────────────────────────────────────────
@@ -280,6 +322,22 @@ service cloud.firestore {
         && (canDo('videos', 'edit') || onlyChanged(['published', 'free', 'updated_at']))
         && (!changed('published') || canDo('videos', 'publish'))
         && (!changed('free') || canDo('videos', 'access'));
+    }
+
+    // Every published lesson's title and course, WITHOUT its file link, so
+    // a member sees the courses they were not given — locked. Written only
+    // by the admin app (VideoCatalog), from the videos above.
+    match /video_catalog/{videoId} {
+      allow read: if memberOk();
+      allow write: if can('videos');
+    }
+
+    // Certificates the admin gives a member by hand (no exam). The member
+    // reads their own.
+    match /certificates/{id} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create, update, delete: if canDo('quizzes', 'certificates');
     }
 
     // ── quizzes ─────────────────────────────────────────────────────────────
@@ -553,6 +611,21 @@ service cloud.firestore {
         && (!('services' in request.resource.data)
             || (request.resource.data.services is list && request.resource.data.services.size() <= 5));
       allow read, update, delete: if webInbox();
+    }
+
+    // E-mails sent by the "Trigger Email from Firestore" extension. The
+    // public service request form may queue ONE kind only: to info@asecbim.com
+    // (keep in line with SiteRepo.requestsEmail), so it cannot mail anybody
+    // else. Nobody reads them from the app.
+    match /mail/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['to', 'replyTo', 'message', 'created_at'])
+        && request.resource.data.to == ['info@asecbim.com']
+        && request.resource.data.message.keys().hasOnly(['subject', 'html'])
+        && request.resource.data.message.subject is string
+        && request.resource.data.message.subject.size() <= 300
+        && request.resource.data.message.html is string
+        && request.resource.data.message.html.size() <= 20000;
+      allow read, update, delete: if false;
     }
 
     match /site_job_applications/{id} {

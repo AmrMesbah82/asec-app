@@ -345,9 +345,12 @@ class _AccessCell extends StatelessWidget {
     final String courses = member.allCourses
         ? s.accessAllCourses
         : s.accessCoursesCount(member.courses.length);
-    final String devices = member.platforms.isEmpty
-        ? s.accessAllPlatforms
-        : member.platforms.map(MemberAccess.platformLabel).join(', ');
+    // Not set = the default: Android and iPhone / iPad only.
+    final String devices = (member.platforms.isEmpty
+            ? MemberAccess.defaultPlatforms
+            : member.platforms)
+        .map(MemberAccess.platformLabel)
+        .join(', ');
     final String period = member.isPaused
         ? s.accessPaused
         : expired

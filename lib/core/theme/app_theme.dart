@@ -11,6 +11,7 @@
 // Last update: 20/8/2024
 // Objectives: This file is responsible for providing the app themes that is used in the app.
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -51,7 +52,7 @@ abstract class AppTheme {
     pageTransitionsTheme: appPageTransitions,
     colorScheme: ColorScheme.light(
       primary: AppColors.secondaryPrimary,
-      onPrimary: Colors.white,
+      onPrimary: AppColors.secondaryPrimaryText,
       outlineVariant: AppColors.lightGrey,
       onSurface: AppColors.inverseBase,
     ),
@@ -64,7 +65,7 @@ abstract class AppTheme {
       headerHeadlineStyle: StyleText.fontSize23Weight400,
       weekdayStyle: StyleText.fontSize12Weight600.copyWith(color: AppColors.darkGrey),
       headerBackgroundColor: AppColors.secondaryPrimary,
-      headerForegroundColor: Colors.white,
+      headerForegroundColor: AppColors.secondaryPrimaryText,
       backgroundColor: AppColors.card,
       todayBackgroundColor: WidgetStatePropertyAll(AppColors.card),
       shape: RoundedRectangleBorder(
@@ -82,7 +83,7 @@ abstract class AppTheme {
       dayForegroundColor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.selected)) {
-            return Colors.white;
+            return AppColors.secondaryPrimaryText;
           } else if (states.contains(WidgetState.disabled)) {
             return AppColors.lightGrey;
           }
@@ -100,7 +101,7 @@ abstract class AppTheme {
       yearForegroundColor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.selected)) {
-            return Colors.white;
+            return AppColors.secondaryPrimaryText;
           }
           return AppColors.text;
         },
@@ -142,7 +143,7 @@ abstract class AppTheme {
     pageTransitionsTheme: appPageTransitions,
     colorScheme: ColorScheme.dark(
       primary: AppColors.secondaryPrimary,
-      onPrimary: Colors.white,
+      onPrimary: AppColors.secondaryPrimaryText,
       outlineVariant: AppColors.lightGrey,
       onSurface: AppColors.inverseBase,
     ),
@@ -155,7 +156,7 @@ abstract class AppTheme {
       headerHeadlineStyle: StyleText.fontSize23Weight400,
       weekdayStyle: StyleText.fontSize12Weight600.copyWith(color: AppColors.darkGrey),
       headerBackgroundColor: AppColors.secondaryPrimary,
-      headerForegroundColor: Colors.white,
+      headerForegroundColor: AppColors.secondaryPrimaryText,
       backgroundColor: AppColors.card,
       todayBackgroundColor: WidgetStatePropertyAll(AppColors.card),
       shape: RoundedRectangleBorder(
@@ -173,7 +174,7 @@ abstract class AppTheme {
       dayForegroundColor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.selected)) {
-            return Colors.white;
+            return AppColors.secondaryPrimaryText;
           } else if (states.contains(WidgetState.disabled)) {
             return AppColors.lightGrey;
           }
@@ -191,7 +192,7 @@ abstract class AppTheme {
       yearForegroundColor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.selected)) {
-            return Colors.white;
+            return AppColors.secondaryPrimaryText;
           }
           return AppColors.text;
         },
@@ -423,36 +424,31 @@ abstract class AppTheme {
     setCurrentThemeColors();
   }
 
-  static Color contrastColor() {
-    final double primaryLuminance = AppColors.primary.computeLuminance();
-    final double secondaryPrimaryLuminance = AppColors.secondaryPrimary.computeLuminance();
+  /// Text / icon colour that reads on [fill]: dark on a light fill, white on
+  /// a dark one — the services_module rule (ADDED 22/10/2026). Follows the
+  /// chosen brand colour, so a light primary flips its text to black.
+  static Color readableOn(Color fill) =>
+      fill.computeLuminance() > 0.5 ? AppColors.black : AppColors.white;
 
-
-    // Check if both colors are light or dark
-    if (primaryLuminance > 0.5 && secondaryPrimaryLuminance > 0.5) {
-      return AppColors.black; // Return black for light colors
-    } else if (primaryLuminance <= 0.5 && secondaryPrimaryLuminance <= 0.5) {
-      return AppColors.white; // Return white for dark colors
-    } else {
-      if (primaryLuminance > 0.5) return AppColors.black;
-      return AppColors.white; // Change this to the desired contrasting color
-    }
+  /// The colour to draw a "selected / active" label or icon in when it sits on
+  /// [surface] (a card, the rail, the bar). Normally the brand [primary]; but
+  /// when the chosen primary is too close to the surface (a grey brand colour
+  /// on the dark card, a dark purple in dark mode) it would vanish, so the
+  /// readable ink for that surface is used instead. Contrast ≥ 3:1 (WCAG for
+  /// large text / icons). ADDED 22/10/2026.
+  static Color accentOn(Color surface) {
+    final Color primary = AppColors.primary;
+    final double a = primary.computeLuminance();
+    final double b = surface.computeLuminance();
+    final double ratio = (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
+    return ratio >= 3 ? primary : readableOn(surface);
   }
 
-  static Color secondaryPrimaryText() {
-    final double secondaryPrimaryLuminance =
-        AppColors.secondaryPrimary.computeLuminance();
+  /// Before 22/10/2026 this mixed primary AND secondary; now it is the ink
+  /// on [AppColors.primary] alone, like services_module.
+  static Color contrastColor() => readableOn(AppColors.primary);
 
-    // Check if both colors are light or dark
-    if (secondaryPrimaryLuminance > 0.5) {
-      return AppColors.black; // Return black for light colors
-    } else if (secondaryPrimaryLuminance <= 0.5) {
-      return AppColors.white; // Return white for dark colors
-    } else {
-      if (secondaryPrimaryLuminance > 0.5) return AppColors.black;
-      return AppColors.white; // Change this to the desired contrasting color
-    }
-  }
+  static Color secondaryPrimaryText() => readableOn(AppColors.secondaryPrimary);
 
   static Color contrastGreyColor() {
     final double primaryLuminance = AppColors.primary.computeLuminance();

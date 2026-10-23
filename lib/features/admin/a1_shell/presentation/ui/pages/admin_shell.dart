@@ -5,6 +5,8 @@
 /// Purpose: Declares `AdminShell` — what amrmesbah33@gmail.com sees.
 /// Author: ASEC team
 /// Created: 19/9/2026
+/// Updated: 22/10/2026 - Certificate quizzes sit under "More" on the phone
+///          (`phoneMore`); Calculators is the bar's centre button (`phoneCenter`).
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +26,10 @@ import 'package:asec/features/web/web_control_page.dart';
 import 'package:asec/features/tools/t1_unit_converter/presentation/ui/pages/unit_converter_page.dart';
 import 'package:asec/features/tools/t2_engineering_calc/data/calc_access.dart';
 import 'package:asec/features/tools/t2_engineering_calc/presentation/ui/pages/engineering_calc_page.dart';
+import 'package:asec/features/tools/t3_duct_calc/presentation/ui/pages/duct_calc_page.dart';
+import 'package:asec/features/tools/t4_pipe_calc/presentation/ui/pages/pipe_calc_page.dart';
+import 'package:asec/features/tools/t5_plumbing_fire/presentation/ui/pages/plumbing_fire_page.dart';
+import 'package:asec/features/tools/t5_plumbing_fire/presentation/ui/pages/fire_calc_page.dart';
 import 'package:asec/generated/l10n.dart';
 import 'package:asec/features/onboarding/o2_authentication/domain/enums/admin_permission.dart';
 
@@ -68,6 +74,8 @@ class AdminShell extends StatelessWidget {
             label: s.certificateQuizzes,
             shortLabel: s.certificateShort,
             page: AdminQuizzesPage(adminUid: admin.uid, certificate: true),
+            // Phone: under "More", so Calculators gets the bar tab.
+            phoneMore: true,
           ),
           // Notifications, tips & tricks, the member Library and stars.
           if (admin.can(AdminPermission.engagement))
@@ -107,18 +115,59 @@ class AdminShell extends StatelessWidget {
             label: s.permWebsite,
             page: const WebControlPage(),
           ),
-          ShellSection(
+          // THE CALCULATORS — one tab. Tapping it opens a circular menu
+          // (CustomCircularMenu): unit converter, engineering calculators,
+          // duct calculator. All three also work offline.
+          ShellSection.group(
+            id: 'calculators',
+            // Phone: the raised round button in the middle of the bar.
+            phoneCenter: true,
             icon: Icons.calculate_rounded,
-            label: s.unitConverter,
-            page: const UnitConverterPage(),
-          ),
-          // Online only: the offline screen and the sign-in screen keep the
-          // unit converter alone, so this tab goes away with the internet.
-          ShellSection(
-            icon: Icons.engineering_rounded,
-            label: s.engineeringCalc,
-            shortLabel: s.engineeringCalcShort,
-            page: const EngineeringCalcPage(),
+            label: s.engineeringCalcShort,
+            children: <ShellSection>[
+              ShellSection(
+                id: 'converter',
+                icon: Icons.swap_horiz_rounded,
+                label: s.unitConverter,
+                shortLabel: s.unitConverterShort,
+                page: const UnitConverterPage(),
+              ),
+              ShellSection(
+                id: 'engineeringCalc',
+                icon: Icons.engineering_rounded,
+                label: s.engineeringCalc,
+                shortLabel: s.engineeringCalcShort,
+                page: const EngineeringCalcPage(),
+              ),
+              ShellSection(
+                id: 'ductCalc',
+                icon: Icons.air_rounded,
+                label: s.ductCalc,
+                shortLabel: s.ductCalcShort,
+                page: const DuctCalcPage(),
+              ),
+              ShellSection(
+                id: 'pipeCalc',
+                icon: Icons.plumbing_rounded,
+                label: s.pipeCalc,
+                shortLabel: s.pipeCalcShort,
+                page: const PipeCalcPage(),
+              ),
+              ShellSection(
+                id: 'plumbingFireCalc',
+                icon: Icons.water_drop_rounded,
+                label: s.plumbingFireCalc,
+                shortLabel: s.plumbingFireCalcShort,
+                page: const PlumbingFirePage(),
+              ),
+              ShellSection(
+                id: 'fireCalc',
+                icon: Icons.local_fire_department_rounded,
+                label: s.fireCalc,
+                shortLabel: s.fireCalcShort,
+                page: const FireCalcPage(),
+              ),
+            ],
           ),
           ShellSection(
             icon: Icons.settings_rounded,

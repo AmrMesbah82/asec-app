@@ -140,6 +140,55 @@ abstract final class SiteRepo {
         'created_at': FieldValue.serverTimestamp(),
       });
 
+  /// Where service requests are e-mailed. firestore.rules (`mail`) allows
+  /// this address only, so the form cannot be used to mail anybody else.
+  static const String requestsEmail = 'info@asecbim.com';
+
+  /// Queues an e-mail of a service request to [requestsEmail] in `mail`,
+  /// the collection the "Trigger Email from Firestore" extension sends.
+  static Future<void> mailServiceRequest(Map<String, dynamic> d) {
+    String esc(Object? v) => '${v ?? ''}'
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    final List<(String, Object?)> rows = <(String, Object?)>[
+      ('Client name / اسم العميل', d['client_name']),
+      ('Company / الشركة', d['company']),
+      ('Phone / الهاتف', d['phone']),
+      ('E-mail / البريد', d['email']),
+      ('Project / المشروع', d['project_name']),
+      ('Project type / نوع المشروع', d['project_type']),
+      ('Services / الخدمات', (d['services'] as List<dynamic>? ?? const <dynamic>[]).join('، ')),
+      ('Floors / الطوابق', d['floors']),
+      ('Land area / المساحة', d['land_area']),
+      ('Location / المكان', d['location']),
+      ('Files / الملفات', d['files_link']),
+    ];
+    final StringBuffer table = StringBuffer();
+    for (final (String label, Object? value) in rows) {
+      table
+        ..write('<tr><td style="border:1px solid #ddd"><b>')
+        ..write(esc(label))
+        ..write('</b></td><td style="border:1px solid #ddd">')
+        ..write(esc(value))
+        ..write('</td></tr>');
+    }
+    final String html = '<div dir="auto" style="font-family:Arial,sans-serif">'
+        '<h2>New service request — طلب خدمة جديد</h2>'
+        '<table cellpadding="6" style="border-collapse:collapse">$table</table></div>';
+    final String client = (d['client_name'] ?? '').toString().trim();
+    final String replyTo = (d['email'] ?? '').toString().trim();
+    return db.collection('mail').add(<String, dynamic>{
+      'to': <String>[requestsEmail],
+      if (replyTo.isNotEmpty) 'replyTo': replyTo,
+      'message': <String, dynamic>{
+        'subject': 'طلب خدمة جديد — New service request${client.isEmpty ? '' : ' · $client'}',
+        'html': html,
+      },
+      'created_at': FieldValue.serverTimestamp(),
+    });
+  }
+
   // ── Storage ─────────────────────────────────────────────────────────────
 
   /// `site/{folder}/{timestamp}_{name}` — public read, admins write.

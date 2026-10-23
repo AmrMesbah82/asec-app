@@ -9,17 +9,25 @@
 ///          `AppUser.canSeeCourse`.
 /// Author: ASEC team
 /// Created: 1/10/2026
-
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart';
+/// Updated: 23/10/2026 - Signing in is no longer limited by platform or
+///          device: a member may use the app on any number of devices and
+///          platforms. The platforms now limit only the courses (videos,
+///          video quizzes, certificates) — see `AppUser.canSeeCourse`.
 
 import 'package:asec/features/onboarding/o2_authentication/domain/entities/app_user.dart';
+import 'package:asec/features/onboarding/o2_authentication/domain/entities/course_access.dart';
 
 /// Why a member is kept out. [none] = they may use the app.
-enum AccessBlock { none, paused, notStarted, expired, platform, otherDevice, deviceRemoved }
+/// [deviceBlocked] is not decided here — AccessGate reads `blocked_devices`.
+enum AccessBlock { none, paused, notStarted, expired, platform, otherDevice, deviceRemoved, deviceBlocked }
 
 abstract final class MemberAccess {
+  /// The courses (Drive category folders) every member may watch until an
+  /// admin sets their access. Any other course stays locked until the admin
+  /// ticks it on Members → Edit access. Names must match the Drive folder
+  /// names exactly. firestore.rules `hasCourse` holds the same list.
+  static const List<String> defaultCourses = <String>['GENERAL NOTES', 'Reals'];
+
   /// Every platform key the admin can choose from, in display order.
   static const List<String> allPlatforms = <String>[
     'android',
@@ -45,27 +53,20 @@ abstract final class MemberAccess {
     }
   }
 
+  /// What a member the admin has not set platforms for may use: Android and
+  /// iPhone / iPad only.
+  static const List<String> defaultPlatforms = CourseAccess.defaultPlatforms;
+
   /// The platform this copy of the app is running on.
-  static String get currentPlatform {
-    if (kIsWeb) return 'web';
-    try {
-      if (Platform.isAndroid) return 'android';
-      if (Platform.isIOS) return 'ios';
-      if (Platform.isMacOS) return 'macos';
-      if (Platform.isWindows) return 'windows';
-      return Platform.operatingSystem;
-    } catch (_) {
-      return 'unknown';
-    }
-  }
+  static String get currentPlatform => CourseAccess.currentPlatform;
 
   /// Admins are never blocked; members are checked in this order: paused,
-  /// not started, ended, wrong platform, wrong device.
+  /// not started, ended.
   ///
-  /// ONE DEVICE: [thisDevice] is this copy's id (DeviceIdentity.id) and
-  /// [boundHereUid] the account this device was last locked to. No device
-  /// on the account yet = allowed (AccessGate locks it to this one); the
-  /// admin removed THIS device = kept out until the member signs in again.
+  /// NO PLATFORM / DEVICE LIMIT (23/10/2026): any platform, any number of
+  /// devices. [thisDevice] / [boundHereUid] are kept for callers but no
+  /// longer used. A device the admin blocked is still shut out
+  /// (AccessGate, `blocked_devices`).
   static AccessBlock check(
     AppUser user, {
     DateTime? now,
@@ -80,14 +81,6 @@ abstract final class MemberAccess {
     }
     if (user.accessUntil != null && t.isAfter(user.accessUntil!)) {
       return AccessBlock.expired;
-    }
-    if (!user.allowsPlatform(currentPlatform)) return AccessBlock.platform;
-    if (thisDevice != null) {
-      if (!user.hasDevice) {
-        if (boundHereUid == user.uid) return AccessBlock.deviceRemoved;
-      } else if (user.deviceId != thisDevice) {
-        return AccessBlock.otherDevice;
-      }
     }
     return AccessBlock.none;
   }

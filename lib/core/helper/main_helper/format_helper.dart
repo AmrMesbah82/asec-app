@@ -9,6 +9,8 @@
 /// Updated: 16/10/2026 - Brought into ASEC: EVERY Text in the app passes its
 ///          string through [FormatHelper.capitalize]. Emails and links are
 ///          left exactly as written.
+/// Updated: 23/10/2026 - Units stay exactly as written (kg, not Kg; also
+///          mm, m/s, kg/m³, kJ/kg·K …) — see [_isUnit].
 
 // Date: 23/10/2024
 // Last update: 31/03/2026
@@ -43,6 +45,34 @@ List<String> abbreviation = [
   "cxo"
 ];
 
+/// Unit symbols that [FormatHelper.capitalize] must never touch. Common
+/// English words ("in", "bar", "min") are left out on purpose; compound
+/// units like "m³/min" are caught by [_isUnit] anyway.
+const Set<String> _unitWords = <String>{
+  'kg', 'g', 'mg', 't',
+  'mm', 'cm', 'm', 'km', 'm²', 'm³', 'mm²', 'cm²', 'cm³', 'cm⁴',
+  'l', 'ml', 'lb', 'lbs', 'oz', 'ft', 'ft²', 'ft³', 'in²', 'in³', 'in⁴',
+  'kw', 'kj', 'kpa', 'mpa', 'pa', 'mbar', 'psi', 'gpm', 'cfm', 'fpm',
+  's', 'h', 'rpm',
+};
+
+/// True when [word] is a unit symbol (kg, mm, m/s, kg/m³, kJ/kg·K, 10kg…):
+/// written in lower case and either a known symbol, a number with a unit,
+/// or a compound unit (contains / · ² ³ ⁴).
+bool _isUnit(String word) {
+  // Ignore wrapping punctuation: "(kg)", "kg," "kg."
+  final String core = word.replaceAll(RegExp(r'^[(\[]+|[)\],.:;]+$'), '');
+  if (core.isEmpty) return false;
+  final String first = core[0];
+  if (first != first.toLowerCase() || first == first.toUpperCase()) {
+    // Starts with a capital, a digit or a symbol — a number + unit like
+    // "10kg" still counts.
+    return RegExp(r'^\d+([.,]\d+)?[a-z]').hasMatch(core);
+  }
+  if (_unitWords.contains(core.toLowerCase())) return true;
+  return RegExp(r'[/·²³⁴]').hasMatch(core);
+}
+
 abstract class FormatHelper {
   /// Picks the locale-appropriate name, falling back to the English one when
   /// the locale is English or no Arabic value exists.
@@ -70,6 +100,8 @@ abstract class FormatHelper {
       if (word.isNotEmpty) {
         // An email or a link stays exactly as it is.
         if (word.contains('@') || word.contains('://')) return word;
+        // A unit symbol stays exactly as it is: kg, mm, m/s, kg/m³.
+        if (_isUnit(word)) return word;
         return word[0].toUpperCase() + word.substring(1);
       } else {
         return "";
